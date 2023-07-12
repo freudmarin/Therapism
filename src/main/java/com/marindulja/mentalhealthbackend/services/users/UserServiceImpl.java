@@ -12,7 +12,6 @@ import com.marindulja.mentalhealthbackend.services.auth.AuthService;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -130,11 +129,6 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<User> findAllByInstitution(Institution institution) {
-        return userRepository.findAllByInstitution(institution);
     }
 
     private UserDto mapToDTO(User user) {
