@@ -1,7 +1,6 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.InstitutionDto;
-import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.models.SubscriptionStatus;
 import com.marindulja.mentalhealthbackend.services.institutions.InstitutionService;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/institutions")
+@RequestMapping("api/v1/institutions")
 @PreAuthorize("hasRole('SUPERADMIN')")
 public class InstitutionController {
 
@@ -24,12 +23,8 @@ public class InstitutionController {
 
     @PostMapping("create")
     public ResponseEntity<?> createInstitution(@RequestBody InstitutionDto institutionDto) {
-        try {
-            InstitutionDto savedInstitution = institutionService.save(institutionDto);
-            return new ResponseEntity<>(savedInstitution, HttpStatus.CREATED);
-        } catch (InvalidInputException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        InstitutionDto savedInstitution = institutionService.save(institutionDto);
+        return new ResponseEntity<>(savedInstitution, HttpStatus.CREATED);
     }
 
     @PutMapping("{id}")

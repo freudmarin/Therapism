@@ -19,4 +19,6 @@ public interface UserService extends UserDetailsService {
     List<UserDto> findAllByRoleFilteredAndSorted(Role role, String searchValue);
 
     UserDto save(UserDto userDto, Role role, Long institutionId);
+
+    UserDetailsService userDetailsService();
 }

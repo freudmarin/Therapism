@@ -1,6 +1,5 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
-import com.marindulja.mentalhealthbackend.models.Role;
 import lombok.Getter;
 import lombok.Setter;
 

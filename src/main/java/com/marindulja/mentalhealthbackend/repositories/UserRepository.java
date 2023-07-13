@@ -3,8 +3,6 @@ package com.marindulja.mentalhealthbackend.repositories;
 import com.marindulja.mentalhealthbackend.models.Institution;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -17,7 +15,7 @@ public interface UserRepository extends JpaRepository<User,Long>, JpaSpecificati
 
     Optional<User> findByRole(Role role);
 
-    Optional<User> findByUsername(String userName);
+    Optional<User> findByEmail(String userName);
 
     List<User> findAllByInstitution(Institution institution);
 }

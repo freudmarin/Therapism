@@ -1,7 +1,6 @@
 package com.marindulja.mentalhealthbackend.services.institutions;
 
 import com.marindulja.mentalhealthbackend.dtos.InstitutionDto;
-import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.models.SubscriptionStatus;
 
 import java.util.List;

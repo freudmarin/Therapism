@@ -8,12 +8,13 @@ import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.InstitutionRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.repositories.specifications.UserSpecification;
-import com.marindulja.mentalhealthbackend.services.auth.AuthService;
+import com.marindulja.mentalhealthbackend.services.auth.AuthenticationServiceImpl;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -26,11 +27,11 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper mapper = new ModelMapper();
     private final UserRepository userRepository;
 
-    private final AuthService authService;
+    private final AuthenticationServiceImpl authService;
     private final InstitutionRepository institutionRepository;
 
 
-    public UserServiceImpl(UserRepository userRepository, AuthService authService,
+    public UserServiceImpl(UserRepository userRepository, AuthenticationServiceImpl authService,
                           InstitutionRepository institutionRepository) {
         this.userRepository = userRepository;
         this.authService = authService;
@@ -62,6 +63,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        }
+
+
+    @Override
     public UserDto update(Long id, UserDto userDto) throws InvalidInputException {
         if (StringUtils.isBlank(userDto.getUsername())) {
             throw new InvalidInputException("Institution name cannot be null or empty");
@@ -86,7 +94,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByUsername(String username) throws EntityNotFoundException {
 
-        return userRepository.findByUsername(username)
+        return userRepository.findByEmail(username)
                 .orElseThrow(() ->
                         new EntityNotFoundException(String.format("User with the username %s does not exist!", username))
                 );
