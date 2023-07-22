@@ -8,6 +8,7 @@ import com.marindulja.mentalhealthbackend.repositories.InstitutionRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.repositories.specifications.InstitutionSpecification;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,7 @@ public class InstitutionServiceImpl implements InstitutionService {
     @Override
     public InstitutionDto findById(Long id) {
         return institutionRepository.findById(id).map(this::mapToDTO)
-                .orElseThrow(() -> new EntityNotFoundException("Institution with id" + id + "not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Institution with id " + id + " not found"));
     }
 
     @Override
@@ -69,14 +70,15 @@ public class InstitutionServiceImpl implements InstitutionService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         Institution institution = institutionRepository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException("Institution with id" + id + "not found"));
+                new EntityNotFoundException("Institution with id " + id + " not found"));
         institution.setDeleted(true);
-
+        institutionRepository.save(institution);
         // delete also all the users that belong to this institution
         userRepository.findAllByInstitution(institution).forEach(user -> user.setDeleted(true));
-
+        userRepository.saveAll(userRepository.findAllByInstitution(institution));
     }
 
     @Override

@@ -3,16 +3,14 @@ package com.marindulja.mentalhealthbackend.services.auth;
 import com.marindulja.mentalhealthbackend.dtos.JwtAuthenticationResponse;
 import com.marindulja.mentalhealthbackend.dtos.SignInRequest;
 import com.marindulja.mentalhealthbackend.dtos.SignUpRequest;
+import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +23,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public JwtAuthenticationResponse signUp(SignUpRequest request) {
         var user = User.builder().username(request.getUsername())
                 .email(request.getEmail()).password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole()).build();
+                .role(Role.fromString(request.getRole())).build();
         userRepository.save(user);
         var jwt = jwtService.generateToken(user);
         return JwtAuthenticationResponse.builder().token(jwt).build();
@@ -39,11 +37,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
         var jwt = jwtService.generateToken(user);
         return JwtAuthenticationResponse.builder().token(jwt).build();
-    }
-
-    public Optional<User> getCurrentUser() {
-        User principal = (User) SecurityContextHolder.
-                getContext().getAuthentication().getPrincipal();
-        return Optional.of(principal);
     }
 }

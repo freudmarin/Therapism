@@ -19,14 +19,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("therapists")
+    @PostMapping("therapists/add")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createTherapist(@RequestBody UserDto userDto) {
         UserDto savedTherapist = userService.save(userDto, Role.THERAPIST, null);
         return new ResponseEntity<>(savedTherapist, HttpStatus.CREATED);
     }
 
-    @PostMapping("institution-admins/{institutionId}")
+    @PostMapping("institution-admins/{institutionId}/add")
     @PreAuthorize("hasRole('SUPERADMIN')")
     public ResponseEntity<?> createInstitutionAdmin(@RequestBody UserDto userDto, @PathVariable("institutionId") Long institutionId) {
         UserDto savedUser = userService.save(userDto, Role.ADMIN, institutionId);
@@ -54,10 +54,10 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @GetMapping("admin/paginated")
+    @GetMapping("all")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN','THERAPIST')")
-    public ResponseEntity<List<UserDto>> getAllPaginatedAndFilteredUsersByRole(
-            @RequestParam(name = "searchValue") String searchValue, @RequestParam(name = "role") Role role) {
-        return new ResponseEntity<>(userService.findAllByRoleFilteredAndSorted(role, searchValue), HttpStatus.OK);
+    public ResponseEntity<List<UserDto>> getAllFilteredUsersByRole(
+            @RequestParam(name = "searchValue", required = false) String searchValue, @RequestParam(name = "role") String role) {
+        return new ResponseEntity<>(userService.findAllByRoleFilteredAndSorted(Role.fromString(role), searchValue), HttpStatus.OK);
     }
 }

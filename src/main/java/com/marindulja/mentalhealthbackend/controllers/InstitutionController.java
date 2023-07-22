@@ -40,7 +40,7 @@ public class InstitutionController {
     }
 
     @GetMapping("all")
-    public ResponseEntity<List<InstitutionDto>> getAllInstitutionsFilteredAndSorted(@RequestParam(name = "searchValue") String searchValue) {
+    public ResponseEntity<List<InstitutionDto>> getAllInstitutionsFilteredAndSorted(@RequestParam(name = "searchValue", required = false) String searchValue) {
         return new ResponseEntity<>(institutionService.getFilteredAndSorted(searchValue), HttpStatus.OK);
     }
 

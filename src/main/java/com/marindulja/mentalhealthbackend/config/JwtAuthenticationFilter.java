@@ -1,7 +1,7 @@
 package com.marindulja.mentalhealthbackend.config;
 
+import com.marindulja.mentalhealthbackend.services.UserDetailsService;
 import com.marindulja.mentalhealthbackend.services.auth.JwtService;
-import com.marindulja.mentalhealthbackend.services.users.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,8 +24,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-
-    private final UserService userService;
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -43,8 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         userEmail = jwtService.extractUserName(jwt);
         if (StringUtils.isNotEmpty(userEmail)
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userService.userDetailsService()
-                    .loadUserByUsername(userEmail);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

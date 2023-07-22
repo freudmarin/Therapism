@@ -8,17 +8,16 @@ import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.InstitutionRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.repositories.specifications.UserSpecification;
-import com.marindulja.mentalhealthbackend.services.auth.AuthenticationServiceImpl;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,16 +25,15 @@ public class UserServiceImpl implements UserService {
 
     private final ModelMapper mapper = new ModelMapper();
     private final UserRepository userRepository;
-
-    private final AuthenticationServiceImpl authService;
     private final InstitutionRepository institutionRepository;
 
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, AuthenticationServiceImpl authService,
-                          InstitutionRepository institutionRepository) {
+    public UserServiceImpl(UserRepository userRepository,
+                           InstitutionRepository institutionRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.authService = authService;
         this.institutionRepository = institutionRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -50,24 +48,17 @@ public class UserServiceImpl implements UserService {
         User user = mapToEntity(userDto);
         Institution institution;
         if (role == Role.THERAPIST && institutionId == null) {
-            institution = this.findByUsername(authService.getCurrentUser().get().getUsername()).getInstitution();
+            institution = this.findByEmail(this.getCurrentUser().get().getEmail()).getInstitution();
         } else {
             institution = institutionRepository.findById(institutionId).orElseThrow(()
                     -> new EntityNotFoundException("The institution with id" + institutionId));
         }
         user.setInstitution(institution);
         user.setRole(role);
-
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
         return mapToDTO(savedUser);
     }
-
-    @Override
-    public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        }
-
 
     @Override
     public UserDto update(Long id, UserDto userDto) throws InvalidInputException {
@@ -77,7 +68,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id)
                 .map(user -> {
                     user.setUsername(userDto.getUsername());
-                    user.setPassword(userDto.getPassword());
+                    user.setPassword(passwordEncoder.encode(userDto.getPassword()));
                     user.setUsername(userDto.getUsername());
                     User updatedUser = userRepository.save(user);
                     return mapToDTO(updatedUser);
@@ -92,15 +83,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findByUsername(String username) throws EntityNotFoundException {
-
-        return userRepository.findByEmail(username)
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(String.format("User with the username %s does not exist!", username))
+                        new EntityNotFoundException(String.format("User with the email %s does not exist!", email))
                 );
     }
-
-
     @Override
     public void deleteById(Long id) {
         User user = userRepository.findById(id)
@@ -112,7 +100,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> findAllByRoleFilteredAndSorted(Role role, String searchValue) {
-        User currentUser = this.findByUsername(authService.getCurrentUser().get().getUsername());
+        User currentUser = this.findByEmail(this.getCurrentUser().get().getEmail());
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
         if (currentUser.getRole() == Role.SUPERADMIN && role != Role.SUPERADMIN) {
             spec = spec.and(new UserSpecification(role, searchValue, null, null));
@@ -147,8 +135,10 @@ public class UserServiceImpl implements UserService {
         return mapper.map(userDto, User.class);
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return null;
+    public Optional<User> getCurrentUser() {
+        User principal = (User) SecurityContextHolder.
+                getContext().getAuthentication().getPrincipal();
+        return Optional.of(principal);
     }
+
 }

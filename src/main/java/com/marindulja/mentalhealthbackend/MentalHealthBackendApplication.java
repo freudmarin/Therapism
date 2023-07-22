@@ -24,6 +24,9 @@ public class MentalHealthBackendApplication {
                 superAdmin.setUsername("marindulja");
                 superAdmin.setPassword(passwordEncoder.encode("Superadmin19!"));
                 superAdmin.setRole(Role.SUPERADMIN);
+                superAdmin.setEmail("duljamarin@gmail.com");
+                superAdmin.setInstitution(null);
+                superAdmin.setTherapist(null);
                 userRepository.save(superAdmin);
             }
         };
