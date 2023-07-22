@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
+import com.marindulja.mentalhealthbackend.models.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,5 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JwtAuthenticationResponse {
+    private String username;
+    private Role role;
     private String token;
+    private String refreshToken;
 }

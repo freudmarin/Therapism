@@ -5,6 +5,7 @@ import com.marindulja.mentalhealthbackend.dtos.SignInRequest;
 import com.marindulja.mentalhealthbackend.dtos.SignUpRequest;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
+import com.marindulja.mentalhealthbackend.repositories.RefreshTokenRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +20,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
+
     @Override
     public JwtAuthenticationResponse signUp(SignUpRequest request) {
         var user = User.builder().username(request.getUsername())
@@ -26,7 +30,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .role(Role.fromString(request.getRole())).build();
         userRepository.save(user);
         var jwt = jwtService.generateToken(user);
-        return JwtAuthenticationResponse.builder().token(jwt).build();
+        return JwtAuthenticationResponse.builder().username(user.getUsername()).role(user.getRole()).token(jwt).build();
     }
 
     @Override
@@ -35,7 +39,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
+        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
         var jwt = jwtService.generateToken(user);
-        return JwtAuthenticationResponse.builder().token(jwt).build();
+        var refreshToken = refreshTokenService.generateRefreshToken(user);
+        return JwtAuthenticationResponse.builder().username(user.getUsername()).role(user.getRole()).token(jwt)
+                .refreshToken(refreshToken.getToken()).build();
     }
 }
