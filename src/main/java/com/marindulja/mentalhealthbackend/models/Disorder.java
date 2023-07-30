@@ -1,13 +1,21 @@
 package com.marindulja.mentalhealthbackend.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.Where;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-@Data
+
+@Getter
+@Setter
+@RequiredArgsConstructor
 @Entity
 @Table(name = "disorders")
+@Where(clause = "is_deleted = false")
 public class Disorder {
 
     @Id
@@ -18,5 +26,8 @@ public class Disorder {
     private String description;
 
     @ManyToMany(mappedBy = "disorders")
-    private Set<UserProfile> userProfiles;
+    private List<UserProfile> userProfiles = new ArrayList<>();
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
 }

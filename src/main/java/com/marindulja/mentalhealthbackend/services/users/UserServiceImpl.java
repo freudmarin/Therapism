@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto save(UserDto userDto, Role role, Long institutionId) throws InvalidInputException {
         if (StringUtils.isBlank(userDto.getUsername())) {
-            throw new InvalidInputException("Institution name cannot be null or empty");
+            throw new InvalidInputException("User name cannot be null or empty");
         }
         // set the institution id of the logged admin
         // if the user is superAdmin it will be set to null, because the superAdmin belongs to no institution
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
         //so set the institutionId
         User user = mapToEntity(userDto);
         Institution institution;
-        if (role == Role.THERAPIST && institutionId == null) {
+        if ((role == Role.THERAPIST || role == Role.PATIENT) && institutionId == null) {
             institution = this.findByEmail(Utilities.getCurrentUser().get().getEmail()).getInstitution();
         } else {
             institution = institutionRepository.findById(institutionId).orElseThrow(()
@@ -71,6 +71,35 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
         eventPublisher.publishEvent(new UserCreatedEvent(user));
         return mapToDTO(savedUser);
+    }
+
+    @Override
+    public void assignPatientsToTherapist(List<Long> userIds, Long therapistId) {
+        User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
+        User therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
+        List<User> patients = userRepository.findAllById(userIds);
+        if (currentUser.getRole() == Role.ADMIN) {
+            if (!therapist.getInstitution().getId().equals(currentUser.getInstitution().getId())) {
+                throw new UnauthorizedException("Therapist with id" + therapistId + " doesn't belong to the institution " + currentUser.getInstitution().getId() +
+                "with admin" + currentUser.getId());
+            }
+
+            assignTherapistToPatients(therapist, patients);
+        }
+        
+        else if (currentUser.getRole() == Role.THERAPIST) {
+            assignTherapistToPatients(therapist, patients);
+        }
+
+        else
+            throw new UnauthorizedException("The user with id" + currentUser.getId() + "doesn't have the required permission to perform this operation");
+
+    }
+
+    @Transactional
+    public void assignTherapistToPatients(User therapist, List<User> patients) {
+        patients.forEach(patient -> patient.setTherapist(therapist));
+        userRepository.saveAll(patients);
     }
 
     @Override
@@ -154,7 +183,11 @@ public class UserServiceImpl implements UserService {
                 spec = spec.and(new UserSpecification(role, searchValue, null, currentUser.getTherapist()));
             }
         }
-
+        //each patient can view all therapsists 
+        if (currentUser.getRole() == Role.PATIENT && role == Role.THERAPIST) {
+           spec = spec.and(new UserSpecification(role, searchValue,  null, null)); 
+        }
+        
         List<User> userListResult = userRepository.findAll(spec);
 
         return userListResult

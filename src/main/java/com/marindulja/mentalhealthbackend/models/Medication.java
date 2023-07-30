@@ -3,6 +3,9 @@ package com.marindulja.mentalhealthbackend.models;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "user_medications")
@@ -11,11 +14,9 @@ public class Medication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @ManyToMany(mappedBy = "medications")
+    private List<UserProfile> users = new ArrayList<>();
 
     private String name;
-    private String dosage;
-    private String frequency;
+    private String description;
 }

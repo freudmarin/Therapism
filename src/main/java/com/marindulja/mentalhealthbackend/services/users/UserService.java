@@ -20,4 +20,5 @@ public interface UserService  {
 
     UserDto save(UserDto userDto, Role role, Long institutionId);
 
+    void assignPatientsToTherapist(List<Long> userIds, Long therapistId);
 }

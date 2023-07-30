@@ -3,7 +3,9 @@ package com.marindulja.mentalhealthbackend.models;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -14,10 +16,9 @@ public class AnxietyRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @ManyToMany(mappedBy = "anxietyRecords")
+    private List<UserProfile> users = new ArrayList<>();
 
-    private LocalDate recordDate;
+    private LocalDateTime recordDate;
     private int anxietyLevel; // You can define the scale according to your needs
 }

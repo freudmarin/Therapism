@@ -27,9 +27,23 @@ public class UserController {
 
     @PostMapping("therapists/add")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createTherapist(@RequestBody UserDto userDto) {
+    public ResponseEntity<?> createInstitutionTherapist(@RequestBody UserDto userDto) {
         UserDto savedTherapist = userService.save(userDto, Role.THERAPIST, null);
         return new ResponseEntity<>(savedTherapist, HttpStatus.CREATED);
+    }
+
+    @PostMapping("patients/add")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createInstitutionPatient(@RequestBody UserDto userDto) {
+        UserDto savedPatient = userService.save(userDto, Role.PATIENT, null);
+        return new ResponseEntity<>(savedPatient, HttpStatus.CREATED);
+    }
+
+    @PostMapping("therapists/{therapistId}/assignPatients")
+    @PreAuthorize("hasAnyRole('ADMIN', 'THERAPIST')")
+    public ResponseEntity<?> assignPatientsToTherapist(@RequestBody List<Long> userIds, @PathVariable("therapistId") Long therapistId) {
+        userService.assignPatientsToTherapist(userIds, therapistId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("institution-admins/{institutionId}/add")

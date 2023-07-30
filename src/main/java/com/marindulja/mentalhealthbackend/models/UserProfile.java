@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Where;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -24,6 +25,12 @@ public class UserProfile {
     private String surname;
     private String phoneNumber;
 
+    private String triggers;
+
+
+    private String medication_dosage;
+    private String dosage_frequency;
+
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
@@ -32,5 +39,24 @@ public class UserProfile {
             name = "user_profile_disorders",
             joinColumns = @JoinColumn(name = "user_profile_id"),
             inverseJoinColumns = @JoinColumn(name = "disorder_id"))
-    private Set<Disorder> disorders;
+    private List<Disorder> disorders = new ArrayList<>();
+
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_profile_medication",
+            joinColumns = @JoinColumn(name = "user_profile_id"),
+            inverseJoinColumns = @JoinColumn(name = "medication_id")
+    )
+    private List<Medication> medications = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "userprofile_anxietyrecords",
+            joinColumns = @JoinColumn(name = "user_profile_id"),
+            inverseJoinColumns = @JoinColumn(name = "anxiety_record_id")
+    )
+    private List<AnxietyRecord> anxietyRecords = new ArrayList<>();
+
+
 }

@@ -1,7 +1,6 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
 import com.marindulja.mentalhealthbackend.models.SubscriptionStatus;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
