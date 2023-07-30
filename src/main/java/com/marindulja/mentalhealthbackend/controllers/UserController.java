@@ -1,7 +1,10 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.UserDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileDto;
 import com.marindulja.mentalhealthbackend.models.Role;
+import com.marindulja.mentalhealthbackend.models.UserProfile;
+import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import com.marindulja.mentalhealthbackend.services.users.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +18,11 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final ProfileService userProfileService;
+
+    public UserController(UserService userService, ProfileService userProfileService) {
         this.userService = userService;
+        this.userProfileService = userProfileService;
     }
 
     @PostMapping("therapists/add")
@@ -32,14 +38,6 @@ public class UserController {
         UserDto savedUser = userService.save(userDto, Role.ADMIN, institutionId);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
-
-    @DeleteMapping("institution-admins/{adminId}")
-    @PreAuthorize("hasRole('SUPERADMIN')")
-    public ResponseEntity<?> deleteInstitutionAdmin(@PathVariable("adminId") Long adminId) {
-        userService.deleteById(adminId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     @PutMapping("users/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<?> updateUser(@PathVariable("userId") Long userId, @RequestBody UserDto userDto) {
@@ -59,5 +57,27 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getAllFilteredUsersByRole(
             @RequestParam(name = "searchValue", required = false) String searchValue, @RequestParam(name = "role") String role) {
         return new ResponseEntity<>(userService.findAllByRoleFilteredAndSorted(Role.fromString(role), searchValue), HttpStatus.OK);
+    }
+
+
+    @GetMapping("/{id}/profile")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
+    public ResponseEntity<UserProfile> getUserProfileById(@PathVariable Long id) {
+        UserProfile profile = userProfileService.findByUserId(id);
+        return new ResponseEntity<>(profile, HttpStatus.OK);
+    }
+
+    @PutMapping("{id}/profile")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
+    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @RequestBody UserProfileDto updatedProfile) {
+        UserProfile profile = userProfileService.updateProfile(id, updatedProfile);
+        return new ResponseEntity<>(profile, HttpStatus.OK);
+    }
+
+    @DeleteMapping("{id}/profile")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+         userService.deleteById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

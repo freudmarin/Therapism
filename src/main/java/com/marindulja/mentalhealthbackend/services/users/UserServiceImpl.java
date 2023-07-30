@@ -1,24 +1,30 @@
 package com.marindulja.mentalhealthbackend.services.users;
 
+import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.UserDto;
+import com.marindulja.mentalhealthbackend.eventlisteners.UserCreatedEvent;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
+import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Institution;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
+import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.InstitutionRepository;
+import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.repositories.specifications.UserSpecification;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -27,13 +33,19 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final InstitutionRepository institutionRepository;
 
+    private final ProfileRepository profileRepository;
+
     private final PasswordEncoder passwordEncoder;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     public UserServiceImpl(UserRepository userRepository,
-                           InstitutionRepository institutionRepository, PasswordEncoder passwordEncoder) {
+                           InstitutionRepository institutionRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.institutionRepository = institutionRepository;
+        this.profileRepository = profileRepository;
         this.passwordEncoder = passwordEncoder;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -48,7 +60,7 @@ public class UserServiceImpl implements UserService {
         User user = mapToEntity(userDto);
         Institution institution;
         if (role == Role.THERAPIST && institutionId == null) {
-            institution = this.findByEmail(this.getCurrentUser().get().getEmail()).getInstitution();
+            institution = this.findByEmail(Utilities.getCurrentUser().get().getEmail()).getInstitution();
         } else {
             institution = institutionRepository.findById(institutionId).orElseThrow(()
                     -> new EntityNotFoundException("The institution with id" + institutionId));
@@ -57,6 +69,7 @@ public class UserServiceImpl implements UserService {
         user.setRole(role);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
+        eventPublisher.publishEvent(new UserCreatedEvent(user));
         return mapToDTO(savedUser);
     }
 
@@ -89,18 +102,41 @@ public class UserServiceImpl implements UserService {
                         new EntityNotFoundException(String.format("User with the email %s does not exist!", email))
                 );
     }
+
     @Override
     public void deleteById(Long id) {
+        User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
+        User userToBeDeleted = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with id "
+                        + id + " not found"));
+
+
+        if (currentUser.getRole() == Role.SUPERADMIN && userToBeDeleted.getRole() == Role.ADMIN)
+            deleteUserById(id);
+
+        else if (currentUser.getRole() == Role.ADMIN && (userToBeDeleted.getRole() == Role.THERAPIST
+                || userToBeDeleted.getRole() == Role.PATIENT))
+            deleteUserById(id);
+        else
+            throw new UnauthorizedException("User with id " + currentUser.getId() + "is not authorized to delete user with id" + id);
+    }
+
+    @Transactional
+    public void deleteUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with id"
-                        + id + "not found"));
+                        + id + " not found"));
         user.setDeleted(true);
         userRepository.save(user);
+        UserProfile userProfile = profileRepository.findByUserId(id).orElseThrow(() -> new EntityNotFoundException("Profile for user "
+                + id + " not found"));
+        userProfile.setDeleted(true);
+        profileRepository.save(userProfile);
     }
 
     @Override
     public List<UserDto> findAllByRoleFilteredAndSorted(Role role, String searchValue) {
-        User currentUser = this.findByEmail(this.getCurrentUser().get().getEmail());
+        User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
         if (currentUser.getRole() == Role.SUPERADMIN && role != Role.SUPERADMIN) {
             spec = spec.and(new UserSpecification(role, searchValue, null, null));
@@ -134,11 +170,4 @@ public class UserServiceImpl implements UserService {
     private User mapToEntity(UserDto userDto) {
         return mapper.map(userDto, User.class);
     }
-
-    public Optional<User> getCurrentUser() {
-        User principal = (User) SecurityContextHolder.
-                getContext().getAuthentication().getPrincipal();
-        return Optional.of(principal);
-    }
-
 }

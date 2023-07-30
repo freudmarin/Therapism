@@ -2,12 +2,14 @@ package com.marindulja.mentalhealthbackend.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.Where;
 
 import java.util.Set;
 
 @Data
 @Entity
 @Table(name = "user_profiles")
+@Where(clause = "is_deleted = false")
 public class UserProfile {
 
     @Id
@@ -21,6 +23,9 @@ public class UserProfile {
     private String name;
     private String surname;
     private String phoneNumber;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
 
     @ManyToMany
     @JoinTable(

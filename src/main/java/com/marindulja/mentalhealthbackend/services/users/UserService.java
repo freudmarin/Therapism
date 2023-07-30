@@ -15,6 +15,7 @@ public interface UserService  {
     User findByEmail(String email);
 
     void deleteById(Long id);
+
     List<UserDto> findAllByRoleFilteredAndSorted(Role role, String searchValue);
 
     UserDto save(UserDto userDto, Role role, Long institutionId);
