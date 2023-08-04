@@ -29,10 +29,6 @@ public class DisorderServiceImpl implements DisorderService {
         this.userProfileRepository = userProfileRepository;
     }
 
-    public void deleteDisorder(Long id) {
-        disorderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Disorder with id " + "was not found")).setDeleted(true);
-    }
-
     public List<DisorderDto> getAllDisorders() {
         return disorderRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
     }

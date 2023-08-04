@@ -52,14 +52,14 @@ public class UserController {
         UserDto savedUser = userService.save(userDto, Role.ADMIN, institutionId);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
-    @PutMapping("users/{userId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    @PutMapping("{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN','THERAPIST', 'PATIENT')")
     public ResponseEntity<?> updateUser(@PathVariable("userId") Long userId, @RequestBody UserDto userDto) {
         UserDto savedUser = userService.update(userId, userDto);
         return new ResponseEntity<>(savedUser, HttpStatus.OK);
     }
 
-    @GetMapping("users/{id}")
+    @GetMapping("{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST')")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         UserDto user = userService.findById(id);

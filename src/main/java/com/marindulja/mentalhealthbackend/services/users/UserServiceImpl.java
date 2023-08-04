@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.marindulja.mentalhealthbackend.models.Role.THERAPIST;
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -59,7 +61,7 @@ public class UserServiceImpl implements UserService {
         //so set the institutionId
         User user = mapToEntity(userDto);
         Institution institution;
-        if ((role == Role.THERAPIST || role == Role.PATIENT) && institutionId == null) {
+        if ((role == THERAPIST || role == Role.PATIENT) && institutionId == null) {
             institution = this.findByEmail(Utilities.getCurrentUser().get().getEmail()).getInstitution();
         } else {
             institution = institutionRepository.findById(institutionId).orElseThrow(()
@@ -79,6 +81,9 @@ public class UserServiceImpl implements UserService {
         User therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
         List<User> patients = userRepository.findAllById(userIds);
         if (currentUser.getRole() == Role.ADMIN) {
+            if (therapist.getInstitution() == null) {
+                throw new InvalidInputException("Therapist with id " + therapistId +  "belongs to no institution");
+            }
             if (!therapist.getInstitution().getId().equals(currentUser.getInstitution().getId())) {
                 throw new UnauthorizedException("Therapist with id" + therapistId + " doesn't belong to the institution " + currentUser.getInstitution().getId() +
                 "with admin" + currentUser.getId());
@@ -87,7 +92,7 @@ public class UserServiceImpl implements UserService {
             assignTherapistToPatients(therapist, patients);
         }
         
-        else if (currentUser.getRole() == Role.THERAPIST) {
+        else if (currentUser.getRole() == THERAPIST) {
             assignTherapistToPatients(therapist, patients);
         }
 
@@ -104,6 +109,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto update(Long id, UserDto userDto) throws InvalidInputException {
+        User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
+        if(!currentUser.getId().equals(id)) {
+            throw new InvalidInputException("The user can update only his profile");
+        }
+
         if (StringUtils.isBlank(userDto.getUsername())) {
             throw new InvalidInputException("Institution name cannot be null or empty");
         }
@@ -143,7 +153,7 @@ public class UserServiceImpl implements UserService {
         if (currentUser.getRole() == Role.SUPERADMIN && userToBeDeleted.getRole() == Role.ADMIN)
             deleteUserById(id);
 
-        else if (currentUser.getRole() == Role.ADMIN && (userToBeDeleted.getRole() == Role.THERAPIST
+        else if (currentUser.getRole() == Role.ADMIN && (userToBeDeleted.getRole() == THERAPIST
                 || userToBeDeleted.getRole() == Role.PATIENT))
             deleteUserById(id);
         else
@@ -171,20 +181,24 @@ public class UserServiceImpl implements UserService {
             spec = spec.and(new UserSpecification(role, searchValue, null, null));
         }
         // admin can view only therapists and patients of the institution he belongs to
-        if (currentUser.getRole() == Role.ADMIN && (role == Role.THERAPIST || role == Role.PATIENT)) {
+        if (currentUser.getRole() == Role.ADMIN && (role == THERAPIST || role == Role.PATIENT)) {
             spec = spec.and(new UserSpecification(role, searchValue, currentUser.getInstitution(), null));
         }
 
         // therapist can belong to an  institution or no
-        if (currentUser.getRole() == Role.THERAPIST && role == Role.PATIENT) {
-            if (currentUser.getInstitution() != null) {
-                spec = spec.and(new UserSpecification(role, searchValue, currentUser.getInstitution(), currentUser.getTherapist()));
-            } else {
-                spec = spec.and(new UserSpecification(role, searchValue, null, currentUser.getTherapist()));
+        if (currentUser.getRole() == THERAPIST) {
+            if (role == Role.PATIENT) {
+                if (currentUser.getInstitution() != null) {
+                    spec = spec.and(new UserSpecification(role, searchValue, currentUser.getInstitution(), currentUser.getTherapist()));
+                } else {
+                    spec = spec.and(new UserSpecification(role, searchValue, null, currentUser.getTherapist()));
+                }
+            } else if (role == THERAPIST) {
+                spec = spec.and(new UserSpecification(role, searchValue, null, null));
             }
         }
         //each patient can view all therapsists 
-        if (currentUser.getRole() == Role.PATIENT && role == Role.THERAPIST) {
+        if (currentUser.getRole() == Role.PATIENT && role == THERAPIST) {
            spec = spec.and(new UserSpecification(role, searchValue,  null, null)); 
         }
         
