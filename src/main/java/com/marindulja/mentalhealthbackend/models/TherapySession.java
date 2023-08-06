@@ -23,5 +23,9 @@ public class TherapySession {
     private User patient;
 
     private LocalDateTime sessionDate;
-    private String notes;
+    @Column(name = "patient_notes")
+    private String patientNotes;
+
+    @Column(name = "therapist_notes")
+    private String therapistNotes;
 }

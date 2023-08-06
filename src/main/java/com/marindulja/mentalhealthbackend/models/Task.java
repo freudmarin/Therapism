@@ -1,9 +1,13 @@
 package com.marindulja.mentalhealthbackend.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import org.hibernate.annotations.Where;
 
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Entity
 @Table(name = "tasks")
 public class Task {
@@ -21,5 +25,6 @@ public class Task {
     private User assignedToUser;
 
     private String description;
-    private String status; // "assigned", "in progress", "completed"
+
+    private TaskStatus status; // "assigned", "in progress", "completed"
 }

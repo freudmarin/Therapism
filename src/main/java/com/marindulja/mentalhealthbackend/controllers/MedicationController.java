@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/disorders")
+@RequestMapping("api/v1/medications")
 @PreAuthorize("hasAnyRole('SUPERADMIN', 'THERAPIST')")
 public class MedicationController {
     private final MedicationService medicationService;
@@ -34,7 +34,7 @@ public class MedicationController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PatchMapping("users/{userId}/updateMedications")
+    @PatchMapping("users/{userId}/medications")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> updateMedicationsToUser(@PathVariable Long userId, @RequestBody List<Long> medicationIds) {
         medicationService.updateMedicationsToUser(userId, medicationIds);
@@ -45,6 +45,6 @@ public class MedicationController {
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> removeMedicationsFromPatient(@PathVariable Long userId, @RequestBody List<Long> medicationIds) {
         medicationService.removeMedicationsFromPatient(userId, medicationIds);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
