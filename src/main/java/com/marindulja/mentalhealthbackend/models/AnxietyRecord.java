@@ -20,5 +20,5 @@ public class AnxietyRecord {
     private List<UserProfile> users = new ArrayList<>();
 
     private LocalDateTime recordDate;
-    private int anxietyLevel; // You can define the scale according to your needs
+    private Integer anxietyLevel; // You can define the scale according to your needs
 }

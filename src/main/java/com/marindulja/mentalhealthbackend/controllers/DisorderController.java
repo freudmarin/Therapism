@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
+import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
 import com.marindulja.mentalhealthbackend.services.disorders.DisorderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,23 @@ public class DisorderController {
         this.disorderService = disorderService;
     }
 
+    @GetMapping("all")
+    @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT', 'ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<List<DisorderDto>> getAllDisorders() {
+       List<DisorderDto> allDisorders = disorderService.getAllDisorders();
+        return new ResponseEntity<>(allDisorders, HttpStatus.OK);
+    }
     @PutMapping("users/{userId}/assignDisorders")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> assignDisordersToUser(@PathVariable Long userId, @RequestBody List<Long> disorderIds) {
         disorderService.assignDisordersToUser(userId, disorderIds);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PatchMapping("users/{userId}/updateDisorders")
+    @PreAuthorize("hasRole('THERAPIST')")
+    public ResponseEntity<?> updateDisordersToUser(@PathVariable Long userId, @RequestBody List<Long> disorderIds) {
+        disorderService.updateDisordersToUser(userId, disorderIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

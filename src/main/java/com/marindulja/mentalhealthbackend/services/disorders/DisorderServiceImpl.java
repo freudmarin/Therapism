@@ -4,6 +4,7 @@ import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Disorder;
+import com.marindulja.mentalhealthbackend.models.Medication;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.DisorderRepository;
@@ -44,6 +45,36 @@ public class DisorderServiceImpl implements DisorderService {
         }
 
         patientProfile.getDisorders().addAll(disorders);
+        userProfileRepository.save(patientProfile);
+    }
+
+    public void updateDisordersToUser(Long patientId, List<Long> disorderIds) {
+        UserProfile patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
+
+        List<Disorder> newDisorders = disorderRepository.findAllById(disorderIds);
+
+        if (newDisorders.size() != disorderIds.size()) {
+            throw new IllegalArgumentException("Some disorders IDs are invalid");
+        }
+
+        List<Disorder> currentDisordersList = patientProfile.getDisorders();
+
+        // Filter out medications from current list that are not in the new list
+        List<Disorder> retainedDisorders = currentDisordersList.stream()
+                .filter(newDisorders::contains)
+                .collect(Collectors.toList());
+
+        // Get medications from the new list that are not in the current list
+        List<Disorder> disordersToAdd = newDisorders.stream()
+                .filter(medication -> !retainedDisorders.contains(medication))
+                .toList();
+
+        // Combine the two lists
+        retainedDisorders.addAll(disordersToAdd);
+
+        // Set the modified medications back to the patient profile
+        patientProfile.setDisorders(retainedDisorders);
+
         userProfileRepository.save(patientProfile);
     }
 
