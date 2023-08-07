@@ -38,8 +38,8 @@ public class TaskController {
 
     @PutMapping("users/{userId}/updateTask/{taskId}")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> updateExistingTask(@PathVariable Long patientId, @PathVariable Long taskId, @RequestBody TaskDto request) {
-        AssignedTaskDto updatedTask = taskService.updatePatientTask(patientId, taskId, request);
+    public ResponseEntity<?> updateExistingTask(@PathVariable Long userId, @PathVariable Long taskId, @RequestBody TaskDto request) {
+        AssignedTaskDto updatedTask = taskService.updatePatientTask(userId, taskId, request);
         return new ResponseEntity<>(updatedTask, HttpStatus.OK);
     }
 
