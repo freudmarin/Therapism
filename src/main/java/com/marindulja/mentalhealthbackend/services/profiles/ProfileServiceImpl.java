@@ -7,6 +7,7 @@ import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,12 +15,13 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final ProfileRepository userProfileRepository;
 
+    private final ModelMapper mapper = new ModelMapper();
     public ProfileServiceImpl(ProfileRepository userProfileRepository) {
         this.userProfileRepository = userProfileRepository;
     }
 
     @Override
-    public UserProfile updateProfile(Long userId, UserProfileDto userProfileDto) {
+    public UserProfileDto updateProfile(Long userId, UserProfileDto userProfileDto) {
 
         User currentUser = Utilities.getCurrentUser().get();
 
@@ -30,23 +32,24 @@ public class ProfileServiceImpl implements ProfileService {
         UserProfile existingProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
 
-        String[] nameParts = userProfileDto.getFullName().split(" ");
-
-        if (nameParts.length > 0) {
-            existingProfile.setName(nameParts[0]);
-        }
-        if (nameParts.length > 1) {
-            existingProfile.setSurname(nameParts[1]);
-        }
+        existingProfile.setName(userProfileDto.getName());
+        existingProfile.setSurname(userProfileDto.getSurname());
 
         existingProfile.setPhoneNumber(userProfileDto.getPhoneNumber());
 
-        return userProfileRepository.save(existingProfile);
+        UserProfile userProfile = userProfileRepository.save(existingProfile);
+        return mapToDTO(userProfile);
     }
 
     @Override
-    public UserProfile findByUserId(Long userId) {
-        return userProfileRepository.findByUserId(userId).orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
+    public UserProfileDto findByUserId(Long userId) {
+        return mapToDTO(userProfileRepository.findByUserId(userId).orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId)));
+    }
+    private UserProfileDto mapToDTO(UserProfile medication) {
+        return mapper.map(medication, UserProfileDto.class);
     }
 
+    private UserProfile mapToEntity(UserProfileDto userProfileDto) {
+        return mapper.map(userProfileDto, UserProfile.class);
+    }
 }

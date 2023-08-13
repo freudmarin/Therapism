@@ -1,12 +1,12 @@
 package com.marindulja.mentalhealthbackend.models;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.Where;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
-@ToString
 @RequiredArgsConstructor
 @Entity
 @Table(name = "tasks")

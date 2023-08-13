@@ -9,7 +9,6 @@ import org.hibernate.annotations.Where;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Getter
 @Setter
 @RequiredArgsConstructor

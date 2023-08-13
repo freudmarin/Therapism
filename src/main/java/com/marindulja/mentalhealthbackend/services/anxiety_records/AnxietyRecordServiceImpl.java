@@ -2,6 +2,7 @@ package com.marindulja.mentalhealthbackend.services.anxiety_records;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileDto;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.AnxietyRecord;
@@ -10,6 +11,7 @@ import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.AnxietyRecordRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
+import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -29,17 +31,20 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
 
     private final ProfileRepository userProfileRepository;
 
+    private final ProfileService profileService;
+
     private final ModelMapper mapper = new ModelMapper();
 
-    public AnxietyRecordServiceImpl(AnxietyRecordRepository anxietyRecordRepository, UserRepository userRepository, ProfileRepository userProfileRepository) {
+    public AnxietyRecordServiceImpl(AnxietyRecordRepository anxietyRecordRepository, UserRepository userRepository, ProfileRepository userProfileRepository, ProfileService profileService) {
         this.anxietyRecordRepository = anxietyRecordRepository;
         this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
+        this.profileService = profileService;
     }
 
     @Override
     @Transactional
-    public AnxietyRecordDto registerAnxietyLevels(AnxietyRecordDto anxietyRecordDto) {
+    public UserProfileDto registerAnxietyLevelsAndGetUserProfile(AnxietyRecordDto anxietyRecordDto) {
         User currentUser = Utilities.getCurrentUser().get();
         if (anxietyRecordDto.getAnxietyLevel() == null) {
             throw new InvalidInputException("Anxiety level should be defined");
@@ -49,17 +54,21 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
 
         AnxietyRecord anxietyRecordToBeSaved = mapToEntity(anxietyRecordDto);
         anxietyRecordToBeSaved.setRecordDate(LocalDateTime.now());
-        patientProfile.setAnxietyRecords(List.of(anxietyRecordToBeSaved));
-        AnxietyRecord savedAnxietyRecord = anxietyRecordRepository.save(anxietyRecordToBeSaved);
+        anxietyRecordRepository.save(anxietyRecordToBeSaved);
+        patientProfile.getAnxietyRecords().add(anxietyRecordToBeSaved);
+
         userProfileRepository.save(patientProfile);
-        return mapToDTO(savedAnxietyRecord);
+
+
+        return profileService.findByUserId(currentUser.getId());
     }
 
     @Override
-    public AnxietyRecordDto getById(long id) {
-      return anxietyRecordRepository.findById(id).map(this::mapToDTO).orElseThrow(() ->
-                new EntityNotFoundException("Anxiety Record with id " + id + " not found"));
-
+    public List<AnxietyRecordDto> getAllOfCurrentUser() {
+        User currentUser = Utilities.getCurrentUser().get();
+        UserProfile currentUserProfile = userProfileRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + currentUser + "not found"));
+        return currentUserProfile.getAnxietyRecords().stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override

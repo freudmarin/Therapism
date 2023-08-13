@@ -21,7 +21,7 @@ public class MedicationController {
 
     @GetMapping("all")
     @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT', 'ADMIN', 'SUPERADMIN')")
-    public ResponseEntity<List<MedicationDto>> getAllDisorders() {
+    public ResponseEntity<List<MedicationDto>> getAllMedications() {
         List<MedicationDto> allDisorders = medicationService.getAllMedications();
         return new ResponseEntity<>(allDisorders, HttpStatus.OK);
     }

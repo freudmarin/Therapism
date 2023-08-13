@@ -8,5 +8,8 @@ public enum TaskStatus {
     CANCELED,
     IN_PROGRESS,
 
-    COMPLETED
+    COMPLETED;
+    public static TaskStatus fromString(String status) {
+        return TaskStatus.valueOf(status.toUpperCase());
+    };
 }

@@ -23,7 +23,7 @@ public class TherapyController {
 
     @GetMapping("therapist/all")
     @PreAuthorize("hasAnyRole('THERAPIST')")
-    public ResponseEntity<List<TherapySessionDto>> getAllTasksAssignedToUser(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate) {
+    public ResponseEntity<List<TherapySessionDto>> getAllTherapySessionsOfCurrentTherapist(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate) {
         List<TherapySessionDto> allSessionsOfTherapist = therapySessionService.allSessionsOfTherapist(startDate, endDate);
         return new ResponseEntity<>(allSessionsOfTherapist, HttpStatus.OK);
     }

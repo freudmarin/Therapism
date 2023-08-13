@@ -5,7 +5,10 @@ import com.marindulja.mentalhealthbackend.dtos.AssignedTaskDto;
 import com.marindulja.mentalhealthbackend.dtos.TaskDto;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
-import com.marindulja.mentalhealthbackend.models.*;
+import com.marindulja.mentalhealthbackend.models.Task;
+import com.marindulja.mentalhealthbackend.models.TaskStatus;
+import com.marindulja.mentalhealthbackend.models.User;
+import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TaskRepository;
 import io.micrometer.common.util.StringUtils;
@@ -81,9 +84,9 @@ public class TaskServiceImpl implements TaskService {
 
 
         UserProfile patientProfile = userProfileRepository.findByUserId(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + "not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + " not found"));
 
-        if (!therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
+        if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
             throw new UnauthorizedException("The patient with id " + patientId + "is not the patient of the therapist with id " + therapist.getId());
         }
         return true;

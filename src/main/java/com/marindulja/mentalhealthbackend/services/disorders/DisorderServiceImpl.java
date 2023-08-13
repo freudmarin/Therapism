@@ -32,6 +32,7 @@ public class DisorderServiceImpl implements DisorderService {
     public List<DisorderDto> getAllDisorders() {
         return disorderRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
     }
+
     public void assignDisordersToUser(Long userId, List<Long> disorderIds) {
         //even the therapist can be a patient
         UserProfile patientProfile = getPatientProfileIfBelongsToTherapist(userId);
@@ -96,8 +97,9 @@ public class DisorderServiceImpl implements DisorderService {
         UserProfile patientProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + userId + "not found"));
 
-        if (!therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-            throw new UnauthorizedException("The patient with id " + userId + "is not the patient of the therapist with id " + therapist.getId());
+        if (patientProfile.getUser().getTherapist() == null ||
+                !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
+            throw new UnauthorizedException("The patient with id " + userId + " is not the patient of the therapist with id " + therapist.getId());
         }
         return patientProfile;
     }

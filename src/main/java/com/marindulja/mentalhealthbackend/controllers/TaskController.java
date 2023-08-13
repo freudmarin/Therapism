@@ -45,9 +45,9 @@ public class TaskController {
 
     @PatchMapping("{taskId}/status")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> updateTaskStatus(@PathVariable Long taskId, @RequestBody TaskStatus newTaskStatus) {
-        taskService.changeTaskStatus(taskId, newTaskStatus);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<?> updateTaskStatus(@PathVariable Long taskId, @RequestBody TaskDto taskDtoStatusUpdate) {
+        AssignedTaskDto assignedTaskDto = taskService.changeTaskStatus(taskId,  TaskStatus.fromString(taskDtoStatusUpdate.getStatus()));
+        return new ResponseEntity<>(assignedTaskDto, HttpStatus.OK);
     }
 }
 

@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface TherapySessionRepository extends JpaRepository<TherapySession, Long> {
-    List<TherapySession> getTherapySessionsByTherapistBetween(User therapist, LocalDateTime startDate, LocalDateTime endDate);
+    List<TherapySession> getTherapySessionsByTherapistAndSessionDateBetween(User therapist, LocalDateTime startDate, LocalDateTime endDate);
 }

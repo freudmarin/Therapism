@@ -31,7 +31,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
     @Override
     public List<TherapySessionDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) {
-        List<TherapySession> allSessionsOfTherapist = therapySessionRepository.getTherapySessionsByTherapistBetween(Utilities.getCurrentUser().get(), start, end);
+        List<TherapySession> allSessionsOfTherapist = therapySessionRepository.getTherapySessionsByTherapistAndSessionDateBetween(Utilities.getCurrentUser().get(), start, end);
         return allSessionsOfTherapist.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
@@ -81,7 +81,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + "not found"));
 
         if (!therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-            throw new UnauthorizedException("The patient with id " + patientId + "is not the patient of the therapist with id " + therapist.getId());
+            throw new UnauthorizedException("The patient with id " + patientId + " is not the patient of the therapist with id " + therapist.getId());
         }
         return true;
     }

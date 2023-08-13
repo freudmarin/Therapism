@@ -2,10 +2,12 @@ package com.marindulja.mentalhealthbackend.dtos;
 
 import com.marindulja.mentalhealthbackend.models.User;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 public class TherapySessionDto {
 
     private Long id;

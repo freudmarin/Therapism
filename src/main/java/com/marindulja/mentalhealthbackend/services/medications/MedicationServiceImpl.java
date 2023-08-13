@@ -9,6 +9,7 @@ import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.MedicationRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -32,21 +33,29 @@ public class MedicationServiceImpl implements MedicationService {
     public List<MedicationDto> getAllMedications() {
         return medicationRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
     }
+    @Transactional
     public void assignMedicationsToUser(Long patientId, List<Long> medicationIds) {
-        //even the therapist can be a patient
         UserProfile patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
 
         List<Medication> medications = medicationRepository.findAllById(medicationIds);
 
         if (medications.size() != medicationIds.size()) {
-            // handle cases where some disorder IDs are invalid
             throw new IllegalArgumentException("Some medications IDs are invalid");
         }
 
-        patientProfile.getMedications().addAll(medications);
+        // Clear current associations (if you want to replace, not just add)
+        patientProfile.getMedications().clear();
+
+        // Add the new associations
+        for (Medication medication : medications) {
+            patientProfile.getMedications().add(medication);
+            medication.getUsers().add(patientProfile);
+        }
         userProfileRepository.save(patientProfile);
+        medicationRepository.saveAll(medications);// Save the user profile
     }
 
+    @Transactional
     public void updateMedicationsToUser(Long patientId, List<Long> medicationIds) {
         UserProfile patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
 
@@ -58,25 +67,23 @@ public class MedicationServiceImpl implements MedicationService {
 
         List<Medication> currentMedicationsList = patientProfile.getMedications();
 
-        // Filter out medications from current list that are not in the new list
-        List<Medication> retainedMedications = currentMedicationsList.stream()
-                .filter(newMedications::contains)
-                .collect(Collectors.toList());
+        // Remove associations with medications that are not in the new list
+        currentMedicationsList.removeIf(medication -> !newMedications.contains(medication));
 
-        // Get medications from the new list that are not in the current list
-        List<Medication> medicationsToAdd = newMedications.stream()
-                .filter(medication -> !retainedMedications.contains(medication))
-                .toList();
-
-        // Combine the two lists
-        retainedMedications.addAll(medicationsToAdd);
-
-        // Set the modified medications back to the patient profile
-        patientProfile.setMedications(retainedMedications);
+        // Add associations with medications that are in the new list but not the current list
+        for (Medication medication : newMedications) {
+            if (!currentMedicationsList.contains(medication)) {
+                currentMedicationsList.add(medication);
+                if (!medication.getUsers().contains(patientProfile)) {
+                    medication.getUsers().add(patientProfile);
+                }
+            }
+        }
 
         userProfileRepository.save(patientProfile);
     }
 
+    @Transactional
     public void removeMedicationsFromPatient(Long patientId, List<Long> medicationsIds) {
         UserProfile patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
 
@@ -84,6 +91,9 @@ public class MedicationServiceImpl implements MedicationService {
         if (medications.size() != medicationsIds.size()) {
             // handle cases where some disorder IDs are invalid
             throw new IllegalArgumentException("Some medications IDs are invalid");
+        }
+        for (Medication medication : medications) {
+            medication.getUsers().remove(patientProfile);
         }
         patientProfile.getMedications().removeAll(medications);
         userProfileRepository.save(patientProfile);
@@ -96,8 +106,8 @@ public class MedicationServiceImpl implements MedicationService {
         UserProfile patientProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + userId + "not found"));
 
-        if (!therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-            throw new UnauthorizedException("The patient with id " + userId + "is not the patient of the therapist with id " + therapist.getId());
+        if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
+            throw new UnauthorizedException("The patient with id " + userId + " is not the patient of the therapist with id " + therapist.getId());
         }
         return patientProfile;
     }

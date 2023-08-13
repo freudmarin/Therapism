@@ -1,16 +1,17 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
 import com.marindulja.mentalhealthbackend.models.TaskStatus;
-import com.marindulja.mentalhealthbackend.models.User;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class AssignedTaskDto {
     private Long id;
 
-    private User assignedByUser;
+    private UserDto assignedByUser;
 
-    private User assignedToUser;
+    private UserDto assignedToUser;
 
     private String description;
 

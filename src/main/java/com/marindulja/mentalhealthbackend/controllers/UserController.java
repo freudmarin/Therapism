@@ -3,7 +3,6 @@ package com.marindulja.mentalhealthbackend.controllers;
 import com.marindulja.mentalhealthbackend.dtos.UserDto;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileDto;
 import com.marindulja.mentalhealthbackend.models.Role;
-import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import com.marindulja.mentalhealthbackend.services.users.UserService;
 import org.springframework.http.HttpStatus;
@@ -76,15 +75,15 @@ public class UserController {
 
     @GetMapping("/{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
-    public ResponseEntity<UserProfile> getUserProfileById(@PathVariable Long id) {
-        UserProfile profile = userProfileService.findByUserId(id);
+    public ResponseEntity<UserProfileDto> getUserProfileById(@PathVariable Long id) {
+        UserProfileDto profile = userProfileService.findByUserId(id);
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
     @PutMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
-    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @RequestBody UserProfileDto updatedProfile) {
-        UserProfile profile = userProfileService.updateProfile(id, updatedProfile);
+    public ResponseEntity<UserProfileDto> updateUserProfile(@PathVariable Long id, @RequestBody UserProfileDto updatedProfile) {
+        UserProfileDto profile = userProfileService.updateProfile(id, updatedProfile);
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
