@@ -80,7 +80,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         UserProfile patientProfile = userProfileRepository.findByUserId(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + "not found"));
 
-        if (!therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
+        if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
             throw new UnauthorizedException("The patient with id " + patientId + " is not the patient of the therapist with id " + therapist.getId());
         }
         return true;
