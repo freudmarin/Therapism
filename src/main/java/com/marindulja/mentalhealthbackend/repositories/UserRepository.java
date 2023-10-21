@@ -1,6 +1,5 @@
 package com.marindulja.mentalhealthbackend.repositories;
 
-import com.marindulja.mentalhealthbackend.models.Institution;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +16,4 @@ public interface UserRepository extends JpaRepository<User,Long>, JpaSpecificati
 
     Optional<User> findByEmail(String userName);
 
-    List<User> findAllByInstitution(Institution institution);
 }

@@ -24,20 +24,6 @@ public class UserController {
         this.userProfileService = userProfileService;
     }
 
-    @PostMapping("therapists/add")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createInstitutionTherapist(@RequestBody UserDto userDto) {
-        UserDto savedTherapist = userService.save(userDto, Role.THERAPIST, null);
-        return new ResponseEntity<>(savedTherapist, HttpStatus.CREATED);
-    }
-
-    @PostMapping("patients/add")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createInstitutionPatient(@RequestBody UserDto userDto) {
-        UserDto savedPatient = userService.save(userDto, Role.PATIENT, null);
-        return new ResponseEntity<>(savedPatient, HttpStatus.CREATED);
-    }
-
     @PostMapping("therapists/{therapistId}/assignPatients")
     @PreAuthorize("hasAnyRole('ADMIN', 'THERAPIST')")
     public ResponseEntity<?> assignPatientsToTherapist(@RequestBody List<Long> userIds, @PathVariable("therapistId") Long therapistId) {
@@ -45,12 +31,6 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("institution-admins/{institutionId}/add")
-    @PreAuthorize("hasRole('SUPERADMIN')")
-    public ResponseEntity<?> createInstitutionAdmin(@RequestBody UserDto userDto, @PathVariable("institutionId") Long institutionId) {
-        UserDto savedUser = userService.save(userDto, Role.ADMIN, institutionId);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-    }
     @PutMapping("{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN','THERAPIST', 'PATIENT')")
     public ResponseEntity<?> updateUser(@PathVariable("userId") Long userId, @RequestBody UserDto userDto) {
@@ -66,7 +46,7 @@ public class UserController {
     }
 
     @GetMapping("all")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN','THERAPIST')")
+    @PreAuthorize("hasAnyRole('ADMIN','THERAPIST')")
     public ResponseEntity<List<UserDto>> getAllFilteredUsersByRole(
             @RequestParam(name = "searchValue", required = false) String searchValue, @RequestParam(name = "role") String role) {
         return new ResponseEntity<>(userService.findAllByRoleFilteredAndSorted(Role.fromString(role), searchValue), HttpStatus.OK);

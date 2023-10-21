@@ -13,7 +13,7 @@ public class ApplicationConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*") // Be more specific in a production environment
+                        .allowedOrigins("*")
                         .allowedMethods("*");
             }
         };

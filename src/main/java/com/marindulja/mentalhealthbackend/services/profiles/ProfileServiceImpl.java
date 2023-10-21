@@ -3,6 +3,7 @@ package com.marindulja.mentalhealthbackend.services.profiles;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
+import com.marindulja.mentalhealthbackend.models.Gender;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
@@ -32,11 +33,9 @@ public class ProfileServiceImpl implements ProfileService {
         UserProfile existingProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
 
-        existingProfile.setName(userProfileDto.getName());
-        existingProfile.setSurname(userProfileDto.getSurname());
 
         existingProfile.setPhoneNumber(userProfileDto.getPhoneNumber());
-
+        existingProfile.setGender(Gender.valueOf(userProfileDto.getGender()));
         UserProfile userProfile = userProfileRepository.save(existingProfile);
         return mapToDTO(userProfile);
     }

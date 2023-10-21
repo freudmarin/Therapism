@@ -18,7 +18,5 @@ public interface UserService  {
 
     List<UserDto> findAllByRoleFilteredAndSorted(Role role, String searchValue);
 
-    UserDto save(UserDto userDto, Role role, Long institutionId);
-
     void assignPatientsToTherapist(List<Long> userIds, Long therapistId);
 }

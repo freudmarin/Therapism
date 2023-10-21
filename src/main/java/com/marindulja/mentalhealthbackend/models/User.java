@@ -32,9 +32,9 @@ public class User implements UserDetails {
 
     private String email;
 
-    @ManyToOne
-    @JoinColumn(name = "institution_id")
-    private Institution institution;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private UserProfile userProfile;
 
     @ManyToOne
     @JoinColumn(name = "therapist_id")

@@ -1,6 +1,5 @@
 package com.marindulja.mentalhealthbackend.repositories.specifications;
 
-import com.marindulja.mentalhealthbackend.models.Institution;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -17,14 +16,11 @@ public class UserSpecification implements Specification<User> {
     private final Role role;
     private final String searchValue;
 
-    private final Institution institution;
-
     private final User therapist;
 
-    public UserSpecification(Role role, String searchValue, Institution institution, User therapist) {
+    public UserSpecification(Role role, String searchValue, User therapist) {
         this.role = role;
         this.searchValue = searchValue;
-        this.institution = institution;
         this.therapist = therapist;
     }
 
@@ -38,10 +34,6 @@ public class UserSpecification implements Specification<User> {
 
         if (searchValue != null && !searchValue.isEmpty()) {
             predicates.add(criteriaBuilder.like(root.get("username"), "%" + searchValue + "%"));
-        }
-
-        if (institution != null && institution.getId() !=null) {
-            predicates.add(criteriaBuilder.equal(root.get("institution").get("id"), institution.getId()));
         }
 
         if (therapist != null && therapist.getId() !=null) {

@@ -13,4 +13,18 @@ public class UserDto {
     private String password;
 
     private String email;
+
+    private String gender;
+
+    private String phoneNumber;
+
+    public UserDto(String username, String email, String gender, String phoneNumber) {
+        this.username = username;
+        this.email = email;
+        this.gender = gender;
+        this.phoneNumber = phoneNumber;
+    }
 }
+
+
+

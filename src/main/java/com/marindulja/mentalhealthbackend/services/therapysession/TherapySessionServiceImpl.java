@@ -46,7 +46,6 @@ public class TherapySessionServiceImpl implements TherapySessionService {
             therapySessionRepository.save(newTherapySession);
             return mapToDTO(newTherapySession);
         }
-
         return null;
     }
 
@@ -73,7 +72,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     }
 
 
-    private boolean patientBelongsToTherapist(Long patientId) {
+    private boolean patientBelongsToTherapist(Long patientId) throws UnauthorizedException {
         User therapist = Utilities.getCurrentUser().get();
 
 
