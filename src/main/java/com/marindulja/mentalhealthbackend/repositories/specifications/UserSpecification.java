@@ -13,33 +13,30 @@ import java.util.List;
 
 public class UserSpecification implements Specification<User> {
 
-    private final Role role;
+    private final List<Role> roles;
     private final String searchValue;
 
-    private final User therapist;
-
-    public UserSpecification(Role role, String searchValue, User therapist) {
-        this.role = role;
+    public UserSpecification(List<Role> roles, String searchValue) {
+        this.roles = roles;
         this.searchValue = searchValue;
-        this.therapist = therapist;
     }
 
     @Override
     public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
-        if (role != null) {
-            predicates.add(criteriaBuilder.equal(root.get("role"), role));
+        if (!roles.isEmpty()) {
+            CriteriaBuilder.In<Object> inClause = criteriaBuilder.in(root.get("role"));
+            for (Role role : roles) {
+                inClause.value(role);
+            }
+            predicates.add(inClause);
         }
 
         if (searchValue != null && !searchValue.isEmpty()) {
-            predicates.add(criteriaBuilder.like(root.get("username"), "%" + searchValue + "%"));
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("username")), "%" + searchValue.toLowerCase() + "%"));
         }
 
-        if (therapist != null && therapist.getId() !=null) {
-            predicates.add(criteriaBuilder.equal(root.get("therapist").get("therapist_id"), therapist.getId()));
-        }
-
-        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        return predicates.isEmpty() ? null : criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }
 }

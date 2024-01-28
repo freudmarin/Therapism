@@ -2,9 +2,9 @@ package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.UserDto;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileDto;
-import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import com.marindulja.mentalhealthbackend.services.users.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/users")
+@Slf4j
 public class UserController {
     private final UserService userService;
 
@@ -46,10 +47,10 @@ public class UserController {
     }
 
     @GetMapping("all")
-    @PreAuthorize("hasAnyRole('ADMIN','THERAPIST')")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','THERAPIST')")
     public ResponseEntity<List<UserDto>> getAllFilteredUsersByRole(
-            @RequestParam(name = "searchValue", required = false) String searchValue, @RequestParam(name = "role") String role) {
-        return new ResponseEntity<>(userService.findAllByRoleFilteredAndSorted(Role.fromString(role), searchValue), HttpStatus.OK);
+            @RequestParam(name = "searchValue", required = false) String searchValue) {
+        return new ResponseEntity<>(userService.findAllByRoleFilteredAndSorted(searchValue), HttpStatus.OK);
     }
 
 
@@ -70,7 +71,7 @@ public class UserController {
     @DeleteMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-         userService.deleteById(id);
+        userService.deleteById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

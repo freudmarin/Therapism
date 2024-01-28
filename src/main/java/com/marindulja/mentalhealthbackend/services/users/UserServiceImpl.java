@@ -18,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -126,24 +127,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> findAllByRoleFilteredAndSorted(Role role, String searchValue) {
+    public List<UserDto> findAllByRoleFilteredAndSorted(String searchValue) {
         User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
-        if (currentUser.getRole() == Role.SUPERADMIN && role != Role.SUPERADMIN) {
-            spec = spec.and(new UserSpecification(role, searchValue, null));
+        if (currentUser.getRole() == Role.SUPERADMIN) {
+            spec = spec.and(new UserSpecification(Arrays.asList(Role.SUPERADMIN, Role.ADMIN, Role.PATIENT,Role.THERAPIST), searchValue));
         }
         // admin can view only therapists and patients of the institution he belongs to
-        if (currentUser.getRole() == Role.ADMIN && (role == THERAPIST || role == Role.PATIENT)) {
-            spec = spec.and(new UserSpecification(role, searchValue, null));
+        if (currentUser.getRole() == Role.ADMIN) {
+            spec = spec.and(new UserSpecification(Arrays.asList(Role.ADMIN, Role.PATIENT,Role.THERAPIST), searchValue));
         }
 
         // therapist can belong to an  institution or no
         if (currentUser.getRole() == THERAPIST) {
-            spec = spec.and(new UserSpecification(role, searchValue, currentUser.getTherapist()));
+            spec = spec.and(new UserSpecification(List.of(Role.PATIENT), searchValue));
         }
 
         List<User> userListResult = userRepository.findAll(spec);
-
+        if (currentUser.getRole() == THERAPIST) {
+            userListResult.stream().filter(u -> u.getTherapist() == currentUser).collect(Collectors.toList());
+        }
         return userListResult
                 .stream()
                 .map(this::mapToDTOForUserList)
@@ -155,9 +158,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserDto mapToDTOForUserList(User user) {
-        return new UserDto(user.getUsername(),
-                user.getEmail(), user.getUserProfile().getGender(), user.getUserProfile().getPhoneNumber());
-
+        return new UserDto(user.getId(), user.getUsername(),
+                user.getPassword(), user.getEmail());
     }
 
     private User mapToEntity(UserDto userDto) {

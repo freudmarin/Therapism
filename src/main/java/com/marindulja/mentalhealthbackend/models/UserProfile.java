@@ -25,6 +25,7 @@ public class UserProfile {
 
     private String triggers;
 
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @Column(name = "is_deleted")
@@ -45,18 +46,9 @@ public class UserProfile {
     )
     private List<AnxietyRecord> anxietyRecords = new ArrayList<>();
 
-    public String getGender() {
-        return Gender.fromEnum(this.gender);
-    }
-
     @OneToOne
     @MapsId
     @JoinColumn(name = "user_id")
     private User user;
 
-    public UserProfile(User user, String phoneNumber, Gender gender) {
-        this.user = user;
-        this.phoneNumber = phoneNumber;
-        this.gender = gender;
-    }
 }

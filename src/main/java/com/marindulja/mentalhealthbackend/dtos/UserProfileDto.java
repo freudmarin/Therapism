@@ -8,6 +8,9 @@ import java.util.List;
 @Getter
 @Setter
 public class UserProfileDto {
+    @Getter
+    @Setter
+    UserDto userDto;
     private Long id;
     private String phoneNumber;
     private String gender;

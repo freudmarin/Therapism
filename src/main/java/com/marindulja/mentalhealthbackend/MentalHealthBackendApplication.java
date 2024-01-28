@@ -4,8 +4,8 @@ import com.marindulja.mentalhealthbackend.models.Gender;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
-import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,7 +20,8 @@ public class MentalHealthBackendApplication {
     }
 
     @Bean
-    CommandLineRunner init(UserRepository userRepository, ProfileRepository profileRepository,  PasswordEncoder passwordEncoder) {
+    @Transactional
+    CommandLineRunner init(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             if (userRepository.findByRole(Role.SUPERADMIN).isEmpty()) {
                 User superAdmin = new User();
@@ -31,7 +32,8 @@ public class MentalHealthBackendApplication {
                 superAdmin.setEmail("duljamarin@gmail.com");
                 superAdminUserProfile.setGender(Gender.MALE);
                 superAdminUserProfile.setPhoneNumber("+355684448934");
-                superAdminUserProfile.setUser(superAdmin);
+                superAdminUserProfile.setUser(superAdmin); // Set the user to the profile
+                superAdmin.setUserProfile(superAdminUserProfile); // Set the profile to the user
                 userRepository.save(superAdmin);
             }
         };
