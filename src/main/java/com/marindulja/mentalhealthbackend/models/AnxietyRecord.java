@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -18,8 +16,9 @@ public class AnxietyRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(mappedBy = "anxietyRecords")
-    private List<UserProfile> users = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "user_profile_id")
+    private UserProfile user;
 
     private LocalDateTime recordDate;
     private Integer anxietyLevel; // You can define the scale according to your needs

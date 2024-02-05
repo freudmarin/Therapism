@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public void assignPatientsToTherapist(List<Long> userIds, Long therapistId) {
-        User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
+        User currentUser = Utilities.getCurrentUser().get();
         User therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
         List<User> patients = userRepository.findAllById(userIds);
         if (currentUser.getRole() == Role.ADMIN) {
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (StringUtils.isBlank(userDto.getUsername())) {
-            throw new InvalidInputException("Institution name cannot be null or empty");
+            throw new InvalidInputException("Username cannot be null or empty");
         }
         return userRepository.findById(id)
                 .map(user -> {

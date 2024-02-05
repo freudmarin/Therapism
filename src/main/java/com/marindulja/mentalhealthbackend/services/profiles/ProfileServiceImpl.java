@@ -22,6 +22,18 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    public UserProfileDto createProfile(Long userId, UserProfileDto userProfileDto) {
+        User currentUser = Utilities.getCurrentUser().get();
+
+        if(!userId.equals(currentUser.getId())) {
+            throw new UnauthorizedException("User with id " + currentUser.getId() + " not authorized to update user with id " + userId);
+        }
+        UserProfile newUserProfile = mapToEntity(userProfileDto);
+        newUserProfile.setUser(currentUser);
+        return mapToDTO(userProfileRepository.save(newUserProfile));
+    }
+
+    @Override
     public UserProfileDto updateProfile(Long userId, UserProfileDto userProfileDto) {
 
         User currentUser = Utilities.getCurrentUser().get();
@@ -44,8 +56,8 @@ public class ProfileServiceImpl implements ProfileService {
     public UserProfileDto findByUserId(Long userId) {
         return mapToDTO(userProfileRepository.findByUserId(userId).orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId)));
     }
-    private UserProfileDto mapToDTO(UserProfile medication) {
-        return mapper.map(medication, UserProfileDto.class);
+    private UserProfileDto mapToDTO(UserProfile userProfile) {
+        return mapper.map(userProfile, UserProfileDto.class);
     }
 
     private UserProfile mapToEntity(UserProfileDto userProfileDto) {

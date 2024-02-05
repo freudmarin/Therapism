@@ -3,7 +3,6 @@ package com.marindulja.mentalhealthbackend.services.auth;
 import com.marindulja.mentalhealthbackend.dtos.JwtAuthenticationResponse;
 import com.marindulja.mentalhealthbackend.dtos.SignInRequest;
 import com.marindulja.mentalhealthbackend.dtos.SignUpRequest;
-import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.RefreshTokenRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;

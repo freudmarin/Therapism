@@ -68,6 +68,13 @@ public class UserController {
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
+    @PostMapping("{id}/profile")
+    @PreAuthorize("hasAnyRole('ADMIN','THERAPIST','PATIENT')")
+    public ResponseEntity<UserProfileDto> createUserProfile(@PathVariable Long id, @RequestBody UserProfileDto userProfileDto) {
+        UserProfileDto profile = userProfileService.createProfile(id, userProfileDto);
+        return new ResponseEntity<>(profile, HttpStatus.CREATED);
+    }
+
     @DeleteMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {

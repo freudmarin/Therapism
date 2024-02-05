@@ -71,6 +71,13 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         return mapToDTO(existingTherapySession);
     }
 
+    @Override
+    public void deleteTherapySession(Long therapyId) {
+        TherapySession existingTherapySession = therapySessionRepository.findById(therapyId).orElseThrow(() -> new EntityNotFoundException("TherapySession with id " + therapyId + "not found"));
+        existingTherapySession.setDeleted(true);
+        therapySessionRepository.save(existingTherapySession);
+    }
+
 
     private boolean patientBelongsToTherapist(Long patientId) throws UnauthorizedException {
         User therapist = Utilities.getCurrentUser().get();

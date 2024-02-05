@@ -44,7 +44,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
 
     @Override
     @Transactional
-    public UserProfileDto registerAnxietyLevelsAndGetUserProfile(AnxietyRecordDto anxietyRecordDto) {
+    public UserProfileDto registerAnxietyLevels(AnxietyRecordDto anxietyRecordDto) {
         User currentUser = Utilities.getCurrentUser().get();
         if (anxietyRecordDto.getAnxietyLevel() == null) {
             throw new InvalidInputException("Anxiety level should be defined");

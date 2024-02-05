@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface AnxietyRecordService {
 
-    UserProfileDto registerAnxietyLevelsAndGetUserProfile(AnxietyRecordDto anxietyRecord);
+    UserProfileDto registerAnxietyLevels(AnxietyRecordDto anxietyRecord);
 
     List<AnxietyRecordDto> getAllOfCurrentUser();
     List<AnxietyRecordDto> viewPatientAnxietyLevels(long patientId);

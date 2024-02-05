@@ -3,12 +3,14 @@ package com.marindulja.mentalhealthbackend.models;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
 @Table(name = "therapy_sessions")
+@Where(clause = "is_deleted = false")
 public class TherapySession {
 
     @Id
@@ -29,4 +31,7 @@ public class TherapySession {
 
     @Column(name = "therapist_notes")
     private String therapistNotes;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
 }

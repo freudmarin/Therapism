@@ -32,7 +32,7 @@ public class TherapyController {
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> createTherapySession(@PathVariable Long patientId, @RequestBody TherapySessionDto request) {
         TherapySessionDto createdTherapySession = therapySessionService.createTherapySession(patientId, request);
-        return new ResponseEntity<>(createdTherapySession, HttpStatus.OK);
+        return new ResponseEntity<>(createdTherapySession, HttpStatus.CREATED);
     }
 
     @PutMapping("therapy/{therapyId}/patient/{patientId}")
@@ -47,5 +47,12 @@ public class TherapyController {
     public ResponseEntity<?> updatePatientNotes(@PathVariable Long therapyId, @RequestBody TherapySessionDto therapySessionDto) {
         therapySessionService.updatePatientNotes(therapyId, therapySessionDto);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("{therapyId}")
+    @PreAuthorize("hasRole('THERAPIST')")
+    public ResponseEntity<?> deleteTherapySession(@PathVariable Long therapyId) {
+        therapySessionService.deleteTherapySession(therapyId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

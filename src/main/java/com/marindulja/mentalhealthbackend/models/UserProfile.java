@@ -38,12 +38,7 @@ public class UserProfile {
             inverseJoinColumns = @JoinColumn(name = "disorder_id"))
     private List<Disorder> disorders = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "userprofile_anxietyrecords",
-            joinColumns = @JoinColumn(name = "user_profile_id"),
-            inverseJoinColumns = @JoinColumn(name = "anxiety_record_id")
-    )
+    @OneToMany(mappedBy = "user")
     private List<AnxietyRecord> anxietyRecords = new ArrayList<>();
 
     @OneToOne

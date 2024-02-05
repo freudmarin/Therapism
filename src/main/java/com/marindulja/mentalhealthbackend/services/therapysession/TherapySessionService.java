@@ -12,4 +12,6 @@ public interface TherapySessionService {
     TherapySessionDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionDto therapySessionDto);
 
     TherapySessionDto updatePatientNotes(Long therapySessionId, TherapySessionDto therapySessionDto);
+
+    void deleteTherapySession(Long therapyId);
 }

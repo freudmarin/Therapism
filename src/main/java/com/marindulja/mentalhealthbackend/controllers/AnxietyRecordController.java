@@ -24,7 +24,7 @@ public class AnxietyRecordController {
     @PostMapping("current-user/register-anxiety")
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<UserProfileDto> registerAnxietyLevels(@RequestBody AnxietyRecordDto anxietyRecordDto) {
-        UserProfileDto userProfileDto = anxietyRecordService.registerAnxietyLevelsAndGetUserProfile(anxietyRecordDto);
+        UserProfileDto userProfileDto = anxietyRecordService.registerAnxietyLevels(anxietyRecordDto);
         return new ResponseEntity<>(userProfileDto, HttpStatus.OK);
     }
 
