@@ -23,8 +23,6 @@ public class UserProfile {
 
     private String phoneNumber;
 
-    private String triggers;
-
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
@@ -46,4 +44,11 @@ public class UserProfile {
     @JoinColumn(name = "user_id")
     private User user;
 
+    public UserProfile(Long id, String phoneNumber, Gender gender, List<Disorder> disorders, List<AnxietyRecord> anxietyRecords) {
+        this.id = id;
+        this.phoneNumber = phoneNumber;
+        this.gender = gender;
+        this.disorders = disorders;
+        this.anxietyRecords = anxietyRecords;
+    }
 }

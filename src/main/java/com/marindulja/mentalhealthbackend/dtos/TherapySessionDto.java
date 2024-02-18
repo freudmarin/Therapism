@@ -1,6 +1,5 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
-import com.marindulja.mentalhealthbackend.models.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,9 +11,9 @@ public class TherapySessionDto {
 
     private Long id;
 
-    private User therapist;
+    private UserDto therapist;
 
-    private User patient;
+    private UserDto patient;
 
     private LocalDateTime sessionDate;
     private String patientNotes;

@@ -7,25 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 @RestController
 @RequestMapping("api/v1/therapySessions")
-@PreAuthorize("hasAnyRole('PATIENT', 'THERAPIST')")
 public class TherapyController {
     private final TherapySessionService therapySessionService;
 
     public TherapyController(TherapySessionService therapySessionService) {
         this.therapySessionService = therapySessionService;
-    }
-
-
-    @GetMapping("therapist/all")
-    @PreAuthorize("hasAnyRole('THERAPIST')")
-    public ResponseEntity<List<TherapySessionDto>> getAllTherapySessionsOfCurrentTherapist(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate) {
-        List<TherapySessionDto> allSessionsOfTherapist = therapySessionService.allSessionsOfTherapist(startDate, endDate);
-        return new ResponseEntity<>(allSessionsOfTherapist, HttpStatus.OK);
     }
 
     @PostMapping("patient/{patientId}/create")

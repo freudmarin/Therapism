@@ -1,7 +1,9 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.UserDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileCreationOrUpdateDto;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileWithUserDto;
 import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import com.marindulja.mentalhealthbackend.services.users.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +42,7 @@ public class UserController {
     }
 
     @GetMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST')")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST', 'PATIENT')")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         UserDto user = userService.findById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
@@ -56,22 +58,22 @@ public class UserController {
 
     @GetMapping("/{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
-    public ResponseEntity<UserProfileDto> getUserProfileById(@PathVariable Long id) {
-        UserProfileDto profile = userProfileService.findByUserId(id);
+    public ResponseEntity<UserProfileWithUserDto> getUserProfileById(@PathVariable Long id) {
+        UserProfileWithUserDto profile = userProfileService.findByUserId(id);
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
     @PutMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
-    public ResponseEntity<UserProfileDto> updateUserProfile(@PathVariable Long id, @RequestBody UserProfileDto updatedProfile) {
+    public ResponseEntity<UserProfileDto> updateUserProfile(@PathVariable Long id, @RequestBody UserProfileCreationOrUpdateDto updatedProfile) {
         UserProfileDto profile = userProfileService.updateProfile(id, updatedProfile);
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
     @PostMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','THERAPIST','PATIENT')")
-    public ResponseEntity<UserProfileDto> createUserProfile(@PathVariable Long id, @RequestBody UserProfileDto userProfileDto) {
-        UserProfileDto profile = userProfileService.createProfile(id, userProfileDto);
+    public ResponseEntity<UserProfileDto> createUserProfile(@PathVariable Long id, @RequestBody UserProfileCreationOrUpdateDto userProfileCreationDto) {
+        UserProfileDto profile = userProfileService.createProfile(id, userProfileCreationDto);
         return new ResponseEntity<>(profile, HttpStatus.CREATED);
     }
 

@@ -21,6 +21,7 @@ public class MoodJournalController {
         this.moodEntryService = moodEntryService;
     }
 
+    @PreAuthorize("hasRole('PATIENT')")
     @PostMapping
     public ResponseEntity<MoodJournalDto> createMoodEntry(@RequestBody MoodJournalDto moodEntryDto) {
         MoodJournalDto createdMoodEntry = moodEntryService.createMoodEntry(moodEntryDto);
@@ -35,8 +36,8 @@ public class MoodJournalController {
 
     @PreAuthorize("hasRole('THERAPIST')")
     @GetMapping("therapists/{therapistId}")
-    public ResponseEntity<List<MoodJournalDto>> getMoodJournalsByTherapist(@PathVariable Long therapistId) {
-        List<MoodJournalDto> moodEntries = moodEntryService.getMoodJournalsByTherapist(therapistId);
+    public ResponseEntity<List<MoodJournalDto>> getMoodJournalsByTherapist() {
+        List<MoodJournalDto> moodEntries = moodEntryService.getMoodJournalsByTherapist();
         return new ResponseEntity<>(moodEntries, HttpStatus.OK);
     }
 

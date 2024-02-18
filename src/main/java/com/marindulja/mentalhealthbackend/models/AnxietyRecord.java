@@ -20,6 +20,7 @@ public class AnxietyRecord {
     @JoinColumn(name = "user_profile_id")
     private UserProfile user;
 
+    @Column(name = "record_date", columnDefinition = "DATETIME")
     private LocalDateTime recordDate;
     private Integer anxietyLevel; // You can define the scale according to your needs
 }

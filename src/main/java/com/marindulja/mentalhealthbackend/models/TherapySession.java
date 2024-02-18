@@ -25,7 +25,9 @@ public class TherapySession {
     @JoinColumn(name = "patient_id", nullable = false)
     private User patient;
 
+    @Column(name = "session_date", columnDefinition = "DATETIME")
     private LocalDateTime sessionDate;
+
     @Column(name = "patient_notes")
     private String patientNotes;
 

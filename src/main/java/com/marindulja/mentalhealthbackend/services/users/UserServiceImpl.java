@@ -40,21 +40,22 @@ public class UserServiceImpl implements UserService {
         this.profileRepository = profileRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
     @Override
+    @Transactional
     public void assignPatientsToTherapist(List<Long> userIds, Long therapistId) {
         User currentUser = Utilities.getCurrentUser().get();
         User therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
         List<User> patients = userRepository.findAllById(userIds);
         if (currentUser.getRole() == Role.ADMIN) {
             assignTherapistToPatients(therapist, patients);
-        } else if (currentUser.getRole() == THERAPIST) {
+        } else if (currentUser.getRole() == THERAPIST && currentUser.getId() == therapistId) {
             assignTherapistToPatients(therapist, patients);
         } else
-            throw new UnauthorizedException("The user with id" + currentUser.getId() + "doesn't have the required permission to perform this operation");
+            throw new UnauthorizedException("The user with id " + currentUser.getId() + "doesn't have the required permission to perform this operation");
 
     }
 
-    @Transactional
     public void assignTherapistToPatients(User therapist, List<User> patients) {
         patients.forEach(patient -> patient.setTherapist(therapist));
         userRepository.saveAll(patients);
@@ -96,8 +97,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
-        User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
+        User currentUser = Utilities.getCurrentUser().get();
         User userToBeDeleted = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with id "
                         + id + " not found"));
@@ -113,8 +115,7 @@ public class UserServiceImpl implements UserService {
             throw new UnauthorizedException("User with id " + currentUser.getId() + "is not authorized to delete user with id" + id);
     }
 
-    @Transactional
-    public void deleteUserById(Long id) {
+    private void deleteUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with id"
                         + id + " not found"));
@@ -128,14 +129,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> findAllByRoleFilteredAndSorted(String searchValue) {
-        User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
+        System.out.println("UserService called");
+        User currentUser = Utilities.getCurrentUser().get();
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
         if (currentUser.getRole() == Role.SUPERADMIN) {
-            spec = spec.and(new UserSpecification(Arrays.asList(Role.SUPERADMIN, Role.ADMIN, Role.PATIENT,Role.THERAPIST), searchValue));
+            spec = spec.and(new UserSpecification(Arrays.asList(Role.SUPERADMIN, Role.ADMIN, Role.PATIENT, Role.THERAPIST), searchValue));
         }
         // admin can view only therapists and patients of the institution he belongs to
         if (currentUser.getRole() == Role.ADMIN) {
-            spec = spec.and(new UserSpecification(Arrays.asList(Role.ADMIN, Role.PATIENT,Role.THERAPIST), searchValue));
+            spec = spec.and(new UserSpecification(Arrays.asList(Role.ADMIN, Role.PATIENT, Role.THERAPIST), searchValue));
         }
 
         // therapist can belong to an  institution or no
@@ -157,9 +159,9 @@ public class UserServiceImpl implements UserService {
         return mapper.map(user, UserDto.class);
     }
 
-    private UserDto mapToDTOForUserList(User user) {
+    public UserDto mapToDTOForUserList(User user) {
         return new UserDto(user.getId(), user.getUsername(),
-                user.getPassword(), user.getEmail());
+                user.getPassword(), user.getEmail(), user.getRole());
     }
 
     private User mapToEntity(UserDto userDto) {

@@ -39,16 +39,21 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public List<AssignedTaskDto> allTasksAssignedByTherapist() {
+        List<Task> allTasksAssignedToPatient = taskRepository.getAllByAssignedByUser(Utilities.getCurrentUser().get());
+        return allTasksAssignedToPatient.stream().map(this::mapToAssignedTaskDto).collect(Collectors.toList());
+    }
+
+    @Override
     public AssignedTaskDto assignTaskToUser(Long patientId, TaskDto taskDto) {
-        if (StringUtils.isBlank(taskDto.getDescription())) {
-            throw new InvalidInputException("Task description cannot be null or empty");
-        }
         //even the therapist can be a patient
         if (patientBelongsToTherapist(patientId)) {
+            if (StringUtils.isBlank(taskDto.getDescription())) {
+                throw new InvalidInputException("Task description cannot be null or empty");
+            }
             Task taskToBeAssigned = mapToEntity(taskDto);
             taskToBeAssigned.setAssignedByUser(Utilities.getCurrentUser().get());
             taskToBeAssigned.setAssignedToUser(userProfileRepository.findByUserId(patientId).get().getUser());
-            taskToBeAssigned.setDescription(taskDto.getDescription());
             taskToBeAssigned.setStatus(TaskStatus.ASSIGNED);
             taskRepository.save(taskToBeAssigned);
             return mapToAssignedTaskDto(taskToBeAssigned);
@@ -74,9 +79,12 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public AssignedTaskDto changeTaskStatus(Long taskId, TaskStatus newTaskStatus) {
         Task existingTask = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task with id " + taskId + "not found"));
-        existingTask.setStatus(newTaskStatus);
-        taskRepository.save(existingTask);
-        return mapToAssignedTaskDto(existingTask);
+        if (newTaskStatus.equals(TaskStatus.IN_PROGRESS) || newTaskStatus.equals(TaskStatus.COMPLETED)) {
+            existingTask.setStatus(newTaskStatus);
+            taskRepository.save(existingTask);
+            return mapToAssignedTaskDto(existingTask);
+        }
+        throw new IllegalArgumentException("Not appliable task status");
     }
 
     private boolean patientBelongsToTherapist(Long patientId) {
@@ -87,7 +95,7 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + " not found"));
 
         if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-            throw new UnauthorizedException("The patient with id " + patientId + "is not the patient of the therapist with id " + therapist.getId());
+            throw new UnauthorizedException("The patient with id " + patientId + " is not the patient of the therapist with id " + therapist.getId());
         }
         return true;
     }

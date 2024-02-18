@@ -2,7 +2,6 @@ package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.AssignedTaskDto;
 import com.marindulja.mentalhealthbackend.dtos.TaskDto;
-import com.marindulja.mentalhealthbackend.models.TaskStatus;
 import com.marindulja.mentalhealthbackend.services.tasks.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +20,18 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-
-    @GetMapping("all")
+    @GetMapping("all/patient")
     @PreAuthorize("hasAnyRole('PATIENT')")
-    public ResponseEntity<List<AssignedTaskDto>> getAllTasksAssignedToUser() {
-        List<AssignedTaskDto> allTasksAssignedToUser = taskService.allTasksAssignedToPatient();
-        return new ResponseEntity<>(allTasksAssignedToUser, HttpStatus.OK);
+    public ResponseEntity<List<AssignedTaskDto>> getAllTasksAssignedToPatient() {
+        List<AssignedTaskDto> allTasksAssignedToPatient = taskService.allTasksAssignedToPatient();
+        return new ResponseEntity<>(allTasksAssignedToPatient, HttpStatus.OK);
+    }
+
+    @GetMapping("all/therapist")
+    @PreAuthorize("hasAnyRole('THERAPIST')")
+    public ResponseEntity<List<AssignedTaskDto>> getAllTasksAssignedByTherapist() {
+        List<AssignedTaskDto> allTasksAssignedByTherapist = taskService.allTasksAssignedByTherapist();
+        return new ResponseEntity<>(allTasksAssignedByTherapist, HttpStatus.OK);
     }
 
     @PutMapping("users/{userId}/assignTask")
@@ -46,7 +51,7 @@ public class TaskController {
     @PatchMapping("{taskId}/status")
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<?> updateTaskStatus(@PathVariable Long taskId, @RequestBody TaskDto taskDtoStatusUpdate) {
-        AssignedTaskDto assignedTaskDto = taskService.changeTaskStatus(taskId,  TaskStatus.fromString(taskDtoStatusUpdate.getStatus()));
+        AssignedTaskDto assignedTaskDto = taskService.changeTaskStatus(taskId, taskDtoStatusUpdate.getStatus());
         return new ResponseEntity<>(assignedTaskDto, HttpStatus.OK);
     }
 }

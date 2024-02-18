@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
+import com.marindulja.mentalhealthbackend.models.TaskStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,5 +9,5 @@ import lombok.Setter;
 public class TaskDto {
 
     private String description;
-    private String status;
+    private TaskStatus status;
 }

@@ -43,6 +43,6 @@ public class DisorderController {
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> removeDisordersFromPatient(@PathVariable Long userId, @RequestBody List<Long> disorderIds) {
         disorderService.removeDisordersFromPatient(userId, disorderIds);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

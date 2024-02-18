@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> getAllByAssignedToUser(User patient);
+
+    List<Task> getAllByAssignedByUser(User patient);
 }

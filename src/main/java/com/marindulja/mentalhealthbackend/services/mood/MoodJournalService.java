@@ -9,7 +9,7 @@ import java.util.List;
 public interface MoodJournalService {
     MoodJournalDto createMoodEntry(MoodJournalDto moodEntryDTO);
 
-    List<MoodJournalDto> getMoodJournalsByTherapist(Long therapistId);
+    List<MoodJournalDto> getMoodJournalsByTherapist();
 
     List<MoodJournalDto> getMoodJournalsByPatient(Long userId);
 

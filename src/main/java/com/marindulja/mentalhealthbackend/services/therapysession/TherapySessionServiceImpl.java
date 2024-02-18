@@ -65,7 +65,8 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
     @Override
     public TherapySessionDto updatePatientNotes(Long therapySessionId, TherapySessionDto therapySessionDto) {
-        TherapySession existingTherapySession = therapySessionRepository.findById(therapySessionId).orElseThrow(() -> new EntityNotFoundException("TherapySession with id " + therapySessionId + "not found"));
+        TherapySession existingTherapySession = therapySessionRepository.findById(therapySessionId).orElseThrow(() ->
+                new EntityNotFoundException("TherapySession with id " + therapySessionId + " not found"));
         existingTherapySession.setPatientNotes(therapySessionDto.getPatientNotes());
         therapySessionRepository.save(existingTherapySession);
         return mapToDTO(existingTherapySession);
