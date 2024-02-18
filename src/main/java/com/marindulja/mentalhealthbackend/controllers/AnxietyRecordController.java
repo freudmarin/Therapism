@@ -24,21 +24,21 @@ public class AnxietyRecordController {
     @PostMapping("current-user/register-anxiety")
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<UserProfileWithUserDto> registerAnxietyLevels(@RequestBody AnxietyRecordDto anxietyRecordDto) {
-        UserProfileWithUserDto userProfileDto = anxietyRecordService.registerAnxietyLevels(anxietyRecordDto);
+        final var userProfileDto = anxietyRecordService.registerAnxietyLevels(anxietyRecordDto);
         return new ResponseEntity<>(userProfileDto, HttpStatus.OK);
     }
 
     @GetMapping("current-user")
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<List<AnxietyRecordDto>> getAllRecordsOfCurrentUser() {
-        List<AnxietyRecordDto> anxietyRecords = anxietyRecordService.getAllOfCurrentUser();
+        final var anxietyRecords = anxietyRecordService.getAllOfCurrentUser();
         return new ResponseEntity<>(anxietyRecords, HttpStatus.OK);
     }
 
     @GetMapping("{patientId}")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> viewPatientAnxietyLevels(@PathVariable(name = "patientId") Long patientId) {
-        List<AnxietyRecordDto> anxietyRecordsList = anxietyRecordService.viewPatientAnxietyLevels(patientId);
-        return new ResponseEntity<>(anxietyRecordsList,HttpStatus.OK);
+        final var anxietyRecordsList = anxietyRecordService.viewPatientAnxietyLevels(patientId);
+        return new ResponseEntity<>(anxietyRecordsList, HttpStatus.OK);
     }
 }

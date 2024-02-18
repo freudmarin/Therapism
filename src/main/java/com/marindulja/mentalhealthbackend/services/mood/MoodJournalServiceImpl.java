@@ -6,8 +6,6 @@ import com.marindulja.mentalhealthbackend.dtos.MoodTrendDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.MoodJournal;
 import com.marindulja.mentalhealthbackend.models.Role;
-import com.marindulja.mentalhealthbackend.models.User;
-import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.MoodJournalRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
@@ -40,7 +38,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
 
     public MoodJournalDto createMoodEntry(MoodJournalDto moodEntryDTO) {
-        MoodJournal moodJournalEntry = mapToEntity(moodEntryDTO);
+        final var moodJournalEntry = mapToEntity(moodEntryDTO);
         // Update mood entry fields
         moodJournalEntry.setUser(profileRepository.findById(Utilities.getCurrentUser().get().getId()).get());
         // Update other fields as needed
@@ -50,20 +48,20 @@ public class MoodJournalServiceImpl implements MoodJournalService {
     }
 
     public List<MoodJournalDto> getMoodJournalsByPatient(Long userId) {
-        User currentUser = Utilities.getCurrentUser().get();
-        if(currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
+        final var currentUser = Utilities.getCurrentUser().get();
+        if (currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
             throw new UnauthorizedException("Patient can view only his/her mood journal entries");
         else if (currentUser.getRole() == Role.THERAPIST && !patientBelongsToTherapist(userId))
             throw new UnauthorizedException("Therapist can view only his/her patient's mood journal");
-            List<MoodJournal> moodEntries = moodJournalRepository.findAllByUserId(userId);
+        final var moodEntries = moodJournalRepository.findAllByUserId(userId);
         return moodEntries.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<MoodJournalDto> getMoodJournalsByTherapist() {
-        User therapist = userRepository.findById(Utilities.getCurrentUser().get().getId()).get();
-        List<User> patients =  userRepository.findAllByTherapist(therapist);
+        final var therapist = userRepository.findById(Utilities.getCurrentUser().get().getId()).get();
+        final var patients = userRepository.findAllByTherapist(therapist);
         return patients.stream()
                 .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId())
                         .stream()
@@ -74,10 +72,10 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     public MoodJournalDto updateMoodJournal(Long moodEntryId, MoodJournalDto updatedMoodJournalDTO) {
         // Check if the mood entry with the given ID exists
-        MoodJournal existingMoodEntry = moodJournalRepository.findById(moodEntryId)
+        final var existingMoodEntry = moodJournalRepository.findById(moodEntryId)
                 .orElseThrow(() -> new EntityNotFoundException("MoodEntry with id :" + moodEntryId + "not found"));
 
-        MoodJournal updatedMoodJournal = this.mapToEntity(updatedMoodJournalDTO);
+        final var updatedMoodJournal = this.mapToEntity(updatedMoodJournalDTO);
         // Update mood entry fields
         existingMoodEntry.setEntryDate(updatedMoodJournal.getEntryDate());
         existingMoodEntry.setMoodLevel(updatedMoodJournal.getMoodLevel());
@@ -91,15 +89,15 @@ public class MoodJournalServiceImpl implements MoodJournalService {
     }
 
     public List<MoodTrendDto> getMoodTrends(Long userId, ChronoUnit interval) {
-        User currentUser = Utilities.getCurrentUser().get();
-        if(currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
+        final var currentUser = Utilities.getCurrentUser().get();
+        if (currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
             throw new UnauthorizedException("Patient can view only his/her mood journal trends");
         else if (currentUser.getRole() == Role.THERAPIST && !patientBelongsToTherapist(userId))
             throw new UnauthorizedException("Therapist can view only his/her patient's mood trends");
 
 
         // Fetch mood entries for the user
-        List<MoodJournal> moodEntries = moodJournalRepository.findAllByUserId(userId);
+        final var moodEntries = moodJournalRepository.findAllByUserId(userId);
 
         // Calculate aggregated mood trends based on the specified time interval
         return calculateMoodTrends(moodEntries, interval);
@@ -107,7 +105,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     private List<MoodTrendDto> calculateMoodTrends(List<MoodJournal> moodJournals, ChronoUnit interval) {
         // Group mood entries by date based on the specified interval
-        Map<LocalDate, List<MoodJournal>> groupedEntries = moodJournals.stream()
+        final Map<LocalDate, List<MoodJournal>> groupedEntries = moodJournals.stream()
                 .collect(Collectors.groupingBy(entry -> truncateDate(entry.getEntryDate(), interval)));
 
         // Calculate average mood level for each date
@@ -128,29 +126,28 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     private LocalDate truncateDate(LocalDateTime dateTime, ChronoUnit interval) {
         // Truncate date based on the specified interval
-        switch (interval) {
-            case DAYS:
-                return dateTime.toLocalDate();
-            case WEEKS:
-                return dateTime.truncatedTo(ChronoUnit.WEEKS).toLocalDate();
-            case MONTHS:
-                return dateTime.withDayOfMonth(1).toLocalDate();
-            default:
-                throw new IllegalArgumentException("Unsupported time interval");
-        }
+        return switch (interval) {
+            case DAYS -> dateTime.toLocalDate();
+            case WEEKS -> dateTime.truncatedTo(ChronoUnit.WEEKS).toLocalDate();
+            case MONTHS -> dateTime.withDayOfMonth(1).toLocalDate();
+            default -> throw new IllegalArgumentException("Unsupported time interval");
+        };
     }
 
     private Double calculateAverageMoodLevel(List<MoodJournal> entries) {
         // Extract mood levels from the list of MoodEntry objects and calculate the average
-        return entries.stream()
+        final var average = entries.stream()
                 .mapToDouble(MoodJournal::getMoodLevel)
                 .average()
                 .orElse(0.0);  // Default to 0 if there are no entries or average cannot be calculated
+
+        // Format the result to have 2 digits after the decimal point
+        return Double.parseDouble(String.format("%.2f", average)); // Default to 0 if there are no entries or average cannot be calculated
     }
 
     @Override
     public void deleteMoodEntry(Long therapyId) {
-        MoodJournal moodEntry = moodJournalRepository.findById(therapyId).orElseThrow(() -> new EntityNotFoundException("MoodEntry with id " + therapyId + "not found"));
+        final var moodEntry = moodJournalRepository.findById(therapyId).orElseThrow(() -> new EntityNotFoundException("MoodEntry with id " + therapyId + "not found"));
         moodEntry.setDeleted(true);
         moodJournalRepository.save(moodEntry);
     }
@@ -164,10 +161,10 @@ public class MoodJournalServiceImpl implements MoodJournalService {
     }
 
     private boolean patientBelongsToTherapist(Long patientId) {
-        User therapist = Utilities.getCurrentUser().get();
+        final var therapist = Utilities.getCurrentUser().get();
 
 
-        UserProfile patientProfile = profileRepository.findByUserId(patientId)
+        final var patientProfile = profileRepository.findByUserId(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + " not found"));
 
         if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {

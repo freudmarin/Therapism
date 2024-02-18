@@ -4,7 +4,6 @@ import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Disorder;
-import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.DisorderRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
@@ -12,6 +11,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,9 +36,8 @@ public class DisorderServiceImpl implements DisorderService {
 
     public void assignDisordersToUser(Long userId, List<Long> disorderIds) {
         //even the therapist can be a patient
-        UserProfile patientProfile = getPatientProfileIfBelongsToTherapist(userId);
-
-        List<Disorder> disorders = disorderRepository.findAllById(disorderIds);
+        final var patientProfile = getPatientProfileIfBelongsToTherapist(userId);
+        final var disorders = disorderRepository.findAllById(disorderIds);
 
         if (disorders.size() != disorderIds.size()) {
             // handle cases where some disorder IDs are invalid
@@ -48,24 +48,23 @@ public class DisorderServiceImpl implements DisorderService {
         userProfileRepository.save(patientProfile);
     }
 
-    public void updateDisordersToUser(Long patientId, List<Long> disorderIds) {
-        UserProfile patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
-
-        List<Disorder> newDisorders = disorderRepository.findAllById(disorderIds);
+    public void updateDisordersToUser(Long patientId, Collection<Long> disorderIds) {
+        final var patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
+        final var newDisorders = disorderRepository.findAllById(new HashSet<>(disorderIds));
 
         if (newDisorders.size() != disorderIds.size()) {
             throw new IllegalArgumentException("Some disorders IDs are invalid");
         }
 
-        List<Disorder> currentDisordersList = patientProfile.getDisorders();
+        final var currentDisordersList = patientProfile.getDisorders();
 
         // Filter out medications from current list that are not in the new list
-        List<Disorder> retainedDisorders = currentDisordersList.stream()
+        final var retainedDisorders = currentDisordersList.stream()
                 .filter(newDisorders::contains)
                 .collect(Collectors.toList());
 
         // Get medications from the new list that are not in the current list
-        List<Disorder> disordersToAdd = newDisorders.stream()
+        final var disordersToAdd = newDisorders.stream()
                 .filter(medication -> !retainedDisorders.contains(medication))
                 .toList();
 
@@ -79,9 +78,9 @@ public class DisorderServiceImpl implements DisorderService {
     }
 
     public void removeDisordersFromPatient(Long patientId, List<Long> disorderIds) {
-        UserProfile patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
+        final var patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
 
-        List<Disorder> disorders = disorderRepository.findAllById(disorderIds);
+        final var disorders = disorderRepository.findAllById(disorderIds);
         if (disorders.size() != disorderIds.size()) {
             // handle cases where some disorder IDs are invalid
             throw new IllegalArgumentException("Some disorder IDs are invalid");
@@ -91,10 +90,8 @@ public class DisorderServiceImpl implements DisorderService {
     }
 
     private UserProfile getPatientProfileIfBelongsToTherapist(Long userId) {
-        User therapist = Utilities.getCurrentUser().get();
-
-
-        UserProfile patientProfile = userProfileRepository.findByUserId(userId)
+        final var therapist = Utilities.getCurrentUser().get();
+        final var patientProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + userId + "not found"));
 
         if (patientProfile.getUser().getTherapist() == null ||

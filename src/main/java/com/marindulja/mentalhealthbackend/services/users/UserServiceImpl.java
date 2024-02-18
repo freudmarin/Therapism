@@ -44,9 +44,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void assignPatientsToTherapist(List<Long> userIds, Long therapistId) {
-        User currentUser = Utilities.getCurrentUser().get();
-        User therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
-        List<User> patients = userRepository.findAllById(userIds);
+        final var currentUser = Utilities.getCurrentUser().get();
+        final var therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
+        final var patients = userRepository.findAllById(userIds);
         if (currentUser.getRole() == Role.ADMIN) {
             assignTherapistToPatients(therapist, patients);
         } else if (currentUser.getRole() == THERAPIST && currentUser.getId() == therapistId) {
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto update(Long id, UserDto userDto) throws InvalidInputException {
-        User currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
+        final var currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
         if (!currentUser.getId().equals(id)) {
             throw new InvalidInputException("The user can update only his profile");
         }
@@ -99,8 +99,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteById(Long id) {
-        User currentUser = Utilities.getCurrentUser().get();
-        User userToBeDeleted = userRepository.findById(id)
+        final var currentUser = Utilities.getCurrentUser().get();
+        final var userToBeDeleted = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with id "
                         + id + " not found"));
 
@@ -116,7 +116,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void deleteUserById(Long id) {
-        User user = userRepository.findById(id)
+        final var user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with id"
                         + id + " not found"));
         user.setDeleted(true);
@@ -129,8 +129,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> findAllByRoleFilteredAndSorted(String searchValue) {
-        System.out.println("UserService called");
-        User currentUser = Utilities.getCurrentUser().get();
+        final var currentUser = Utilities.getCurrentUser().get();
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
         if (currentUser.getRole() == Role.SUPERADMIN) {
             spec = spec.and(new UserSpecification(Arrays.asList(Role.SUPERADMIN, Role.ADMIN, Role.PATIENT, Role.THERAPIST), searchValue));
@@ -145,7 +144,7 @@ public class UserServiceImpl implements UserService {
             spec = spec.and(new UserSpecification(List.of(Role.PATIENT), searchValue));
         }
 
-        List<User> userListResult = userRepository.findAll(spec);
+        final var userListResult = userRepository.findAll(spec);
         if (currentUser.getRole() == THERAPIST) {
             userListResult.stream().filter(u -> u.getTherapist() == currentUser).collect(Collectors.toList());
         }

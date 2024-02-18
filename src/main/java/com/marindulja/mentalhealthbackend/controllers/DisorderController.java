@@ -22,7 +22,7 @@ public class DisorderController {
     @GetMapping("all")
     @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT', 'ADMIN', 'SUPERADMIN')")
     public ResponseEntity<List<DisorderDto>> getAllDisorders() {
-       List<DisorderDto> allDisorders = disorderService.getAllDisorders();
+       var allDisorders = disorderService.getAllDisorders();
         return new ResponseEntity<>(allDisorders, HttpStatus.OK);
     }
     @PutMapping("users/{userId}/assignDisorders")

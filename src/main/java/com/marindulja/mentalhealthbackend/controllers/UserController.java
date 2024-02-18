@@ -37,14 +37,14 @@ public class UserController {
     @PutMapping("{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN','THERAPIST', 'PATIENT')")
     public ResponseEntity<?> updateUser(@PathVariable("userId") Long userId, @RequestBody UserDto userDto) {
-        UserDto savedUser = userService.update(userId, userDto);
+        final var savedUser = userService.update(userId, userDto);
         return new ResponseEntity<>(savedUser, HttpStatus.OK);
     }
 
     @GetMapping("{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST', 'PATIENT')")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        UserDto user = userService.findById(id);
+        final var user = userService.findById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
@@ -59,21 +59,21 @@ public class UserController {
     @GetMapping("/{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
     public ResponseEntity<UserProfileWithUserDto> getUserProfileById(@PathVariable Long id) {
-        UserProfileWithUserDto profile = userProfileService.findByUserId(id);
+        final var profile = userProfileService.findByUserId(id);
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
     @PutMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
     public ResponseEntity<UserProfileDto> updateUserProfile(@PathVariable Long id, @RequestBody UserProfileCreationOrUpdateDto updatedProfile) {
-        UserProfileDto profile = userProfileService.updateProfile(id, updatedProfile);
+        final var profile = userProfileService.updateProfile(id, updatedProfile);
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
     @PostMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','THERAPIST','PATIENT')")
     public ResponseEntity<UserProfileDto> createUserProfile(@PathVariable Long id, @RequestBody UserProfileCreationOrUpdateDto userProfileCreationDto) {
-        UserProfileDto profile = userProfileService.createProfile(id, userProfileCreationDto);
+        final var profile = userProfileService.createProfile(id, userProfileCreationDto);
         return new ResponseEntity<>(profile, HttpStatus.CREATED);
     }
 

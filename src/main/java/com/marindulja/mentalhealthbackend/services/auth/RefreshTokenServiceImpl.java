@@ -20,7 +20,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     public RefreshToken generateRefreshToken(User user) {
-        RefreshToken refreshToken = new RefreshToken();
+        var refreshToken = new RefreshToken();
         refreshToken.setUser(user);
         refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7)); // e.g., 7 days validity
         refreshToken.setToken(UUID.randomUUID().toString());

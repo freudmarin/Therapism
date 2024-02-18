@@ -19,14 +19,14 @@ public class TherapyController {
     @PostMapping("patient/{patientId}/create")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> createTherapySession(@PathVariable Long patientId, @RequestBody TherapySessionDto request) {
-        TherapySessionDto createdTherapySession = therapySessionService.createTherapySession(patientId, request);
+        var createdTherapySession = therapySessionService.createTherapySession(patientId, request);
         return new ResponseEntity<>(createdTherapySession, HttpStatus.CREATED);
     }
 
     @PutMapping("therapy/{therapyId}/patient/{patientId}")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> updateExistingTherapySession(@PathVariable Long therapyId, @PathVariable Long patientId, @RequestBody TherapySessionDto request) {
-        TherapySessionDto updatedTherapySession = therapySessionService.updateTherapySession(patientId, therapyId, request);
+        var updatedTherapySession = therapySessionService.updateTherapySession(patientId, therapyId, request);
         return new ResponseEntity<>(updatedTherapySession, HttpStatus.OK);
     }
 

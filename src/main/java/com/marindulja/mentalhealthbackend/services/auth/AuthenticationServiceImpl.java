@@ -26,11 +26,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public JwtAuthenticationResponse signUp(SignUpRequest request) {
-        var user = User.builder().username(request.getUsername())
+        final var user = User.builder().username(request.getUsername())
                 .email(request.getEmail()).password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole()).build();
         userRepository.save(user);
-        var jwt = jwtService.generateToken(user);
+        final var jwt = jwtService.generateToken(user);
         return JwtAuthenticationResponse.builder().username(user.getUsername()).role(user.getRole()).token(jwt).build();
     }
 
@@ -38,11 +38,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public JwtAuthenticationResponse signIn(SignInRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        var user = userRepository.findByEmail(request.getEmail())
+        final var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
         refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
-        var jwt = jwtService.generateToken(user);
-        var refreshToken = refreshTokenService.generateRefreshToken(user);
+        final var jwt = jwtService.generateToken(user);
+        final var refreshToken = refreshTokenService.generateRefreshToken(user);
         return JwtAuthenticationResponse.builder().username(user.getUsername()).role(user.getRole()).token(jwt)
                 .refreshToken(refreshToken.getToken()).build();
     }

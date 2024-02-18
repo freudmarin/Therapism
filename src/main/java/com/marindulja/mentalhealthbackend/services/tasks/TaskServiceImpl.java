@@ -7,8 +7,6 @@ import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Task;
 import com.marindulja.mentalhealthbackend.models.TaskStatus;
-import com.marindulja.mentalhealthbackend.models.User;
-import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TaskRepository;
 import io.micrometer.common.util.StringUtils;
@@ -34,13 +32,13 @@ public class TaskServiceImpl implements TaskService {
     }
     @Override
     public List<AssignedTaskDto> allTasksAssignedToPatient() {
-        List<Task> allTasksAssignedToPatient = taskRepository.getAllByAssignedToUser(Utilities.getCurrentUser().get());
+        final var allTasksAssignedToPatient = taskRepository.getAllByAssignedToUser(Utilities.getCurrentUser().get());
         return allTasksAssignedToPatient.stream().map(this::mapToAssignedTaskDto).collect(Collectors.toList());
     }
 
     @Override
     public List<AssignedTaskDto> allTasksAssignedByTherapist() {
-        List<Task> allTasksAssignedToPatient = taskRepository.getAllByAssignedByUser(Utilities.getCurrentUser().get());
+        final var allTasksAssignedToPatient = taskRepository.getAllByAssignedByUser(Utilities.getCurrentUser().get());
         return allTasksAssignedToPatient.stream().map(this::mapToAssignedTaskDto).collect(Collectors.toList());
     }
 
@@ -51,7 +49,7 @@ public class TaskServiceImpl implements TaskService {
             if (StringUtils.isBlank(taskDto.getDescription())) {
                 throw new InvalidInputException("Task description cannot be null or empty");
             }
-            Task taskToBeAssigned = mapToEntity(taskDto);
+            final var taskToBeAssigned = mapToEntity(taskDto);
             taskToBeAssigned.setAssignedByUser(Utilities.getCurrentUser().get());
             taskToBeAssigned.setAssignedToUser(userProfileRepository.findByUserId(patientId).get().getUser());
             taskToBeAssigned.setStatus(TaskStatus.ASSIGNED);
@@ -65,7 +63,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public AssignedTaskDto updatePatientTask(Long patientId, Long taskId, TaskDto taskDto) {
         if (patientBelongsToTherapist(patientId)) {
-            Task existingTask = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task with id " + taskId + "not found"));
+            final var existingTask = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task with id " + taskId + "not found"));
             existingTask.setAssignedByUser(Utilities.getCurrentUser().get());
             existingTask.setAssignedToUser(userProfileRepository.findByUserId(patientId).get().getUser());
             existingTask.setDescription(taskDto.getDescription());
@@ -78,7 +76,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public AssignedTaskDto changeTaskStatus(Long taskId, TaskStatus newTaskStatus) {
-        Task existingTask = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task with id " + taskId + "not found"));
+        final var existingTask = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task with id " + taskId + "not found"));
         if (newTaskStatus.equals(TaskStatus.IN_PROGRESS) || newTaskStatus.equals(TaskStatus.COMPLETED)) {
             existingTask.setStatus(newTaskStatus);
             taskRepository.save(existingTask);
@@ -88,10 +86,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private boolean patientBelongsToTherapist(Long patientId) {
-        User therapist = Utilities.getCurrentUser().get();
-
-
-        UserProfile patientProfile = userProfileRepository.findByUserId(patientId)
+        final var therapist = Utilities.getCurrentUser().get();
+        final var patientProfile = userProfileRepository.findByUserId(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + " not found"));
 
         if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {

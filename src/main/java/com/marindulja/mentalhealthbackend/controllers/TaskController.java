@@ -23,35 +23,35 @@ public class TaskController {
     @GetMapping("all/patient")
     @PreAuthorize("hasAnyRole('PATIENT')")
     public ResponseEntity<List<AssignedTaskDto>> getAllTasksAssignedToPatient() {
-        List<AssignedTaskDto> allTasksAssignedToPatient = taskService.allTasksAssignedToPatient();
+        final var allTasksAssignedToPatient = taskService.allTasksAssignedToPatient();
         return new ResponseEntity<>(allTasksAssignedToPatient, HttpStatus.OK);
     }
 
     @GetMapping("all/therapist")
     @PreAuthorize("hasAnyRole('THERAPIST')")
     public ResponseEntity<List<AssignedTaskDto>> getAllTasksAssignedByTherapist() {
-        List<AssignedTaskDto> allTasksAssignedByTherapist = taskService.allTasksAssignedByTherapist();
+        final var allTasksAssignedByTherapist = taskService.allTasksAssignedByTherapist();
         return new ResponseEntity<>(allTasksAssignedByTherapist, HttpStatus.OK);
     }
 
     @PutMapping("users/{userId}/assignTask")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> assignTaskToUser(@PathVariable Long userId, @RequestBody TaskDto request) {
-        AssignedTaskDto assignedTask = taskService.assignTaskToUser(userId, request);
+        final var assignedTask = taskService.assignTaskToUser(userId, request);
         return new ResponseEntity<>(assignedTask, HttpStatus.OK);
     }
 
     @PutMapping("users/{userId}/updateTask/{taskId}")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> updateExistingTask(@PathVariable Long userId, @PathVariable Long taskId, @RequestBody TaskDto request) {
-        AssignedTaskDto updatedTask = taskService.updatePatientTask(userId, taskId, request);
+        final var updatedTask = taskService.updatePatientTask(userId, taskId, request);
         return new ResponseEntity<>(updatedTask, HttpStatus.OK);
     }
 
     @PatchMapping("{taskId}/status")
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<?> updateTaskStatus(@PathVariable Long taskId, @RequestBody TaskDto taskDtoStatusUpdate) {
-        AssignedTaskDto assignedTaskDto = taskService.changeTaskStatus(taskId, taskDtoStatusUpdate.getStatus());
+        final var assignedTaskDto = taskService.changeTaskStatus(taskId, taskDtoStatusUpdate.getStatus());
         return new ResponseEntity<>(assignedTaskDto, HttpStatus.OK);
     }
 }

@@ -24,27 +24,27 @@ public class MoodJournalController {
     @PreAuthorize("hasRole('PATIENT')")
     @PostMapping
     public ResponseEntity<MoodJournalDto> createMoodEntry(@RequestBody MoodJournalDto moodEntryDto) {
-        MoodJournalDto createdMoodEntry = moodEntryService.createMoodEntry(moodEntryDto);
+        final var createdMoodEntry = moodEntryService.createMoodEntry(moodEntryDto);
         return new ResponseEntity<>(createdMoodEntry, HttpStatus.CREATED);
     }
     @PreAuthorize("hasAnyRole('THERAPIST','PATIENT')")
     @GetMapping("patients/{userId}")
     public ResponseEntity<List<MoodJournalDto>> getMoodJournalsByPatient(@PathVariable Long userId) {
-        List<MoodJournalDto> moodEntries = moodEntryService.getMoodJournalsByPatient(userId);
+        final var moodEntries = moodEntryService.getMoodJournalsByPatient(userId);
         return new ResponseEntity<>(moodEntries, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('THERAPIST')")
     @GetMapping("therapists/{therapistId}")
     public ResponseEntity<List<MoodJournalDto>> getMoodJournalsByTherapist() {
-        List<MoodJournalDto> moodEntries = moodEntryService.getMoodJournalsByTherapist();
+        final var moodEntries = moodEntryService.getMoodJournalsByTherapist();
         return new ResponseEntity<>(moodEntries, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('PATIENT')")
     @PutMapping("{moodJournalId}")
     public ResponseEntity<MoodJournalDto> updateMoodJournal(@PathVariable Long moodJournalId, @RequestBody MoodJournalDto updatedMoodJournalDto) {
-        MoodJournalDto updatedMoodEntry = moodEntryService.updateMoodJournal(moodJournalId, updatedMoodJournalDto);
+        final var updatedMoodEntry = moodEntryService.updateMoodJournal(moodJournalId, updatedMoodJournalDto);
         return new ResponseEntity<>(updatedMoodEntry, HttpStatus.OK);
     }
 
@@ -58,7 +58,7 @@ public class MoodJournalController {
     @PreAuthorize("hasAnyRole('PATIENT', 'THERAPIST')")
     @GetMapping("trends/{userId}")
     public ResponseEntity<List<MoodTrendDto>> getMoodTrends(@PathVariable Long userId, @RequestParam ChronoUnit interval) {
-        List<MoodTrendDto> moodTrends = moodEntryService.getMoodTrends(userId, interval);
-        return ResponseEntity.ok(moodTrends);
+        final var moodTrends = moodEntryService.getMoodTrends(userId, interval);
+        return new ResponseEntity<>(moodTrends, HttpStatus.OK);
     }
 }

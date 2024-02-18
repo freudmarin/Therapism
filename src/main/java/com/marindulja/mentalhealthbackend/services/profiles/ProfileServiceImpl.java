@@ -29,20 +29,20 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public UserProfileDto createProfile(Long userId, UserProfileCreationOrUpdateDto userProfileCreationDto) {
-        User cUser = Utilities.getCurrentUser().get();
+        final var cUser = Utilities.getCurrentUser().get();
 
         if(!userId.equals(cUser.getId())) {
             throw new UnauthorizedException("User with id " + cUser.getId() + " not authorized to create profile for user with id " + userId);
         }
 
-        User currentUser = userRepository.findById(cUser.getId())
+        final var currentUser = userRepository.findById(cUser.getId())
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found."));
 
 
-        UserProfile newUserProfile = mapUserProfileCreationDtoToEntity(userProfileCreationDto);
+        final var newUserProfile = mapUserProfileCreationDtoToEntity(userProfileCreationDto);
         newUserProfile.setUser(currentUser);
         // Save the UserProfile
-        UserProfile savedUserProfile = userProfileRepository.save(newUserProfile);
+        final var savedUserProfile = userProfileRepository.save(newUserProfile);
         // Map the saved UserProfile to DTO and return
         return mapToDTO(savedUserProfile);
     }
@@ -50,13 +50,13 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public UserProfileDto updateProfile(Long userId, UserProfileCreationOrUpdateDto userProfileCreationOrUpdateDto) {
 
-        User currentUser = Utilities.getCurrentUser().get();
+        final var currentUser = Utilities.getCurrentUser().get();
 
         if(!userId.equals(currentUser.getId())) {
             throw new UnauthorizedException("User with id " + currentUser.getId() + " not authorized to update user with id " + userId);
         }
 
-        UserProfile existingProfile = userProfileRepository.findByUserId(userId)
+        final var existingProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
         existingProfile.setPhoneNumber(userProfileCreationOrUpdateDto.getPhoneNumber());
         existingProfile.setGender(userProfileCreationOrUpdateDto.getGender());
@@ -67,10 +67,10 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public UserProfileWithUserDto findByUserId(Long userId) {
 
-        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+        final var userProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
 
-        UserDto userDto = mapToUserDTO(userProfile.getUser());
+        final var userDto = mapToUserDTO(userProfile.getUser());
 
         UserProfileWithUserDto userProfileWithUserDto = new UserProfileWithUserDto();
         userProfileWithUserDto.setProfileId(userProfile.getId());
