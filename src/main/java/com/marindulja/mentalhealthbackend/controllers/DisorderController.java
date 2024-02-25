@@ -22,9 +22,10 @@ public class DisorderController {
     @GetMapping("all")
     @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT', 'ADMIN', 'SUPERADMIN')")
     public ResponseEntity<List<DisorderDto>> getAllDisorders() {
-       var allDisorders = disorderService.getAllDisorders();
+        var allDisorders = disorderService.getAllDisorders();
         return new ResponseEntity<>(allDisorders, HttpStatus.OK);
     }
+
     @PutMapping("users/{userId}/assignDisorders")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> assignDisordersToUser(@PathVariable Long userId, @RequestBody List<Long> disorderIds) {

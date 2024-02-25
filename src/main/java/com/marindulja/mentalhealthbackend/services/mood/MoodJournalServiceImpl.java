@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,7 +50,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         final var currentUser = Utilities.getCurrentUser().get();
         if (currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
             throw new UnauthorizedException("Patient can view only his/her mood journal entries");
-        else if (currentUser.getRole() == Role.THERAPIST && !patientBelongsToTherapist(userId))
+        else if (currentUser.getRole() == Role.THERAPIST && !Utilities.patientBelongsToTherapist(userId, profileRepository))
             throw new UnauthorizedException("Therapist can view only his/her patient's mood journal");
         final var moodEntries = moodJournalRepository.findAllByUserId(userId);
         return moodEntries.stream()
@@ -92,9 +91,8 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         final var currentUser = Utilities.getCurrentUser().get();
         if (currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
             throw new UnauthorizedException("Patient can view only his/her mood journal trends");
-        else if (currentUser.getRole() == Role.THERAPIST && !patientBelongsToTherapist(userId))
+        else if (currentUser.getRole() == Role.THERAPIST && !Utilities.patientBelongsToTherapist(userId, profileRepository))
             throw new UnauthorizedException("Therapist can view only his/her patient's mood trends");
-
 
         // Fetch mood entries for the user
         final var moodEntries = moodJournalRepository.findAllByUserId(userId);
@@ -105,7 +103,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     private List<MoodTrendDto> calculateMoodTrends(List<MoodJournal> moodJournals, ChronoUnit interval) {
         // Group mood entries by date based on the specified interval
-        final Map<LocalDate, List<MoodJournal>> groupedEntries = moodJournals.stream()
+        final var groupedEntries = moodJournals.stream()
                 .collect(Collectors.groupingBy(entry -> truncateDate(entry.getEntryDate(), interval)));
 
         // Calculate average mood level for each date
@@ -114,11 +112,9 @@ public class MoodJournalServiceImpl implements MoodJournalService {
                     LocalDate date = entry.getKey();
                     List<MoodJournal> entriesForDate = entry.getValue();
                     Double averageMoodLevel = calculateAverageMoodLevel(entriesForDate);
-
                     MoodTrendDto trendDTO = new MoodTrendDto();
                     trendDTO.setDate(date);
                     trendDTO.setAverageMoodLevel(averageMoodLevel);
-
                     return trendDTO;
                 })
                 .collect(Collectors.toList());
@@ -158,18 +154,5 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     private MoodJournal mapToEntity(MoodJournalDto moodEntryDto) {
         return mapper.map(moodEntryDto, MoodJournal.class);
-    }
-
-    private boolean patientBelongsToTherapist(Long patientId) {
-        final var therapist = Utilities.getCurrentUser().get();
-
-
-        final var patientProfile = profileRepository.findByUserId(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + " not found"));
-
-        if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-            throw new UnauthorizedException("The patient with id " + patientId + " is not the patient of the therapist with id " + therapist.getId());
-        }
-        return true;
     }
 }

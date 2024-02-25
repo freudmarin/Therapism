@@ -2,7 +2,6 @@ package com.marindulja.mentalhealthbackend.services.therapysession;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionDto;
-import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.TherapySession;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TherapySessionRepository;
@@ -35,7 +34,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
     @Override
     public TherapySessionDto createTherapySession(Long patientId, TherapySessionDto therapySessionDto) {
-        if (patientBelongsToTherapist(patientId)) {
+        if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository)) {
             final var newTherapySession = mapToEntity(therapySessionDto);
             newTherapySession.setTherapist(Utilities.getCurrentUser().get());
             newTherapySession.setPatient(userProfileRepository.findByUserId(patientId).get().getUser());
@@ -49,7 +48,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
     @Override
     public TherapySessionDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionDto therapySessionDto) {
-        if (patientBelongsToTherapist(patientId)) {
+        if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository)) {
             final var existingTherapySession = therapySessionRepository.findById(therapySessionId).orElseThrow(() -> new EntityNotFoundException("TherapySession with id " + therapySessionId + "not found"));
             existingTherapySession.setTherapist(Utilities.getCurrentUser().get());
             existingTherapySession.setPatient(userProfileRepository.findByUserId(patientId).get().getUser());
@@ -76,21 +75,6 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         existingTherapySession.setDeleted(true);
         therapySessionRepository.save(existingTherapySession);
     }
-
-
-    private boolean patientBelongsToTherapist(Long patientId) throws UnauthorizedException {
-        final var therapist = Utilities.getCurrentUser().get();
-
-
-        final var patientProfile = userProfileRepository.findByUserId(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + "not found"));
-
-        if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-            throw new UnauthorizedException("The patient with id " + patientId + " is not the patient of the therapist with id " + therapist.getId());
-        }
-        return true;
-    }
-
 
     private TherapySessionDto mapToDTO(TherapySession therapySession) {
         return mapper.map(therapySession, TherapySessionDto.class);
