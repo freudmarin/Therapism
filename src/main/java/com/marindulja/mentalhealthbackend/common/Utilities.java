@@ -32,4 +32,15 @@ import java.util.Optional;
             }
             return true;
         }
+
+        public static boolean therapistBelongsToPatient(Long therapistId, ProfileRepository userProfileRepository) throws UnauthorizedException {
+            final var patient = Utilities.getCurrentUser().get();
+            final var patientProfile = userProfileRepository.findByUserId(patient.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patient.getId() + "not found"));
+
+            if (patientProfile.getUser().getTherapist() == null || !therapistId.equals(patientProfile.getUser().getTherapist().getId())) {
+                throw new UnauthorizedException("The patient with id " + patient.getId() + " is not the patient of the therapist with id " + therapistId);
+            }
+            return true;
+        }
 }

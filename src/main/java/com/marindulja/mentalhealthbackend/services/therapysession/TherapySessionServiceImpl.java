@@ -2,9 +2,11 @@ package com.marindulja.mentalhealthbackend.services.therapysession;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionDto;
+import com.marindulja.mentalhealthbackend.models.SessionStatus;
 import com.marindulja.mentalhealthbackend.models.TherapySession;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TherapySessionRepository;
+import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -20,10 +22,13 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     private final TherapySessionRepository therapySessionRepository;
 
     private final ProfileRepository userProfileRepository;
+    private final UserRepository userRepository;
 
-    public TherapySessionServiceImpl(TherapySessionRepository therapySessionRepository, ProfileRepository userProfileRepository) {
+    public TherapySessionServiceImpl(TherapySessionRepository therapySessionRepository, ProfileRepository userProfileRepository,
+                                     UserRepository userRepository) {
         this.therapySessionRepository = therapySessionRepository;
         this.userProfileRepository = userProfileRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -33,11 +38,12 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     }
 
     @Override
-    public TherapySessionDto createTherapySession(Long patientId, TherapySessionDto therapySessionDto) {
-        if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository)) {
+    public TherapySessionDto createTherapySession(Long therapistId, TherapySessionDto therapySessionDto) {
+        if (Utilities.therapistBelongsToPatient(therapistId, userProfileRepository)
+                && checkTherapistAvailability(therapySessionDto.getSessionDate())) {
             final var newTherapySession = mapToEntity(therapySessionDto);
-            newTherapySession.setTherapist(Utilities.getCurrentUser().get());
-            newTherapySession.setPatient(userProfileRepository.findByUserId(patientId).get().getUser());
+            newTherapySession.setTherapist(userRepository.findById(therapistId).get());
+            newTherapySession.setPatient(Utilities.getCurrentUser().get());
             newTherapySession.setTherapistNotes(therapySessionDto.getTherapistNotes());
             newTherapySession.setSessionDate(therapySessionDto.getSessionDate());
             therapySessionRepository.save(newTherapySession);
@@ -58,6 +64,20 @@ public class TherapySessionServiceImpl implements TherapySessionService {
             return mapToDTO(existingTherapySession);
         }
         return null;
+    }
+
+    public void acceptSession(Long sessionId) {
+        TherapySession session = therapySessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+        session.setStatus(SessionStatus.SCHEDULED);
+        therapySessionRepository.save(session);
+    }
+
+    public void declineSession(Long sessionId) {
+        TherapySession session = therapySessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+        session.setStatus(SessionStatus.DECLINED);
+        therapySessionRepository.save(session);
     }
 
     @Override
@@ -84,4 +104,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         return mapper.map(therapySessionDto, TherapySession.class);
     }
 
+    private boolean checkTherapistAvailability(LocalDateTime therapySessionTime) {
+        return true;
+    }
 }
