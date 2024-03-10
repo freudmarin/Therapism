@@ -1,11 +1,13 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.TherapySessionDto;
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 import com.marindulja.mentalhealthbackend.services.therapysession.TherapySessionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("api/v1/therapySessions")
@@ -15,17 +17,24 @@ public class TherapyController {
     public TherapyController(TherapySessionService therapySessionService) {
         this.therapySessionService = therapySessionService;
     }
+    @GetMapping("all")
+    @PreAuthorize("hasRole('THERAPIST')")
+    public ResponseEntity<?> getAllSessionsOfTherapist(@RequestParam("from") LocalDateTime from,
+                                                       @RequestParam("to") LocalDateTime to) {
+        var allSessionsOfTherapist = therapySessionService.allSessionsOfTherapist(from, to);
+        return new ResponseEntity<>(allSessionsOfTherapist, HttpStatus.OK);
+    }
 
     @PostMapping("patient/{patientId}/create")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> createTherapySession(@PathVariable Long therapistID, @RequestBody TherapySessionDto request) {
+    public ResponseEntity<?> createTherapySession(@PathVariable Long therapistID, @RequestBody TherapySessionWriteDto request) {
         var createdTherapySession = therapySessionService.createTherapySession(therapistID, request);
         return new ResponseEntity<>(createdTherapySession, HttpStatus.CREATED);
     }
 
     @PutMapping("therapy/{therapyId}/patient/{patientId}")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> updateExistingTherapySession(@PathVariable Long therapyId, @PathVariable Long patientId, @RequestBody TherapySessionDto request) {
+    public ResponseEntity<?> updateExistingTherapySession(@PathVariable Long therapyId, @PathVariable Long patientId, @RequestBody TherapySessionWriteDto request) {
         var updatedTherapySession = therapySessionService.updateTherapySession(patientId, therapyId, request);
         return new ResponseEntity<>(updatedTherapySession, HttpStatus.OK);
     }
@@ -46,7 +55,7 @@ public class TherapyController {
 
     @PatchMapping("{therapyId}")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> updatePatientNotes(@PathVariable Long therapyId, @RequestBody TherapySessionDto therapySessionDto) {
+    public ResponseEntity<?> updatePatientNotes(@PathVariable Long therapyId, @RequestBody TherapySessionWriteDto therapySessionDto) {
         therapySessionService.updatePatientNotes(therapyId, therapySessionDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }

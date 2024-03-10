@@ -1,17 +1,18 @@
 package com.marindulja.mentalhealthbackend.services.therapysession;
 
-import com.marindulja.mentalhealthbackend.dtos.TherapySessionDto;
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TherapySessionService {
-    List<TherapySessionDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end);
-    TherapySessionDto createTherapySession(Long therapistId, TherapySessionDto therapySessionDto);
+    List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end);
+    TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto);
 
-    TherapySessionDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionDto therapySessionDto);
+    TherapySessionReadDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionWriteDto therapySessionDto);
 
-    TherapySessionDto updatePatientNotes(Long therapySessionId, TherapySessionDto therapySessionDto);
+    TherapySessionReadDto updatePatientNotes(Long therapySessionId, TherapySessionWriteDto therapySessionDto);
 
     void acceptSession(Long sessionId);
 

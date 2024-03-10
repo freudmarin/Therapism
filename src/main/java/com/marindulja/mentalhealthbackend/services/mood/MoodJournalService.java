@@ -1,21 +1,22 @@
 package com.marindulja.mentalhealthbackend.services.mood;
 
-import com.marindulja.mentalhealthbackend.dtos.MoodJournalDto;
+import com.marindulja.mentalhealthbackend.dtos.MoodJournalReadDto;
+import com.marindulja.mentalhealthbackend.dtos.MoodJournalWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.MoodTrendDto;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public interface MoodJournalService {
-    MoodJournalDto createMoodEntry(MoodJournalDto moodEntryDTO);
+    MoodJournalReadDto createMoodEntry(MoodJournalWriteDto moodEntryDTO);
 
-    List<MoodJournalDto> getMoodJournalsByTherapist();
+    List<MoodJournalReadDto> getMoodJournalsByTherapist();
 
-    List<MoodJournalDto> getMoodJournalsByPatient(Long userId);
+    List<MoodJournalReadDto> getMoodJournalsByPatient(Long userId);
 
     void deleteMoodEntry(Long moodEntryId);
 
-    MoodJournalDto updateMoodJournal(Long moodEntryId, MoodJournalDto updatedMoodEntryDTO);
+    MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodEntryDTO);
 
     List<MoodTrendDto> getMoodTrends(Long userId, ChronoUnit interval);
 }

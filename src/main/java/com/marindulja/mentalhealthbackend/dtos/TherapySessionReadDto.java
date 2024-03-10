@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class TherapySessionDto {
+public class TherapySessionReadDto {
 
     private Long id;
 

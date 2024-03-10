@@ -1,6 +1,7 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordDto;
+import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordReadDto;
+import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileWithUserDto;
 import com.marindulja.mentalhealthbackend.services.anxiety_records.AnxietyRecordService;
 import org.springframework.http.HttpStatus;
@@ -23,14 +24,14 @@ public class AnxietyRecordController {
 
     @PostMapping("current-user/register-anxiety")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<UserProfileWithUserDto> registerAnxietyLevels(@RequestBody AnxietyRecordDto anxietyRecordDto) {
+    public ResponseEntity<UserProfileWithUserDto> registerAnxietyLevels(@RequestBody AnxietyRecordWriteDto anxietyRecordDto) {
         final var userProfileDto = anxietyRecordService.registerAnxietyLevels(anxietyRecordDto);
         return new ResponseEntity<>(userProfileDto, HttpStatus.OK);
     }
 
     @GetMapping("current-user")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<List<AnxietyRecordDto>> getAllRecordsOfCurrentUser() {
+    public ResponseEntity<List<AnxietyRecordReadDto>> getAllRecordsOfCurrentUser() {
         final var anxietyRecords = anxietyRecordService.getAllOfCurrentUser();
         return new ResponseEntity<>(anxietyRecords, HttpStatus.OK);
     }

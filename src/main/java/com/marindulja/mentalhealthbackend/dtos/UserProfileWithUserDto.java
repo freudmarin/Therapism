@@ -1,7 +1,6 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
 import com.marindulja.mentalhealthbackend.models.Gender;
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,11 +13,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserProfileWithUserDto {
-    @Nullable
     UserReadDto userDto;
     private Long profileId;
     private String phoneNumber;
     private Gender gender;
-    List<AnxietyRecordDto> anxietyRecords;
+    List<AnxietyRecordReadDto> anxietyRecords;
     List<DisorderDto> disorders;
 }

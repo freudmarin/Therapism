@@ -7,13 +7,10 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 @Getter
 @Setter
-public class MoodJournalDto {
-    private Long id;
-    private Long userId;
+public class MoodJournalWriteDto {
     private LocalDateTime entryDate;
     private Integer moodLevel;
     private MoodType moodType;
     private String thoughts;
     private String activities;
-
 }

@@ -16,6 +16,6 @@ public class UserProfileReadDto {
     private Long profileId;
     private String phoneNumber;
     private Gender gender;
-    List<AnxietyRecordDto> anxietyRecords;
+    List<AnxietyRecordReadDto> anxietyRecords;
     List<DisorderDto> disorders;
 }

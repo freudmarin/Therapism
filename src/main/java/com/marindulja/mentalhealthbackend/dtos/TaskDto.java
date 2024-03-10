@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TaskDto {
-
     private String description;
     private TaskStatus status;
 }

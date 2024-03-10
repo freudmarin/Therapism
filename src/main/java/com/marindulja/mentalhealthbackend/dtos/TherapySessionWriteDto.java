@@ -7,8 +7,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class AnxietyRecordDto {
-    private Long id;
-    private Integer anxietyLevel;
-    private LocalDateTime recordDate;
+public class TherapySessionWriteDto {
+    private LocalDateTime sessionDate;
+    private String patientNotes;
+
+    private String therapistNotes;
 }

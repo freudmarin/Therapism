@@ -1,7 +1,8 @@
 package com.marindulja.mentalhealthbackend.services.mood;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.MoodJournalDto;
+import com.marindulja.mentalhealthbackend.dtos.MoodJournalReadDto;
+import com.marindulja.mentalhealthbackend.dtos.MoodJournalWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.MoodTrendDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
@@ -37,17 +38,17 @@ public class MoodJournalServiceImpl implements MoodJournalService {
     }
 
 
-    public MoodJournalDto createMoodEntry(MoodJournalDto moodEntryDTO) {
+    public MoodJournalReadDto createMoodEntry(MoodJournalWriteDto moodEntryDTO) {
         final var moodJournalEntry = mapper.map(moodEntryDTO, MoodJournal.class);
         // Update mood entry fields
         moodJournalEntry.setUser(profileRepository.findById(Utilities.getCurrentUser().get().getId()).get());
         // Update other fields as needed
-        moodJournalEntry.setEntryDate(LocalDateTime.now());
+        moodJournalEntry.setEntryDate(moodEntryDTO.getEntryDate());
         MoodJournal savedMoodEntry = moodJournalRepository.save(moodJournalEntry);
-        return mapper.map(savedMoodEntry, MoodJournalDto.class);
+        return mapper.map(savedMoodEntry, MoodJournalReadDto.class);
     }
 
-    public List<MoodJournalDto> getMoodJournalsByPatient(Long userId) {
+    public List<MoodJournalReadDto> getMoodJournalsByPatient(Long userId) {
         final var currentUser = Utilities.getCurrentUser().get();
         if (currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
             throw new UnauthorizedException("Patient can view only his/her mood journal entries");
@@ -55,22 +56,22 @@ public class MoodJournalServiceImpl implements MoodJournalService {
             throw new UnauthorizedException("Therapist can view only his/her patient's mood journal");
         final var moodEntries = moodJournalRepository.findAllByUserId(userId);
         return moodEntries.stream()
-                .map(moodEntry -> mapper.map(moodEntry, MoodJournalDto.class))
+                .map(moodEntry -> mapper.map(moodEntry, MoodJournalReadDto.class))
                 .collect(Collectors.toList());
     }
 
-    public List<MoodJournalDto> getMoodJournalsByTherapist() {
+    public List<MoodJournalReadDto> getMoodJournalsByTherapist() {
         final var therapist = userRepository.findById(Utilities.getCurrentUser().get().getId()).get();
         final var patients = userRepository.findAllByTherapist(therapist);
         return patients.stream()
                 .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId())
                         .stream()
-                        .map(moodEntry -> mapper.map(moodEntry, MoodJournalDto.class))
+                        .map(moodEntry -> mapper.map(moodEntry, MoodJournalReadDto.class))
                 )
                 .collect(Collectors.toList());
     }
 
-    public MoodJournalDto updateMoodJournal(Long moodEntryId, MoodJournalDto updatedMoodJournalDTO) {
+    public MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodJournalDTO) {
         // Check if the mood entry with the given ID exists
         final var existingMoodEntry = moodJournalRepository.findById(moodEntryId)
                 .orElseThrow(() -> new EntityNotFoundException("MoodEntry with id :" + moodEntryId + "not found"));
@@ -85,7 +86,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         // Update other fields as needed
 
         MoodJournal savedMoodEntry = moodJournalRepository.save(existingMoodEntry);
-        return mapper.map(savedMoodEntry, MoodJournalDto.class);
+        return mapper.map(savedMoodEntry, MoodJournalReadDto.class);
     }
 
     public List<MoodTrendDto> getMoodTrends(Long userId, ChronoUnit interval) {

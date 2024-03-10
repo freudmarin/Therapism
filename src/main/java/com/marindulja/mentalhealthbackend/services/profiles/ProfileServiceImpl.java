@@ -78,7 +78,7 @@ public class ProfileServiceImpl implements ProfileService {
         userProfileWithUserDto.setGender(userProfile.getGender());
         userProfileWithUserDto.setUserDto(userDto);
         userProfileWithUserDto.setDisorders(userProfile.getDisorders().stream().map((element) -> mapper.map(element, DisorderDto.class)).collect(Collectors.toList()));
-        userProfileWithUserDto.setAnxietyRecords(userProfile.getAnxietyRecords().stream().map((element) -> mapper.map(element, AnxietyRecordDto.class)).collect(Collectors.toList()));
+        userProfileWithUserDto.setAnxietyRecords(userProfile.getAnxietyRecords().stream().map((element) -> mapper.map(element, AnxietyRecordReadDto.class)).collect(Collectors.toList()));
         return userProfileWithUserDto;
     }
 }

@@ -1,14 +1,15 @@
 package com.marindulja.mentalhealthbackend.services.anxiety_records;
 
-import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordDto;
+import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordReadDto;
+import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileWithUserDto;
 
 import java.util.List;
 
 public interface AnxietyRecordService {
 
-    UserProfileWithUserDto registerAnxietyLevels(AnxietyRecordDto anxietyRecord);
+    UserProfileWithUserDto registerAnxietyLevels(AnxietyRecordWriteDto anxietyRecord);
 
-    List<AnxietyRecordDto> getAllOfCurrentUser();
-    List<AnxietyRecordDto> viewPatientAnxietyLevels(long patientId);
+    List<AnxietyRecordReadDto> getAllOfCurrentUser();
+    List<AnxietyRecordReadDto> viewPatientAnxietyLevels(long patientId);
 }

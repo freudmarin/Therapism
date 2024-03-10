@@ -1,7 +1,8 @@
 package com.marindulja.mentalhealthbackend.services.therapysession;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.TherapySessionDto;
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.models.SessionStatus;
 import com.marindulja.mentalhealthbackend.models.TherapySession;
@@ -33,28 +34,28 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     }
 
     @Override
-    public List<TherapySessionDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) {
+    public List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) {
         final var allSessionsOfTherapist = therapySessionRepository.getTherapySessionsByTherapistAndSessionDateBetween(Utilities.getCurrentUser().get(), start, end);
-        return allSessionsOfTherapist.stream().map(this::mapToDTO).collect(Collectors.toList());
+        return allSessionsOfTherapist.stream().map(therapySession -> mapper.map(therapySession, TherapySessionReadDto.class)).collect(Collectors.toList());
     }
 
     @Override
-    public TherapySessionDto createTherapySession(Long therapistId, TherapySessionDto therapySessionDto) {
+    public TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto) {
         if (Utilities.therapistBelongsToPatient(therapistId, userProfileRepository)
                 && checkTherapistAvailability(therapySessionDto.getSessionDate())) {
-            final var newTherapySession = mapToEntity(therapySessionDto);
+            final var newTherapySession = mapper.map(therapySessionDto, TherapySession.class);
             newTherapySession.setTherapist(userRepository.findById(therapistId).get());
             newTherapySession.setPatient(Utilities.getCurrentUser().get());
             newTherapySession.setTherapistNotes(therapySessionDto.getTherapistNotes());
             newTherapySession.setSessionDate(therapySessionDto.getSessionDate());
             therapySessionRepository.save(newTherapySession);
-            return mapToDTO(newTherapySession);
+            return mapper.map(newTherapySession, TherapySessionReadDto.class);
         }
         return null;
     }
 
     @Override
-    public TherapySessionDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionDto therapySessionDto) {
+    public TherapySessionReadDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionWriteDto therapySessionDto) {
         if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository)) {
             final var existingTherapySession = therapySessionRepository.findById(therapySessionId).orElseThrow(() -> new EntityNotFoundException("TherapySession with id " + therapySessionId + "not found"));
             existingTherapySession.setTherapist(Utilities.getCurrentUser().get());
@@ -62,7 +63,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
             existingTherapySession.setTherapistNotes(therapySessionDto.getTherapistNotes());
             existingTherapySession.setSessionDate(therapySessionDto.getSessionDate());
             therapySessionRepository.save(existingTherapySession);
-            return mapToDTO(existingTherapySession);
+            return mapper.map(existingTherapySession, TherapySessionReadDto.class);
         }
         return null;
     }
@@ -82,12 +83,12 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     }
 
     @Override
-    public TherapySessionDto updatePatientNotes(Long therapySessionId, TherapySessionDto therapySessionDto) {
+    public TherapySessionReadDto updatePatientNotes(Long therapySessionId, TherapySessionWriteDto therapySessionDto) {
         final var existingTherapySession = therapySessionRepository.findById(therapySessionId).orElseThrow(() ->
                 new EntityNotFoundException("TherapySession with id " + therapySessionId + " not found"));
         existingTherapySession.setPatientNotes(therapySessionDto.getPatientNotes());
         therapySessionRepository.save(existingTherapySession);
-        return mapToDTO(existingTherapySession);
+        return mapper.map(existingTherapySession, TherapySessionReadDto.class);
     }
 
     @Override
@@ -95,14 +96,6 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         final var existingTherapySession = therapySessionRepository.findById(therapyId).orElseThrow(() -> new EntityNotFoundException("TherapySession with id " + therapyId + "not found"));
         existingTherapySession.setDeleted(true);
         therapySessionRepository.save(existingTherapySession);
-    }
-
-    private TherapySessionDto mapToDTO(TherapySession therapySession) {
-        return mapper.map(therapySession, TherapySessionDto.class);
-    }
-
-    private TherapySession mapToEntity(TherapySessionDto therapySessionDto) {
-        return mapper.map(therapySessionDto, TherapySession.class);
     }
 
     private boolean checkTherapistAvailability(LocalDateTime therapySessionTime) {

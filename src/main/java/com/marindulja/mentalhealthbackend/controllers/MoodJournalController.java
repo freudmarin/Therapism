@@ -1,6 +1,7 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.MoodJournalDto;
+import com.marindulja.mentalhealthbackend.dtos.MoodJournalReadDto;
+import com.marindulja.mentalhealthbackend.dtos.MoodJournalWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.MoodTrendDto;
 import com.marindulja.mentalhealthbackend.services.mood.MoodJournalService;
 import org.springframework.http.HttpStatus;
@@ -23,27 +24,27 @@ public class MoodJournalController {
 
     @PreAuthorize("hasRole('PATIENT')")
     @PostMapping
-    public ResponseEntity<MoodJournalDto> createMoodEntry(@RequestBody MoodJournalDto moodEntryDto) {
+    public ResponseEntity<MoodJournalReadDto> createMoodEntry(@RequestBody MoodJournalWriteDto moodEntryDto) {
         final var createdMoodEntry = moodEntryService.createMoodEntry(moodEntryDto);
         return new ResponseEntity<>(createdMoodEntry, HttpStatus.CREATED);
     }
     @PreAuthorize("hasAnyRole('THERAPIST','PATIENT')")
     @GetMapping("patients/{userId}")
-    public ResponseEntity<List<MoodJournalDto>> getMoodJournalsByPatient(@PathVariable Long userId) {
+    public ResponseEntity<List<MoodJournalReadDto>> getMoodJournalsByPatient(@PathVariable Long userId) {
         final var moodEntries = moodEntryService.getMoodJournalsByPatient(userId);
         return new ResponseEntity<>(moodEntries, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('THERAPIST')")
     @GetMapping("therapists/{therapistId}")
-    public ResponseEntity<List<MoodJournalDto>> getMoodJournalsByTherapist() {
+    public ResponseEntity<List<MoodJournalReadDto>> getMoodJournalsByTherapist() {
         final var moodEntries = moodEntryService.getMoodJournalsByTherapist();
         return new ResponseEntity<>(moodEntries, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('PATIENT')")
     @PutMapping("{moodJournalId}")
-    public ResponseEntity<MoodJournalDto> updateMoodJournal(@PathVariable Long moodJournalId, @RequestBody MoodJournalDto updatedMoodJournalDto) {
+    public ResponseEntity<MoodJournalReadDto> updateMoodJournal(@PathVariable Long moodJournalId, @RequestBody MoodJournalWriteDto updatedMoodJournalDto) {
         final var updatedMoodEntry = moodEntryService.updateMoodJournal(moodJournalId, updatedMoodJournalDto);
         return new ResponseEntity<>(updatedMoodEntry, HttpStatus.OK);
     }
