@@ -18,11 +18,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
 
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper modelMapper;
 
-    public ChatMessageServiceImpl(ChatMessageRepository chatMessageRepository, UserRepository userRepository) {
+    public ChatMessageServiceImpl(ChatMessageRepository chatMessageRepository, UserRepository userRepository, ModelMapper modelMapper) {
         this.chatMessageRepository = chatMessageRepository;
         this.userRepository = userRepository;
+        this.modelMapper = modelMapper;
     }
 
     public List<ChatMessageDto> getChatMessages(Long senderId, Long recipientId) {

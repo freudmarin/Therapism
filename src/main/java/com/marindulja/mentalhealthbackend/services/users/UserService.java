@@ -1,21 +1,22 @@
 package com.marindulja.mentalhealthbackend.services.users;
 
-import com.marindulja.mentalhealthbackend.dtos.UserDto;
+import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
+import com.marindulja.mentalhealthbackend.dtos.UserWriteDto;
 import com.marindulja.mentalhealthbackend.models.User;
 
 import java.util.List;
 
 public interface UserService  {
 
-    UserDto update(Long id, UserDto userDto);
+    UserReadDto update(Long id, UserWriteDto userDto);
 
-    UserDto findById(Long id);
+    UserReadDto findById(Long id);
 
     User findByEmail(String email);
 
     void deleteById(Long id);
 
-    List<UserDto> findAllByRoleFilteredAndSorted(String searchValue);
+    List<UserReadDto> findAllByRoleFilteredAndSorted(String searchValue);
 
     void assignPatientsToTherapist(List<Long> userIds, Long therapistId);
 }

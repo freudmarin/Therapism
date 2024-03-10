@@ -20,13 +20,14 @@ import java.util.stream.Collectors;
 @Service
 public class TaskServiceImpl implements TaskService {
 
-    private final ModelMapper mapper = new ModelMapper();
+    private final ModelMapper mapper;
 
     private final TaskRepository taskRepository;
 
     private final ProfileRepository userProfileRepository;
 
-    public TaskServiceImpl(TaskRepository taskRepository, ProfileRepository userProfileRepository) {
+    public TaskServiceImpl(ModelMapper mapper, TaskRepository taskRepository, ProfileRepository userProfileRepository) {
+        this.mapper = mapper;
         this.taskRepository = taskRepository;
         this.userProfileRepository = userProfileRepository;
     }

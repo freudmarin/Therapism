@@ -2,13 +2,13 @@ package com.marindulja.mentalhealthbackend.services.therapysession;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionDto;
+import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.models.SessionStatus;
 import com.marindulja.mentalhealthbackend.models.TherapySession;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TherapySessionRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,15 +17,16 @@ import java.util.stream.Collectors;
 
 @Service
 public class TherapySessionServiceImpl implements TherapySessionService {
-    private final ModelMapper mapper = new ModelMapper();
+    private final ModelMappingUtility mapper;
 
     private final TherapySessionRepository therapySessionRepository;
 
     private final ProfileRepository userProfileRepository;
     private final UserRepository userRepository;
 
-    public TherapySessionServiceImpl(TherapySessionRepository therapySessionRepository, ProfileRepository userProfileRepository,
+    public TherapySessionServiceImpl(ModelMappingUtility mapper, TherapySessionRepository therapySessionRepository, ProfileRepository userProfileRepository,
                                      UserRepository userRepository) {
+        this.mapper = mapper;
         this.therapySessionRepository = therapySessionRepository;
         this.userProfileRepository = userProfileRepository;
         this.userRepository = userRepository;

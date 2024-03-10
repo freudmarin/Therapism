@@ -9,9 +9,9 @@ import lombok.Setter;
 public class AssignedTaskDto {
     private Long id;
 
-    private UserDto assignedByUser;
+    private UserReadDto assignedByUser;
 
-    private UserDto assignedToUser;
+    private UserReadDto assignedToUser;
 
     private String description;
 

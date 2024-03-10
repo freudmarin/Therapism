@@ -1,7 +1,9 @@
 package com.marindulja.mentalhealthbackend.services.users;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.UserDto;
+import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
+import com.marindulja.mentalhealthbackend.dtos.UserWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Role;
@@ -13,7 +15,6 @@ import com.marindulja.mentalhealthbackend.repositories.specifications.UserSpecif
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,14 +29,15 @@ import static com.marindulja.mentalhealthbackend.models.Role.THERAPIST;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final ModelMapper mapper = new ModelMapper();
+    private final ModelMappingUtility mapper;
     private final UserRepository userRepository;
 
     private final ProfileRepository profileRepository;
 
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(ModelMappingUtility mapper, UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
+        this.mapper = mapper;
         this.userRepository = userRepository;
         this.profileRepository = profileRepository;
         this.passwordEncoder = passwordEncoder;
@@ -62,7 +64,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto update(Long id, UserDto userDto) throws InvalidInputException {
+    public UserReadDto update(Long id, UserWriteDto userDto) throws InvalidInputException {
         final var currentUser = this.findByEmail(Utilities.getCurrentUser().get().getEmail());
         if (!currentUser.getId().equals(id)) {
             throw new InvalidInputException("The user can update only his profile");
@@ -77,15 +79,15 @@ public class UserServiceImpl implements UserService {
                     user.setPassword(passwordEncoder.encode(userDto.getPassword()));
                     user.setUsername(userDto.getUsername());
                     User updatedUser = userRepository.save(user);
-                    return mapToDTO(updatedUser);
+                    return mapper.map(updatedUser, UserReadDto.class);
                 })
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
     }
 
     @Override
-    public UserDto findById(Long id) {
+    public UserReadDto findById(Long id) {
         return userRepository.findById(id).
-                map(this::mapToDTO).orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+                map(user -> mapper.map(user, UserReadDto.class)).orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
     }
 
     @Override
@@ -128,7 +130,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> findAllByRoleFilteredAndSorted(String searchValue) {
+    public List<UserReadDto> findAllByRoleFilteredAndSorted(String searchValue) {
         final var currentUser = Utilities.getCurrentUser().get();
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
         if (currentUser.getRole() == Role.SUPERADMIN) {
@@ -150,20 +152,7 @@ public class UserServiceImpl implements UserService {
         }
         return userListResult
                 .stream()
-                .map(this::mapToDTOForUserList)
+                .map(user -> new UserReadDto(user.getId(), user.getUsername(), user.getEmail(), user.getRole()))
                 .collect(Collectors.toList());
-    }
-
-    private UserDto mapToDTO(User user) {
-        return mapper.map(user, UserDto.class);
-    }
-
-    public UserDto mapToDTOForUserList(User user) {
-        return new UserDto(user.getId(), user.getUsername(),
-                user.getPassword(), user.getEmail(), user.getRole());
-    }
-
-    private User mapToEntity(UserDto userDto) {
-        return mapper.map(userDto, User.class);
     }
 }

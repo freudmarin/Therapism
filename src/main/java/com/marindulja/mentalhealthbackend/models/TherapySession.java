@@ -36,4 +36,5 @@ public class TherapySession {
 
     @Column(name = "is_deleted")
     private boolean isDeleted;
+    private SessionStatus status;
 }

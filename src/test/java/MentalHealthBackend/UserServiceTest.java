@@ -1,6 +1,6 @@
 package MentalHealthBackend;
 
-import com.marindulja.mentalhealthbackend.dtos.UserDto;
+import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
@@ -29,14 +29,14 @@ class UserServiceTest {
     void findById_UserExists_ReturnsUserDto() {
         // Arrange
         Long userId = 1L;
-        UserDto userDto = new UserDto(1L, "admin@example.com", "test", "admin@example.com", Role.ADMIN);
+        UserReadDto userDto = new UserReadDto(1L, "admin@example.com", "test", "admin@example.com", Role.ADMIN);
 
         User mockUser = new User(1L, "admin@example.com", "test",
                 "admin@example.com", null, null, false, Role.ADMIN);
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
 
         // Act
-        UserDto result = userService.findById(userId);
+        UserReadDto result = userService.findById(userId);
 
         // Assert
         assertNotNull(result);

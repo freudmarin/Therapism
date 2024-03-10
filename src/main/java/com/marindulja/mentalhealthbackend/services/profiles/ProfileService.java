@@ -1,13 +1,13 @@
 package com.marindulja.mentalhealthbackend.services.profiles;
 
-import com.marindulja.mentalhealthbackend.dtos.UserProfileCreationOrUpdateDto;
-import com.marindulja.mentalhealthbackend.dtos.UserProfileDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileWithUserDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileWriteDto;
 
 public interface ProfileService {
 
-    UserProfileDto createProfile(Long userId, UserProfileCreationOrUpdateDto userProfileCreationDto);
-    UserProfileDto updateProfile(Long userId, UserProfileCreationOrUpdateDto userProfileCreationOrUpdateDto);
+    UserProfileReadDto createProfile(Long userId, UserProfileWriteDto userProfileCreationDto);
+    UserProfileReadDto updateProfile(Long userId, UserProfileWriteDto userProfileCreationOrUpdateDto);
 
     UserProfileWithUserDto findByUserId(Long userId);
 

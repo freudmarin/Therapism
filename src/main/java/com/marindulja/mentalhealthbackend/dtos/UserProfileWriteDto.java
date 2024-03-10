@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserProfileCreationOrUpdateDto {
+public class UserProfileWriteDto {
     private String phoneNumber;
     private Gender gender;
 }

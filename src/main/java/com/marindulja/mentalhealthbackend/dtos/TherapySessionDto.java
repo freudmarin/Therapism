@@ -11,9 +11,9 @@ public class TherapySessionDto {
 
     private Long id;
 
-    private UserDto therapist;
+    private UserReadDto therapist;
 
-    private UserDto patient;
+    private UserReadDto patient;
 
     private LocalDateTime sessionDate;
     private String patientNotes;

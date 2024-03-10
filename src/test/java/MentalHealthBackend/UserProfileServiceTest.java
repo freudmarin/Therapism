@@ -2,8 +2,8 @@ package MentalHealthBackend;
 
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.UserProfileCreationOrUpdateDto;
-import com.marindulja.mentalhealthbackend.dtos.UserProfileDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileReadDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileWriteDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Gender;
 import com.marindulja.mentalhealthbackend.models.Role;
@@ -44,8 +44,8 @@ class UserProfileServiceTest {
     void createProfile_authorizedUser_Success() {
         // Arrange
         Long userId = 1L;
-        UserProfileDto userProfileDto = new UserProfileDto( 1L, "+355684448934", Gender.MALE,  new ArrayList<>(), new ArrayList<>());
-        UserProfileCreationOrUpdateDto userProfileCreationDto = new UserProfileCreationOrUpdateDto( "+355684448934", Gender.MALE);
+        UserProfileReadDto userProfileDto = new UserProfileReadDto( 1L, "+355684448934", Gender.MALE,  new ArrayList<>(), new ArrayList<>());
+        UserProfileWriteDto userProfileCreationDto = new UserProfileWriteDto( "+355684448934", Gender.MALE);
         UserProfile mockedUserProfile = new UserProfile(1L, "+355684448934",  Gender.MALE, new ArrayList<>(), new ArrayList<>());
 
         User currentUser = new User(1L, "user", "test",
@@ -60,7 +60,7 @@ class UserProfileServiceTest {
             when(userProfileRepository.save(any(UserProfile.class))).thenReturn(mockedUserProfile);
 
             // Act + Assert
-            UserProfileDto userProfileDTOSaved = profileService.createProfile(userId, userProfileCreationDto);
+            UserProfileReadDto userProfileDTOSaved = profileService.createProfile(userId, userProfileCreationDto);
             assertEquals(userProfileDTOSaved.getProfileId(), userProfileDto.getProfileId());
             assertEquals(userProfileDTOSaved.getGender(), userProfileDto.getGender());
             assertEquals(userProfileDTOSaved.getPhoneNumber(), userProfileDto.getPhoneNumber());
@@ -72,7 +72,7 @@ class UserProfileServiceTest {
     void createProfile_unauthorizedUser_ThrowsUnauthorizedException() {
         // Arrange
         Long userId = 2L; // Assume a different user id
-        UserProfileCreationOrUpdateDto userProfileCreationDto = new UserProfileCreationOrUpdateDto( "+355684448934", Gender.MALE);
+        UserProfileWriteDto userProfileCreationDto = new UserProfileWriteDto( "+355684448934", Gender.MALE);
         User currentUser = new User(1L, "user", "test",
                 "admin@example.com", null, null, false, Role.ADMIN);
 

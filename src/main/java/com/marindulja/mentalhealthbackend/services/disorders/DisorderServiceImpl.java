@@ -2,13 +2,12 @@ package com.marindulja.mentalhealthbackend.services.disorders;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
+import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
-import com.marindulja.mentalhealthbackend.models.Disorder;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.DisorderRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -19,19 +18,20 @@ import java.util.stream.Collectors;
 @Service
 public class DisorderServiceImpl implements DisorderService {
 
-    private final ModelMapper mapper = new ModelMapper();
+    private final ModelMappingUtility mapper;
 
     private final DisorderRepository disorderRepository;
 
     private final ProfileRepository userProfileRepository;
 
-    public DisorderServiceImpl(DisorderRepository disorderRepository, ProfileRepository userProfileRepository) {
+    public DisorderServiceImpl(ModelMappingUtility mapper, DisorderRepository disorderRepository, ProfileRepository userProfileRepository) {
+        this.mapper = mapper;
         this.disorderRepository = disorderRepository;
         this.userProfileRepository = userProfileRepository;
     }
 
     public List<DisorderDto> getAllDisorders() {
-        return disorderRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
+        return disorderRepository.findAll().stream().map(disorder -> mapper.map(disorder, DisorderDto.class)).collect(Collectors.toList());
     }
 
     public void assignDisordersToUser(Long userId, List<Long> disorderIds) {
@@ -99,14 +99,5 @@ public class DisorderServiceImpl implements DisorderService {
             throw new UnauthorizedException("The patient with id " + userId + " is not the patient of the therapist with id " + therapist.getId());
         }
         return patientProfile;
-    }
-
-
-    private DisorderDto mapToDTO(Disorder disorder) {
-        return mapper.map(disorder, DisorderDto.class);
-    }
-
-    private Disorder mapToEntity(DisorderDto disorderDto) {
-        return mapper.map(disorderDto, Disorder.class);
     }
 }

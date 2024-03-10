@@ -10,12 +10,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class UserReadDto {
     private Long id;
 
     private String username;
-
-    private String password;
 
     private String email;
 

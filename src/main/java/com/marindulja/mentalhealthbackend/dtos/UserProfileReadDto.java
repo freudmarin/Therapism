@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserProfileDto {
+public class UserProfileReadDto {
     private Long profileId;
     private String phoneNumber;
     private Gender gender;

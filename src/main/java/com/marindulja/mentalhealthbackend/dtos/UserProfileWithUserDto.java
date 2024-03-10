@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class UserProfileWithUserDto {
     @Nullable
-    UserDto userDto;
+    UserReadDto userDto;
     private Long profileId;
     private String phoneNumber;
     private Gender gender;

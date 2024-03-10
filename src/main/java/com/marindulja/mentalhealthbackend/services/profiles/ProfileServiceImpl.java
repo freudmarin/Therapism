@@ -2,13 +2,12 @@ package com.marindulja.mentalhealthbackend.services.profiles;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.*;
+import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
-import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
@@ -18,17 +17,18 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final ProfileRepository userProfileRepository;
 
-    private final ModelMapper mapper = new ModelMapper();
+    private final ModelMappingUtility mapper;
     private final UserRepository userRepository;
 
-    public ProfileServiceImpl(ProfileRepository userProfileRepository,
+    public ProfileServiceImpl(ProfileRepository userProfileRepository, ModelMappingUtility mapper,
                               UserRepository userRepository) {
         this.userProfileRepository = userProfileRepository;
+        this.mapper = mapper;
         this.userRepository = userRepository;
     }
 
     @Override
-    public UserProfileDto createProfile(Long userId, UserProfileCreationOrUpdateDto userProfileCreationDto) {
+    public UserProfileReadDto createProfile(Long userId, UserProfileWriteDto userProfileCreationDto) {
         final var cUser = Utilities.getCurrentUser().get();
 
         if(!userId.equals(cUser.getId())) {
@@ -39,16 +39,16 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found."));
 
 
-        final var newUserProfile = mapUserProfileCreationDtoToEntity(userProfileCreationDto);
+        final var newUserProfile = mapper.map(userProfileCreationDto, UserProfile.class);
         newUserProfile.setUser(currentUser);
         // Save the UserProfile
         final var savedUserProfile = userProfileRepository.save(newUserProfile);
         // Map the saved UserProfile to DTO and return
-        return mapToDTO(savedUserProfile);
+        return mapper.map(savedUserProfile, UserProfileReadDto.class);
     }
 
     @Override
-    public UserProfileDto updateProfile(Long userId, UserProfileCreationOrUpdateDto userProfileCreationOrUpdateDto) {
+    public UserProfileReadDto updateProfile(Long userId, UserProfileWriteDto userProfileCreationOrUpdateDto) {
 
         final var currentUser = Utilities.getCurrentUser().get();
 
@@ -61,7 +61,7 @@ public class ProfileServiceImpl implements ProfileService {
         existingProfile.setPhoneNumber(userProfileCreationOrUpdateDto.getPhoneNumber());
         existingProfile.setGender(userProfileCreationOrUpdateDto.getGender());
         UserProfile userProfile = userProfileRepository.save(existingProfile);
-        return mapToDTO(userProfile);
+        return mapper.map(userProfile, UserProfileReadDto.class);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class ProfileServiceImpl implements ProfileService {
         final var userProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
 
-        final var userDto = mapToUserDTO(userProfile.getUser());
+        final var userDto = mapper.map(userProfile.getUser(), UserReadDto.class);
 
         UserProfileWithUserDto userProfileWithUserDto = new UserProfileWithUserDto();
         userProfileWithUserDto.setProfileId(userProfile.getId());
@@ -80,19 +80,5 @@ public class ProfileServiceImpl implements ProfileService {
         userProfileWithUserDto.setDisorders(userProfile.getDisorders().stream().map((element) -> mapper.map(element, DisorderDto.class)).collect(Collectors.toList()));
         userProfileWithUserDto.setAnxietyRecords(userProfile.getAnxietyRecords().stream().map((element) -> mapper.map(element, AnxietyRecordDto.class)).collect(Collectors.toList()));
         return userProfileWithUserDto;
-    }
-    private UserProfileDto mapToDTO(UserProfile userProfile) {
-        return mapper.map(userProfile, UserProfileDto.class);
-    }
-
-    private UserProfile mapToEntity(UserProfileWithUserDto userProfileDto) {
-        return mapper.map(userProfileDto, UserProfile.class);
-    }
-    private UserProfile mapUserProfileCreationDtoToEntity(UserProfileCreationOrUpdateDto userProfileDto) {
-        return mapper.map(userProfileDto, UserProfile.class);
-    }
-
-    private UserDto mapToUserDTO(User user) {
-        return mapper.map(user, UserDto.class);
     }
 }
