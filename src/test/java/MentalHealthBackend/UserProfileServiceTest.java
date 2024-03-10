@@ -4,6 +4,8 @@ package MentalHealthBackend;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
+import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Gender;
 import com.marindulja.mentalhealthbackend.models.Role;
@@ -34,6 +36,9 @@ class UserProfileServiceTest {
     private ProfileRepository userProfileRepository;
 
     @Mock
+    private ModelMappingUtility modelMapper;
+
+    @Mock
     private UserRepository userRepository;
 
     @InjectMocks
@@ -58,7 +63,8 @@ class UserProfileServiceTest {
             when(userRepository.findById(any(Long.class))).thenReturn(java.util.Optional.of(currentUser));
             // Mocking UserProfileRepository save method
             when(userProfileRepository.save(any(UserProfile.class))).thenReturn(mockedUserProfile);
-
+            when(modelMapper.map(userProfileCreationDto, UserProfile.class)).thenReturn(mockedUserProfile);
+            when(modelMapper.map(mockedUserProfile, UserProfileReadDto.class)).thenReturn(userProfileDto);
             // Act + Assert
             UserProfileReadDto userProfileDTOSaved = profileService.createProfile(userId, userProfileCreationDto);
             assertEquals(userProfileDTOSaved.getProfileId(), userProfileDto.getProfileId());

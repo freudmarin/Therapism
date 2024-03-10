@@ -1,6 +1,7 @@
 package MentalHealthBackend;
 
 import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
+import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import java.util.Optional;
 
@@ -22,6 +24,9 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private ModelMappingUtility modelMapper;
+
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -29,12 +34,12 @@ class UserServiceTest {
     void findById_UserExists_ReturnsUserDto() {
         // Arrange
         Long userId = 1L;
-        UserReadDto userDto = new UserReadDto(1L, "admin@example.com", "test", "admin@example.com", Role.ADMIN);
+        UserReadDto userDto = new UserReadDto(1L, "admin", "admin@example.com", Role.ADMIN);
 
-        User mockUser = new User(1L, "admin@example.com", "test",
+        User mockUser = new User(1L, "admin", "test",
                 "admin@example.com", null, null, false, Role.ADMIN);
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
-
+        when(modelMapper.map(mockUser, UserReadDto.class)).thenReturn(userDto);
         // Act
         UserReadDto result = userService.findById(userId);
 

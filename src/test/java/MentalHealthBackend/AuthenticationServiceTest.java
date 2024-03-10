@@ -64,7 +64,7 @@ public class AuthenticationServiceTest {
         user.setPassword("password");
         user.setRole(Role.PATIENT);
         lenient().when(refreshTokenRepository.findByUser(any(User.class))).thenReturn(Optional.of(new RefreshToken()));
-        when(refreshTokenService.generateRefreshToken(user)).thenReturn(new RefreshToken(1L, user, "sampleToken", LocalDateTime.now().plusDays(30)));
+        lenient().when(refreshTokenService.generateRefreshToken(user)).thenReturn(new RefreshToken(1L, user, "sampleToken", LocalDateTime.now().plusDays(30)));
     }
 
 
