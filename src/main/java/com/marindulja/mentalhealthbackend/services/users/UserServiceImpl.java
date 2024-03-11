@@ -139,13 +139,12 @@ public class UserServiceImpl implements UserService {
         // admin can view only therapists and patients of the institution he belongs to
         else if (currentUser.getRole() == Role.ADMIN) {
             spec = spec.and(new UserSpecification(Arrays.asList(Role.ADMIN, Role.PATIENT, Role.THERAPIST), searchValue));
+        } else if (currentUser.getRole() == THERAPIST) {
+            spec = spec.and(new UserSpecification(List.of(Role.PATIENT, THERAPIST), searchValue));
+        } else {
+            // currentUser.getRole() = patient
+            spec = spec.and(new UserSpecification(List.of(THERAPIST), searchValue));
         }
-
-        // currentUser.getRole() = patient
-        else {
-            spec = spec.and(new UserSpecification(List.of(Role.PATIENT), searchValue));
-        }
-
         final var userListResult = userRepository.findAll(spec);
         if (currentUser.getRole() == THERAPIST) {
             userListResult.stream().filter(u -> u.getTherapist() == currentUser).collect(Collectors.toList());
