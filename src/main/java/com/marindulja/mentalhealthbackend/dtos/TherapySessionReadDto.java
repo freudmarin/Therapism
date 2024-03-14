@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
+import com.marindulja.mentalhealthbackend.models.SessionStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,4 +20,10 @@ public class TherapySessionReadDto {
     private String patientNotes;
 
     private String therapistNotes;
+
+    private SessionStatus sessionStatus;
+
+    private String zoomJoinLinkUrl;
+
+    private Long meetingId;
 }

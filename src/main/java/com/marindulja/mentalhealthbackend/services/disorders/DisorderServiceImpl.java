@@ -3,11 +3,8 @@ package com.marindulja.mentalhealthbackend.services.disorders;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
-import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
-import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.DisorderRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -30,13 +27,14 @@ public class DisorderServiceImpl implements DisorderService {
         this.userProfileRepository = userProfileRepository;
     }
 
+    @Override
     public List<DisorderDto> getAllDisorders() {
         return disorderRepository.findAll().stream().map(disorder -> mapper.map(disorder, DisorderDto.class)).collect(Collectors.toList());
     }
-
+    @Override
     public void assignDisordersToUser(Long userId, List<Long> disorderIds) {
         //even the therapist can be a patient
-        final var patientProfile = getPatientProfileIfBelongsToTherapist(userId);
+        final var patientProfile = Utilities.getPatientProfileIfBelongsToTherapist(userId, userProfileRepository);
         final var disorders = disorderRepository.findAllById(disorderIds);
 
         if (disorders.size() != disorderIds.size()) {
@@ -48,8 +46,9 @@ public class DisorderServiceImpl implements DisorderService {
         userProfileRepository.save(patientProfile);
     }
 
+    @Override
     public void updateDisordersToUser(Long patientId, Collection<Long> disorderIds) {
-        final var patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
+        final var patientProfile = Utilities.getPatientProfileIfBelongsToTherapist(patientId, userProfileRepository);
         final var newDisorders = disorderRepository.findAllById(new HashSet<>(disorderIds));
 
         if (newDisorders.size() != disorderIds.size()) {
@@ -77,8 +76,9 @@ public class DisorderServiceImpl implements DisorderService {
         userProfileRepository.save(patientProfile);
     }
 
+    @Override
     public void removeDisordersFromPatient(Long patientId, List<Long> disorderIds) {
-        final var patientProfile = getPatientProfileIfBelongsToTherapist(patientId);
+        final var patientProfile = Utilities.getPatientProfileIfBelongsToTherapist(patientId, userProfileRepository);
 
         final var disorders = disorderRepository.findAllById(disorderIds);
         if (disorders.size() != disorderIds.size()) {
@@ -87,17 +87,5 @@ public class DisorderServiceImpl implements DisorderService {
         }
         patientProfile.getDisorders().removeAll(disorders);
         userProfileRepository.save(patientProfile);
-    }
-
-    private UserProfile getPatientProfileIfBelongsToTherapist(Long userId) {
-        final var therapist = Utilities.getCurrentUser().get();
-        final var patientProfile = userProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + userId + "not found"));
-
-        if (patientProfile.getUser().getTherapist() == null ||
-                !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-            throw new UnauthorizedException("The patient with id " + userId + " is not the patient of the therapist with id " + therapist.getId());
-        }
-        return patientProfile;
     }
 }

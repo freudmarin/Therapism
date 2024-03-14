@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 import com.marindulja.mentalhealthbackend.services.therapysession.TherapySessionService;
 import org.springframework.http.HttpStatus;
@@ -25,17 +26,20 @@ public class TherapyController {
         return new ResponseEntity<>(allSessionsOfTherapist, HttpStatus.OK);
     }
 
-    @PostMapping("patient/{patientId}/create")
+    @PostMapping("patient/{therapistId}/create")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> createTherapySession(@PathVariable Long therapistID, @RequestBody TherapySessionWriteDto request) {
-        var createdTherapySession = therapySessionService.createTherapySession(therapistID, request);
+    public ResponseEntity<TherapySessionReadDto> createTherapySession(@PathVariable Long therapistId, @RequestBody TherapySessionWriteDto request,
+                                                                      @RequestParam(value = "zoomCode", required = true) String zoomCode) {
+        var createdTherapySession = therapySessionService.createTherapySession(therapistId, request, zoomCode);
         return new ResponseEntity<>(createdTherapySession, HttpStatus.CREATED);
     }
 
     @PutMapping("therapy/{therapyId}/patient/{patientId}")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> updateExistingTherapySession(@PathVariable Long therapyId, @PathVariable Long patientId, @RequestBody TherapySessionWriteDto request) {
-        var updatedTherapySession = therapySessionService.updateTherapySession(patientId, therapyId, request);
+    public ResponseEntity<?> updateExistingTherapySession(@PathVariable Long therapyId, @PathVariable Long patientId,
+                                                          @RequestBody TherapySessionWriteDto request,
+                                                          @RequestParam(value = "zoomCode", required = true) String zoomCode) {
+        var updatedTherapySession = therapySessionService.updateTherapySession(patientId, therapyId, request, zoomCode);
         return new ResponseEntity<>(updatedTherapySession, HttpStatus.OK);
     }
 

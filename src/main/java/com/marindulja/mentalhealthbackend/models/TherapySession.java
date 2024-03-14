@@ -37,4 +37,9 @@ public class TherapySession {
     @Column(name = "is_deleted")
     private boolean isDeleted;
     private SessionStatus status;
+    @Column(name = "zoom_link_url")
+    private String zoomJoinLinkUrl;
+
+    @Column(name = "meeting_id")
+    private long meetingId;
 }

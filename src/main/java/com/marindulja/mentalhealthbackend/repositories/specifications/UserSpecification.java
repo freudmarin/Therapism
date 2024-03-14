@@ -25,7 +25,6 @@ public class UserSpecification implements Specification<User> {
 
     @Override
     public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        System.out.println("ToPredicate was called");
         List<Predicate> predicates = new ArrayList<>();
 
         if (!roles.isEmpty()) {

@@ -8,9 +8,10 @@ import java.util.List;
 
 public interface TherapySessionService {
     List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end);
-    TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto);
+    TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto, String zoomJoinLinkUrl);
 
-    TherapySessionReadDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionWriteDto therapySessionDto);
+    TherapySessionReadDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionWriteDto therapySessionDto,
+    String zoomOAuthCode);
 
     TherapySessionReadDto updatePatientNotes(Long therapySessionId, TherapySessionWriteDto therapySessionDto);
 
