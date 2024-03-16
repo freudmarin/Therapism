@@ -88,7 +88,7 @@ public class ZoomApiIntegration {
         }
     }
 
-    public ZoomMeetingResponse callUpdateMeetingApi(ZoomMeetingRequest zoomMeetingRequest, Long meetingId, String accessToken) {
+    public void callUpdateMeetingApi(ZoomMeetingRequest zoomMeetingRequest, Long meetingId, String accessToken) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String requestBody = objectMapper.writeValueAsString(zoomMeetingRequest);
@@ -100,10 +100,7 @@ public class ZoomApiIntegration {
             httpPatch.setEntity(new StringEntity(requestBody, "UTF-8"));
 
             org.apache.http.HttpResponse httpResponse = httpClient.execute(httpPatch);
-            if (httpResponse.getStatusLine().getStatusCode() == 204) {
-                ZoomMeetingResponse meetingResponse = getMeetingDetails(meetingId, accessToken);
-                return meetingResponse;
-            } else {
+            if (httpResponse.getStatusLine().getStatusCode() != 204) {
                 throw new IllegalStateException("Failed to update Zoom meeting. Status code: " + httpResponse.getStatusLine().getStatusCode());
             }
         } catch (IOException e) {

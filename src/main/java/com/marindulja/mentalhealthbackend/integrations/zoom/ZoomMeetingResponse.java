@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.integrations.zoom;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
@@ -15,54 +16,70 @@ import java.io.Serializable;
 @NoArgsConstructor
 
 @JsonPropertyOrder({
+        "uuid",
         "id",
-        "agenda",
+        "host_id",
+        "host_email",
+        "assistant_id",
         "topic",
+        "type",
+        "status",
         "start_time",
         "duration",
         "timezone",
-        "host_email",
+        "agenda",
+        "created_at",
         "start_url",
         "join_url",
         "password",
-        "type",
-        "uuid",
-        "created_at",
-        "user_id",
-        "personal_meeting_url"
+        "h323_password",
+        "pstn_password",
+        "encrypted_password",
+        "settings",
+        "pre_schedule"
 })
 public class ZoomMeetingResponse implements Serializable {
+    @JsonProperty("uuid")
+    String uuid;
     @JsonProperty("id")
     long meetingId;
-    @JsonProperty("created_at")
-    String createdAt;
-    @JsonProperty("duration")
-    int duration;
     @JsonProperty("host_id")
     String hostId;
     @JsonProperty("host_email")
     String hostEmail;
-    @JsonProperty("join_url")
-    String joinUrl;
-    @JsonProperty("start_time")
-    String startTime;
-    @JsonProperty("start_url")
-    String startUrl;
-    @JsonProperty("status")
-    String status;
-    @JsonProperty("timezone")
-    String timezone;
+    @JsonProperty("assistant_id")
+    String assistantId;
     @JsonProperty("topic")
     String topic;
     @JsonProperty("type")
     int type;
-    @JsonProperty("uuid")
-    String uuid;
+    @JsonProperty("status")
+    String status;
+    @JsonProperty("start_time")
+    String startTime;
+    @JsonProperty("duration")
+    int duration;
+    @JsonProperty("timezone")
+    String timezone;
     @JsonProperty("agenda")
     private String agenda;
+    @JsonProperty("created_at")
+    String createdAt;
+    @JsonProperty("start_url")
+    String startUrl;
+    @JsonProperty("join_url")
+    String joinUrl;
     @JsonProperty("password")
     private String password;
-    @JsonProperty("personal_meeting_url")
-    private String personalMeetingUrl;
-
+    @JsonProperty("h323_password")
+    private String h323_password;
+    @JsonProperty("pstn_password")
+    private String pstn_password;
+    @JsonProperty("encrypted_password")
+    private String encrypted_password;
+    @JsonIgnore
+    @JsonProperty("settings")
+    private Object settings;
+    @JsonProperty("pre_schedule")
+    private boolean pre_schedule;
 }

@@ -28,9 +28,8 @@ public class TherapyController {
 
     @PostMapping("patient/{therapistId}/create")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<TherapySessionReadDto> createTherapySession(@PathVariable Long therapistId, @RequestBody TherapySessionWriteDto request,
-                                                                      @RequestParam(value = "zoomCode", required = true) String zoomCode) {
-        var createdTherapySession = therapySessionService.createTherapySession(therapistId, request, zoomCode);
+    public ResponseEntity<TherapySessionReadDto> createTherapySession(@PathVariable Long therapistId, @RequestBody TherapySessionWriteDto request) {
+        var createdTherapySession = therapySessionService.createTherapySession(therapistId, request);
         return new ResponseEntity<>(createdTherapySession, HttpStatus.CREATED);
     }
 
@@ -45,9 +44,9 @@ public class TherapyController {
 
     @PatchMapping("/session/{sessionId}/accept")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> acceptSession(@PathVariable Long sessionId) {
-        therapySessionService.acceptSession(sessionId);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<TherapySessionReadDto> acceptSession(@PathVariable Long sessionId, @RequestParam(value = "zoomCode", required = true) String zoomCode) {
+        var acceptedSession = therapySessionService.acceptSession(sessionId, zoomCode);
+        return new ResponseEntity<>(acceptedSession, HttpStatus.OK);
     }
 
     @PatchMapping("/session/{sessionId}/decline")

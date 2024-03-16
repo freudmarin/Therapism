@@ -51,34 +51,13 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     }
 
     @Override
-    public TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto, String zoomOAuthCode) {
+    public TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto) {
         if (Utilities.therapistBelongsToPatient(therapistId, userProfileRepository)
                 && checkTherapistAvailability(therapySessionDto.getSessionDate())) {
             final var newTherapySession = mapper.map(therapySessionDto, TherapySession.class);
             newTherapySession.setTherapist(userRepository.findById(therapistId).get());
             newTherapySession.setPatient(Utilities.getCurrentUser().get());
             newTherapySession.setSessionDate(therapySessionDto.getSessionDate());
-            TokenResponse tokenResponse = null;
-            try {
-                tokenResponse = zoomApiIntegration.callTokenApi(zoomOAuthCode);
-            } catch (IOException e) {
-                log.error("Could not retrieve zoom access token");
-            }
-            String userId = "me";
-            MeetingDetailsHelper meetingDetailsHelper = new MeetingDetailsHelper();
-            meetingDetailsHelper.setUserId(userId);
-            ZoomMeetingRequest zoomMeetingRequest = new ZoomMeetingRequest();
-            zoomMeetingRequest.setType(2);
-
-            ZonedDateTime utcDateTime = therapySessionDto.getSessionDate().atZone(ZoneOffset.UTC); // Convert to UTC
-
-            // Format for Zoom
-            String zoomDateTime = utcDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-
-            zoomMeetingRequest.setStartTime(zoomDateTime);
-            ZoomMeetingResponse response = zoomApiIntegration.callCreateMeetingApi(meetingDetailsHelper, zoomMeetingRequest, tokenResponse.getAccessToken());
-            newTherapySession.setZoomJoinLinkUrl(response.getJoinUrl());
-            newTherapySession.setMeetingId(response.getMeetingId());
             newTherapySession.setStatus(SessionStatus.REQUESTED);
             therapySessionRepository.save(newTherapySession);
             return mapper.map(newTherapySession, TherapySessionReadDto.class);
@@ -109,8 +88,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
             String zoomDateTime = utcDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
 
             zoomMeetingRequest.setStartTime(zoomDateTime);
-            ZoomMeetingResponse response = zoomApiIntegration.callUpdateMeetingApi(zoomMeetingRequest, existingTherapySession.getMeetingId(), tokenResponse.getAccessToken());
-            existingTherapySession.setZoomJoinLinkUrl(response.getJoinUrl());
+            zoomApiIntegration.callUpdateMeetingApi(zoomMeetingRequest, existingTherapySession.getMeetingId(), tokenResponse.getAccessToken());
             existingTherapySession.setStatus(SessionStatus.SCHEDULED);
             therapySessionRepository.save(existingTherapySession);
             return mapper.map(existingTherapySession, TherapySessionReadDto.class);
@@ -118,11 +96,34 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         return null;
     }
 
-    public void acceptSession(Long sessionId) {
+    public TherapySessionReadDto acceptSession(Long sessionId,  String zoomOAuthCode) {
         TherapySession session = therapySessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found"));
         session.setStatus(SessionStatus.SCHEDULED);
+        TokenResponse tokenResponse = null;
+        try {
+            tokenResponse = zoomApiIntegration.callTokenApi(zoomOAuthCode);
+        } catch (IOException e) {
+            log.error("Could not retrieve zoom access token");
+        }
+        String userId = "me";
+        MeetingDetailsHelper meetingDetailsHelper = new MeetingDetailsHelper();
+        meetingDetailsHelper.setUserId(userId);
+        ZoomMeetingRequest zoomMeetingRequest = new ZoomMeetingRequest();
+        zoomMeetingRequest.setType(2);
+
+        ZonedDateTime utcDateTime = session.getSessionDate().atZone(ZoneOffset.UTC); // Convert to UTC
+
+        // Format for Zoom
+        String zoomDateTime = utcDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+
+        zoomMeetingRequest.setStartTime(zoomDateTime);
+        ZoomMeetingResponse response = zoomApiIntegration.callCreateMeetingApi(meetingDetailsHelper, zoomMeetingRequest, tokenResponse.getAccessToken());
+        session.setZoomStartLinkUrl(response.getStartUrl());
+        session.setZoomJoinLinkUrl(response.getJoinUrl());
+        session.setMeetingId(response.getMeetingId());
         therapySessionRepository.save(session);
+        return mapper.map(session, TherapySessionReadDto.class);
     }
 
     public void declineSession(Long sessionId) {
