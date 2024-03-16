@@ -17,6 +17,8 @@ public interface TherapySessionService {
 
     TherapySessionReadDto acceptSession(Long sessionId, String zoomCode);
 
+    TherapySessionReadDto getTherapySession(Long sessionId);
+
     void declineSession(Long sessionId);
     void deleteTherapySession(Long therapyId);
 }

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @ControllerAdvice
 public class RestExceptionHandler {
 
-    @ExceptionHandler(value = { InvalidInputException.class })
+    @ExceptionHandler(value = { InvalidInputException.class, IllegalArgumentException.class})
     @ResponseBody
     public ResponseEntity<ErrorDto> handleInvalidInputException(InvalidInputException ex) {
         return ResponseEntity

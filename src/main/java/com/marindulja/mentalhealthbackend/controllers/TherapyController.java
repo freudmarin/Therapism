@@ -42,14 +42,21 @@ public class TherapyController {
         return new ResponseEntity<>(updatedTherapySession, HttpStatus.OK);
     }
 
-    @PatchMapping("/session/{sessionId}/accept")
+    @PatchMapping("session/{sessionId}/accept")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<TherapySessionReadDto> acceptSession(@PathVariable Long sessionId, @RequestParam(value = "zoomCode", required = true) String zoomCode) {
         var acceptedSession = therapySessionService.acceptSession(sessionId, zoomCode);
         return new ResponseEntity<>(acceptedSession, HttpStatus.OK);
     }
 
-    @PatchMapping("/session/{sessionId}/decline")
+    @PatchMapping("/session/{sessionId}")
+    @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT')")
+    public ResponseEntity<TherapySessionReadDto> getTherapySession(@PathVariable Long sessionId) {
+        var therapySession = therapySessionService.getTherapySession(sessionId);
+        return new ResponseEntity<>(therapySession, HttpStatus.OK);
+    }
+
+    @PatchMapping("session/{sessionId}/decline")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> declineSession(@PathVariable Long sessionId) {
         therapySessionService.declineSession(sessionId);

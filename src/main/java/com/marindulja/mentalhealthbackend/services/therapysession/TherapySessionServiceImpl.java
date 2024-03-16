@@ -5,6 +5,7 @@ import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.integrations.zoom.*;
+import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.SessionStatus;
 import com.marindulja.mentalhealthbackend.models.TherapySession;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
@@ -96,7 +97,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         return null;
     }
 
-    public TherapySessionReadDto acceptSession(Long sessionId,  String zoomOAuthCode) {
+    public TherapySessionReadDto acceptSession(Long sessionId, String zoomOAuthCode) {
         TherapySession session = therapySessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found"));
         session.setStatus(SessionStatus.SCHEDULED);
@@ -124,6 +125,20 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         session.setMeetingId(response.getMeetingId());
         therapySessionRepository.save(session);
         return mapper.map(session, TherapySessionReadDto.class);
+    }
+
+    @Override
+    public TherapySessionReadDto getTherapySession(Long sessionId) {
+        TherapySession session = therapySessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+        if ((Utilities.getCurrentUser().get().getRole() == Role.THERAPIST &&
+            Utilities.patientBelongsToTherapist(session.getTherapist().getId(), userProfileRepository)) ||
+            (Utilities.getCurrentUser().get().getRole() == Role.PATIENT &&
+            Utilities.therapistBelongsToPatient(session.getTherapist().getId(), userProfileRepository))) {
+            return mapper.map(session, TherapySessionReadDto.class);
+        }
+        throw new IllegalArgumentException("Patient with id " + session.getPatient().getId()
+        + "doesn't belong to therapist with id" + session.getTherapist().getId());
     }
 
     public void declineSession(Long sessionId) {
