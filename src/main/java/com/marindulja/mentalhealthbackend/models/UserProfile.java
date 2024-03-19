@@ -1,6 +1,7 @@
 package com.marindulja.mentalhealthbackend.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import java.util.List;
 @Table(name = "user_profiles")
 @Where(clause = "is_deleted = false")
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserProfile {
 
     @Id

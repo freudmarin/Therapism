@@ -3,6 +3,7 @@ package MentalHealthBackend;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marindulja.mentalhealthbackend.controllers.AuthenticationController;
 import com.marindulja.mentalhealthbackend.dtos.JwtAuthenticationResponse;
+import com.marindulja.mentalhealthbackend.dtos.SignInRequest;
 import com.marindulja.mentalhealthbackend.dtos.SignUpRequest;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.services.auth.AuthenticationService;
@@ -56,5 +57,22 @@ public class AuthenticationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("token"));
 
+    }
+
+
+    @Test
+    public void signIn_ShouldReturnJwtToken_WhenCredentialsAreValid() throws Exception {
+        // Given
+        SignInRequest signInRequest = new SignInRequest("user@example.com", "password");
+        JwtAuthenticationResponse response = new JwtAuthenticationResponse("user", Role.PATIENT, "token", "refreshToken");
+
+        when(authenticationService.signIn(signInRequest)).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/auth/signin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(signInRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value(response.getToken()));
     }
 }

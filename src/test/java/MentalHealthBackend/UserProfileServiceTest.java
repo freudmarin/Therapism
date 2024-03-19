@@ -4,7 +4,6 @@ package MentalHealthBackend;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.UserProfileWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Gender;
