@@ -49,7 +49,7 @@ public class AnxietyRecordServiceTest {
     @Mock
     private ModelMappingUtility modelMapper;
 
-    private ProfileService profileService; // Assuming you need to mock its behavior
+    private ProfileService profileService;
 
     private AnxietyRecordServiceImpl anxietyRecordService;
 
@@ -63,7 +63,7 @@ public class AnxietyRecordServiceTest {
         profileService = Mockito.mock(ProfileServiceImpl.class);
 
         // Manually create the instance of AnxietyRecordServiceImpl
-        anxietyRecordService = new AnxietyRecordServiceImpl(anxietyRecordRepository,userRepository, userProfileRepository, profileService, modelMapper);
+        anxietyRecordService = new AnxietyRecordServiceImpl(anxietyRecordRepository, userRepository, userProfileRepository, profileService, modelMapper);
 
         currentUser = new User(1L, "user", "test", "user@example.com", null, null, false, Role.PATIENT);
         currentUserProfile = new UserProfile(1L, "+355684448934", Gender.MALE, false, new ArrayList<>(), new ArrayList<>(), currentUser);
