@@ -1,6 +1,7 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
+import com.marindulja.mentalhealthbackend.dtos.MostCommonDisordersDto;
 import com.marindulja.mentalhealthbackend.services.disorders.DisorderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,5 +46,13 @@ public class DisorderController {
     public ResponseEntity<?> removeDisordersFromPatient(@PathVariable Long userId, @RequestBody List<Long> disorderIds) {
         disorderService.removeDisordersFromPatient(userId, disorderIds);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+
+    @GetMapping("highAnxietyPatients")
+    @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT', 'ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<List<MostCommonDisordersDto>> findCommonDisordersAmongHighAnxietyPatients() {
+        var mostCommonDisordersAmongHighAnxietyPatients = disorderService.findCommonDisordersAmongHighAnxietyPatients();
+        return new ResponseEntity<>(mostCommonDisordersAmongHighAnxietyPatients, HttpStatus.OK);
     }
 }
