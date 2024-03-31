@@ -2,8 +2,11 @@ package com.marindulja.mentalhealthbackend.services.tasks;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.AssignedTaskDto;
+import com.marindulja.mentalhealthbackend.dtos.TaskCompletionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TaskDto;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
+import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
+import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.Task;
 import com.marindulja.mentalhealthbackend.models.TaskStatus;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
@@ -83,5 +86,35 @@ public class TaskServiceImpl implements TaskService {
             return mapper.map(existingTask, AssignedTaskDto.class);
         }
         throw new IllegalArgumentException("Not appliable task status");
+    }
+
+    @Override
+    public List<TaskCompletionMoodDto> getTaskCompletionAndMoodByPatientId(Long patientId) {
+        var currentUser = Utilities.getCurrentUser().get();
+        if (currentUser.getRole() != Role.THERAPIST && currentUser.getRole() != Role.PATIENT)
+            throw new UnauthorizedException("The role of current user should be Therapist or Patient");
+
+        var results = taskRepository.findTaskCompletionAndMoodByUserId(patientId);
+        var taskCompletionMoodDtos =  results.stream()
+                .map(result -> new TaskCompletionMoodDto(
+                        (Long) result[0], // assignedToUserId
+                        ((Number) result[1]).doubleValue(), // completionRate, safely cast to Number then to Double
+                        ((Number) result[2]).doubleValue() // avgMoodLevel
+                ))
+                .collect(Collectors.toList());
+
+        if (currentUser.getRole() == Role.THERAPIST) {
+            if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository))
+                return taskCompletionMoodDtos;
+        }
+        if (currentUser.getRole() == Role.PATIENT) {
+            if (!currentUser.getId().equals(patientId))
+                throw new UnauthorizedException("You have provided the wrong patientId");
+
+            if (Utilities.therapistBelongsToPatient(currentUser.getTherapist().getId(), userProfileRepository)) {
+                return taskCompletionMoodDtos;
+            }
+        }
+        return null;
     }
 }

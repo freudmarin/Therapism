@@ -1,6 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.tasks;
 
 import com.marindulja.mentalhealthbackend.dtos.AssignedTaskDto;
+import com.marindulja.mentalhealthbackend.dtos.TaskCompletionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TaskDto;
 import com.marindulja.mentalhealthbackend.models.TaskStatus;
 
@@ -16,4 +17,6 @@ public interface TaskService {
     AssignedTaskDto updatePatientTask(Long patientId, Long taskId, TaskDto taskDto);
 
     AssignedTaskDto changeTaskStatus(Long taskId, TaskStatus newTaskStatus);
+
+    List<TaskCompletionMoodDto> getTaskCompletionAndMoodByPatientId(Long patientId);
 }

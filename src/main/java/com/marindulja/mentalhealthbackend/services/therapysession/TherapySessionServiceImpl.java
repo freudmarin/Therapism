@@ -1,9 +1,11 @@
 package com.marindulja.mentalhealthbackend.services.therapysession;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.integrations.zoom.*;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.SessionStatus;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -132,13 +135,13 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         TherapySession session = therapySessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found"));
         if ((Utilities.getCurrentUser().get().getRole() == Role.THERAPIST &&
-            Utilities.patientBelongsToTherapist(session.getTherapist().getId(), userProfileRepository)) ||
-            (Utilities.getCurrentUser().get().getRole() == Role.PATIENT &&
-            Utilities.therapistBelongsToPatient(session.getTherapist().getId(), userProfileRepository))) {
+                Utilities.patientBelongsToTherapist(session.getTherapist().getId(), userProfileRepository)) ||
+                (Utilities.getCurrentUser().get().getRole() == Role.PATIENT &&
+                        Utilities.therapistBelongsToPatient(session.getTherapist().getId(), userProfileRepository))) {
             return mapper.map(session, TherapySessionReadDto.class);
         }
         throw new IllegalArgumentException("Patient with id " + session.getPatient().getId()
-        + "doesn't belong to therapist with id" + session.getTherapist().getId());
+                + "doesn't belong to therapist with id" + session.getTherapist().getId());
     }
 
     public void declineSession(Long sessionId) {
@@ -166,5 +169,41 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
     private boolean checkTherapistAvailability(LocalDateTime therapySessionTime) {
         return true;
+    }
+
+    @Override
+    public List<TherapySessionMoodDto> findMoodChangesAroundTherapySessions(Long patientId) {
+        var currentUser = Utilities.getCurrentUser().get();
+        if (currentUser.getRole() != Role.THERAPIST && currentUser.getRole() != Role.PATIENT)
+            throw new UnauthorizedException("The role of current user should be Therapist or Patient");
+        var therapySessionMoodDtos = therapySessionRepository.findMoodChangesAroundTherapySessions(patientId).stream().map(objects -> {
+            // Convert Timestamp to LocalDateTime
+            LocalDateTime sessionDate = objects[1] != null ? ((Timestamp) objects[1]).toLocalDateTime() : null;
+            LocalDateTime nearestEntryDateBefore = objects[5] != null ? ((Timestamp) objects[5]).toLocalDateTime() : null;
+            LocalDateTime nearestEntryDateAfter = objects[6] != null ? ((Timestamp) objects[6]).toLocalDateTime() : null;
+
+            return new TherapySessionMoodDto(
+                    (Long) objects[0], // patient_id
+                    sessionDate, // Converted session_date
+                    (Integer) objects[2], // mood_before
+                    (Integer) objects[3], // mood_day_of
+                    (Integer) objects[4], // mood_after
+                    nearestEntryDateBefore, // Converted nearest_entry_date_before
+                    nearestEntryDateAfter  // Converted nearest_entry_date_after
+            );
+        }).collect(Collectors.toList());
+        if (currentUser.getRole() == Role.THERAPIST)
+            if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository))
+                return therapySessionMoodDtos;
+
+        if (currentUser.getRole() == Role.PATIENT) {
+            if (!currentUser.getId().equals(patientId))
+                throw new UnauthorizedException("You have provided the wrong patientId");
+
+            if (Utilities.therapistBelongsToPatient(currentUser.getTherapist().getId(), userProfileRepository)) {
+                return therapySessionMoodDtos;
+            }
+        }
+        return null;
     }
 }

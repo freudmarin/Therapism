@@ -1,6 +1,7 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.AssignedTaskDto;
+import com.marindulja.mentalhealthbackend.dtos.TaskCompletionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TaskDto;
 import com.marindulja.mentalhealthbackend.services.tasks.TaskService;
 import org.springframework.http.HttpStatus;
@@ -53,6 +54,13 @@ public class TaskController {
     public ResponseEntity<?> updateTaskStatus(@PathVariable Long taskId, @RequestBody TaskDto taskDtoStatusUpdate) {
         final var assignedTaskDto = taskService.changeTaskStatus(taskId, taskDtoStatusUpdate.getStatus());
         return new ResponseEntity<>(assignedTaskDto, HttpStatus.OK);
+    }
+
+    @GetMapping("moodImprovement/{patientId}")
+    @PreAuthorize("hasAnyRole('THERAPIST','PATIENT')")
+    public ResponseEntity<List<TaskCompletionMoodDto>> findCorrelationBetweenTaskCompletionAndMoodImprovement(@PathVariable Long patientId) {
+        var moodImprovementAndTaskCompletion = taskService.getTaskCompletionAndMoodByPatientId(patientId);
+        return new ResponseEntity<>(moodImprovementAndTaskCompletion, HttpStatus.OK);
     }
 }
 

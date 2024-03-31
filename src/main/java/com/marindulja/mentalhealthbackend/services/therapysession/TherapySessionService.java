@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.services.therapysession;
 
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 
@@ -21,4 +22,6 @@ public interface TherapySessionService {
 
     void declineSession(Long sessionId);
     void deleteTherapySession(Long therapyId);
+
+    List<TherapySessionMoodDto> findMoodChangesAroundTherapySessions(Long patientId);
 }

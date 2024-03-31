@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
+import com.marindulja.mentalhealthbackend.dtos.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 import com.marindulja.mentalhealthbackend.services.therapysession.TherapySessionService;
@@ -9,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/therapySessions")
@@ -37,14 +39,14 @@ public class TherapyController {
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> updateExistingTherapySession(@PathVariable Long therapyId, @PathVariable Long patientId,
                                                           @RequestBody TherapySessionWriteDto request,
-                                                          @RequestParam(value = "zoomCode", required = true) String zoomCode) {
+                                                          @RequestParam(value = "zoomCode") String zoomCode) {
         var updatedTherapySession = therapySessionService.updateTherapySession(patientId, therapyId, request, zoomCode);
         return new ResponseEntity<>(updatedTherapySession, HttpStatus.OK);
     }
 
     @PatchMapping("session/{sessionId}/accept")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<TherapySessionReadDto> acceptSession(@PathVariable Long sessionId, @RequestParam(value = "zoomCode", required = true) String zoomCode) {
+    public ResponseEntity<TherapySessionReadDto> acceptSession(@PathVariable Long sessionId, @RequestParam(value = "zoomCode") String zoomCode) {
         var acceptedSession = therapySessionService.acceptSession(sessionId, zoomCode);
         return new ResponseEntity<>(acceptedSession, HttpStatus.OK);
     }
@@ -65,9 +67,9 @@ public class TherapyController {
 
     @PatchMapping("{therapyId}")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> updatePatientNotes(@PathVariable Long therapyId, @RequestBody TherapySessionWriteDto therapySessionDto) {
-        therapySessionService.updatePatientNotes(therapyId, therapySessionDto);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<TherapySessionReadDto> updatePatientNotes(@PathVariable Long therapyId, @RequestBody TherapySessionWriteDto therapySessionDto) {
+        var therapySessionReadDto =  therapySessionService.updatePatientNotes(therapyId, therapySessionDto);
+        return new ResponseEntity<>(therapySessionReadDto,HttpStatus.OK);
     }
 
     @DeleteMapping("{therapyId}")
@@ -75,5 +77,12 @@ public class TherapyController {
     public ResponseEntity<?> deleteTherapySession(@PathVariable Long therapyId) {
         therapySessionService.deleteTherapySession(therapyId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("moodChanges/{patientId}")
+    @PreAuthorize("hasAnyRole('THERAPIST','PATIENT')")
+    public ResponseEntity<List<TherapySessionMoodDto>> findMoodChangesAroundTherapySessions(@PathVariable Long patientId) {
+        var moodChangesAroundTherapySessions = therapySessionService.findMoodChangesAroundTherapySessions(patientId);
+        return new ResponseEntity<>(moodChangesAroundTherapySessions, HttpStatus.OK);
     }
 }
