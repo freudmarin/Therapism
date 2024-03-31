@@ -33,7 +33,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     private final ProfileRepository profileRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(ModelMappingUtility mapper, UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
