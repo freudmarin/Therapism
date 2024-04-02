@@ -1,8 +1,8 @@
 package com.marindulja.mentalhealthbackend.common;
 
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
+import com.marindulja.mentalhealthbackend.models.PatientProfile;
 import com.marindulja.mentalhealthbackend.models.User;
-import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -42,15 +42,17 @@ public class Utilities {
         return true;
     }
 
-    public static UserProfile getPatientProfileIfBelongsToTherapist(Long userId, ProfileRepository userProfileRepository) {
+    public static PatientProfile getPatientProfileIfBelongsToTherapist(Long userId, ProfileRepository userProfileRepository) {
         final var therapist = Utilities.getCurrentUser().get();
-        final var patientProfile = userProfileRepository.findByUserId(userId)
+        final var userProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient with id " + userId + "not found"));
-
-        if (patientProfile.getUser().getTherapist() == null ||
-                !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-            throw new UnauthorizedException("The patient with id " + userId + " is not the patient of the therapist with id " + therapist.getId());
+        if (userProfile instanceof PatientProfile patientProfile) {
+            if (patientProfile.getUser().getTherapist() == null ||
+                    !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
+                throw new UnauthorizedException("The patient with id " + userId + " is not the patient of the therapist with id " + therapist.getId());
+            }
+            return patientProfile;
         }
-        return patientProfile;
+        throw new UnauthorizedException("Current User is not a patient");
     }
 }

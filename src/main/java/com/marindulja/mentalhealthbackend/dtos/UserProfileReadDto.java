@@ -6,16 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserProfileReadDto {
+    private UserReadDto userDto;
     private Long profileId;
     private String phoneNumber;
     private Gender gender;
-    List<AnxietyRecordReadDto> anxietyRecords;
-    List<DisorderDto> disorders;
 }

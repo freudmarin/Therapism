@@ -50,11 +50,10 @@ public class UserServiceImpl implements UserService {
         final var patients = userRepository.findAllById(userIds);
         if (currentUser.getRole() == Role.ADMIN) {
             assignTherapistToPatients(therapist, patients);
-        } else if (currentUser.getRole() == THERAPIST && currentUser.getId() == therapistId) {
+        } else if (currentUser.getRole() == THERAPIST && currentUser.getId().equals(therapistId)) {
             assignTherapistToPatients(therapist, patients);
         } else
             throw new UnauthorizedException("The user with id " + currentUser.getId() + "doesn't have the required permission to perform this operation");
-
     }
 
     public void assignTherapistToPatients(User therapist, List<User> patients) {

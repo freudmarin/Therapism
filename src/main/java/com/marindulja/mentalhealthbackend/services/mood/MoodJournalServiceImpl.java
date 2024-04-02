@@ -50,7 +50,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     public List<MoodJournalReadDto> getMoodJournalsByPatient(Long userId) {
         final var currentUser = Utilities.getCurrentUser().get();
-        if (currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
+        if (currentUser.getRole() == Role.PATIENT && !userId.equals(currentUser.getId()))
             throw new UnauthorizedException("Patient can view only his/her mood journal entries");
         else if (currentUser.getRole() == Role.THERAPIST && !Utilities.patientBelongsToTherapist(userId, profileRepository))
             throw new UnauthorizedException("Therapist can view only his/her patient's mood journal");

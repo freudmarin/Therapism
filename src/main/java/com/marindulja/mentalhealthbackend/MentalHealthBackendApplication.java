@@ -2,8 +2,8 @@ package com.marindulja.mentalhealthbackend;
 
 import com.marindulja.mentalhealthbackend.models.Gender;
 import com.marindulja.mentalhealthbackend.models.Role;
+import com.marindulja.mentalhealthbackend.models.SuperAdminProfile;
 import com.marindulja.mentalhealthbackend.models.User;
-import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
@@ -25,7 +25,7 @@ public class MentalHealthBackendApplication {
         return args -> {
             if (userRepository.findByRole(Role.SUPERADMIN).isEmpty()) {
                 User superAdmin = new User();
-                UserProfile superAdminUserProfile = new UserProfile();
+                SuperAdminProfile superAdminUserProfile = new SuperAdminProfile();
                 superAdmin.setUsername("marindulja");
                 superAdmin.setPassword(passwordEncoder.encode("Superadmin19!"));
                 superAdmin.setRole(Role.SUPERADMIN);

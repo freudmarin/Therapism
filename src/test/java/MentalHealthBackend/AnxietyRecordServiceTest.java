@@ -3,7 +3,7 @@ package MentalHealthBackend;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.UserProfileWithUserDto;
+import com.marindulja.mentalhealthbackend.dtos.PatientProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.models.*;
@@ -54,7 +54,7 @@ public class AnxietyRecordServiceTest {
     private AnxietyRecordServiceImpl anxietyRecordService;
 
     private User currentUser;
-    private UserProfile currentUserProfile;
+    private PatientProfile patientProfile;
 
 
     @BeforeEach
@@ -65,8 +65,11 @@ public class AnxietyRecordServiceTest {
         // Manually create the instance of AnxietyRecordServiceImpl
         anxietyRecordService = new AnxietyRecordServiceImpl(anxietyRecordRepository, userRepository, userProfileRepository, profileService, modelMapper);
 
-        currentUser = new User(1L, "user", "test", "user@example.com", null, null, false, Role.PATIENT);
-        currentUserProfile = new UserProfile(1L, "+355684448934", Gender.MALE, false, new ArrayList<>(), new ArrayList<>(), currentUser);
+        currentUser = new User(1L, "user", "test", "user@example.com",
+                null, null, false, Role.PATIENT);
+        patientProfile = new PatientProfile(1L, "+355684448934", Gender.MALE, false, currentUser,
+                new ArrayList<>(), new ArrayList<>(),
+        new ArrayList<>());
     }
 
 
@@ -74,9 +77,9 @@ public class AnxietyRecordServiceTest {
     void createAnxietyRecord_Success() {
         // Arrange
         AnxietyRecordWriteDto recordDto = new AnxietyRecordWriteDto(10, LocalDateTime.of(2024, Month.MARCH, 19, 19, 30));
-        AnxietyRecord record = new AnxietyRecord(1L, currentUserProfile, LocalDateTime.of(2024, Month.MARCH, 19, 19, 30), 10);
+        AnxietyRecord record = new AnxietyRecord(1L, patientProfile, LocalDateTime.of(2024, Month.MARCH, 19, 19, 30), 10);
 
-        UserProfileWithUserDto userProfileWithUserDto = new UserProfileWithUserDto(new UserReadDto(1L, "user", "user@example.com", Role.PATIENT),
+        PatientProfileReadDto patientProfileReadDto = new PatientProfileReadDto(new UserReadDto(1L, "user", "user@example.com", Role.PATIENT),
                 1L, "+355684448934", Gender.MALE, List.of(new AnxietyRecordReadDto(1L, 10,
                 LocalDateTime.of(2024, Month.MARCH, 19, 19, 30))), new ArrayList<>());
         // Mocking Utilities.getCurrentUser()
@@ -84,19 +87,19 @@ public class AnxietyRecordServiceTest {
             // Mocking the current user behavior
             utilitiesMockedStatic.when(Utilities::getCurrentUser).thenReturn(java.util.Optional.of(currentUser));
 
-            when(userProfileRepository.findByUserId(any(Long.class))).thenReturn(java.util.Optional.of(currentUserProfile));
+            when(userProfileRepository.findByUserId(any(Long.class))).thenReturn(java.util.Optional.of(patientProfile));
             when(modelMapper.map(recordDto, AnxietyRecord.class)).thenReturn(record);
             when(anxietyRecordRepository.save(any(AnxietyRecord.class))).thenReturn(record);
-            when(profileService.findByUserId(any(Long.class))).thenReturn(userProfileWithUserDto);
+            when(profileService.findByUserId(any(Long.class))).thenReturn(patientProfileReadDto);
 
             // Act
-            UserProfileWithUserDto result = anxietyRecordService.registerAnxietyLevels(recordDto);
+            PatientProfileReadDto result = anxietyRecordService.registerAnxietyLevels(recordDto);
             // Assert
-            assertEquals(userProfileWithUserDto.getAnxietyRecords().get(0).getAnxietyLevel(), result.getAnxietyRecords().get(0).getAnxietyLevel());
-            assertEquals(userProfileWithUserDto.getAnxietyRecords().get(0).getRecordDate(), result.getAnxietyRecords().get(0).getRecordDate());
-            assertEquals(userProfileWithUserDto.getProfileId(), result.getProfileId());
-            assertEquals(userProfileWithUserDto.getPhoneNumber(), result.getPhoneNumber());
-            assertEquals(userProfileWithUserDto.getGender(), result.getGender());
+            assertEquals(patientProfileReadDto.getAnxietyRecords().get(0).getAnxietyLevel(), result.getAnxietyRecords().get(0).getAnxietyLevel());
+            assertEquals(patientProfileReadDto.getAnxietyRecords().get(0).getRecordDate(), result.getAnxietyRecords().get(0).getRecordDate());
+            assertEquals(patientProfileReadDto.getProfileId(), result.getProfileId());
+            assertEquals(patientProfileReadDto.getPhoneNumber(), result.getPhoneNumber());
+            assertEquals(patientProfileReadDto.getGender(), result.getGender());
             // Verify other properties as needed
         }
     }
@@ -105,15 +108,15 @@ public class AnxietyRecordServiceTest {
     void getAllOfCurrentUser_Success() {
         // Setup
         LocalDateTime recordDate = LocalDateTime.now();
-        AnxietyRecord anxietyRecord = new AnxietyRecord(1L, currentUserProfile, recordDate, 10);
-        currentUserProfile.setAnxietyRecords(Arrays.asList(anxietyRecord)); // Ensure the user profile contains the anxiety records
+        AnxietyRecord anxietyRecord = new AnxietyRecord(1L, patientProfile, recordDate, 10);
+        patientProfile.setAnxietyRecords(Arrays.asList(anxietyRecord)); // Ensure the user profile contains the anxiety records
 
         AnxietyRecordReadDto expectedDto = new AnxietyRecordReadDto(anxietyRecord.getId(), anxietyRecord.getAnxietyLevel(), anxietyRecord.getRecordDate());
         List<AnxietyRecordReadDto> expectedDtos = Collections.singletonList(expectedDto);
 
         try (MockedStatic<Utilities> utilities = Mockito.mockStatic(Utilities.class)) {
             utilities.when(Utilities::getCurrentUser).thenReturn(java.util.Optional.of(currentUser));
-            when(userProfileRepository.findByUserId(currentUser.getId())).thenReturn(java.util.Optional.of(currentUserProfile));
+            when(userProfileRepository.findByUserId(currentUser.getId())).thenReturn(java.util.Optional.of(patientProfile));
 
             // This mock setup handles any AnxietyRecord and maps it to an AnxietyRecordReadDto.
             when(modelMapper.map(any(AnxietyRecord.class), eq(AnxietyRecordReadDto.class))).thenReturn(expectedDto);

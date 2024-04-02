@@ -10,7 +10,10 @@ import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.DisorderRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +47,6 @@ public class DisorderServiceImpl implements DisorderService {
 
     @Override
     public void assignDisordersToUser(Long userId, List<Long> disorderIds) {
-        //even the therapist can be a patient
         final var patientProfile = Utilities.getPatientProfileIfBelongsToTherapist(userId, userProfileRepository);
         final var disorders = disorderRepository.findAllById(disorderIds);
 

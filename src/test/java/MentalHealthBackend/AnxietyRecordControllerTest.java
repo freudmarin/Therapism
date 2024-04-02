@@ -5,7 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.marindulja.mentalhealthbackend.controllers.AnxietyRecordController;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.UserProfileWithUserDto;
+import com.marindulja.mentalhealthbackend.dtos.PatientProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
 import com.marindulja.mentalhealthbackend.models.Gender;
 import com.marindulja.mentalhealthbackend.models.Role;
@@ -57,9 +57,9 @@ class AnxietyRecordControllerTest {
         List<AnxietyRecordReadDto> anxietyRecords = new ArrayList<>();
         anxietyRecords.add(new AnxietyRecordReadDto(1L, 10,
                 LocalDateTime.of(2024, Month.MARCH, 19, 19, 30)));
-        UserProfileWithUserDto userProfileWithUserDto = new UserProfileWithUserDto(new UserReadDto(1L, "user", "user@example.com", Role.PATIENT),
+        PatientProfileReadDto patientProfileReadDto = new PatientProfileReadDto(new UserReadDto(1L, "user", "user@example.com", Role.PATIENT),
                 1L, "+355684448934", Gender.MALE, anxietyRecords, new ArrayList<>());
-        when(anxietyRecordService.registerAnxietyLevels(any(AnxietyRecordWriteDto.class))).thenReturn(userProfileWithUserDto);
+        when(anxietyRecordService.registerAnxietyLevels(any(AnxietyRecordWriteDto.class))).thenReturn(patientProfileReadDto);
 
         mockMvc.perform(post("/api/v1/anxiety-records/current-user/register-anxiety")
                         .contentType(MediaType.APPLICATION_JSON)

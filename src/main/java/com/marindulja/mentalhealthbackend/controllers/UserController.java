@@ -1,6 +1,9 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.*;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileReadDto;
+import com.marindulja.mentalhealthbackend.dtos.UserProfileWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
+import com.marindulja.mentalhealthbackend.dtos.UserWriteDto;
 import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import com.marindulja.mentalhealthbackend.services.users.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -53,9 +56,9 @@ public class UserController {
     }
 
 
-    @GetMapping("/{id}/profile")
+    @GetMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
-    public ResponseEntity<UserProfileWithUserDto> getUserProfileById(@PathVariable Long id) {
+    public ResponseEntity<UserProfileReadDto> getUserProfileById(@PathVariable Long id) {
         final var profile = userProfileService.findByUserId(id);
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }

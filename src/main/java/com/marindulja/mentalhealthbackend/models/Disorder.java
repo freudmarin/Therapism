@@ -25,7 +25,7 @@ public class Disorder {
     private String description;
 
     @ManyToMany(mappedBy = "disorders")
-    private List<UserProfile> userProfiles = new ArrayList<>();
+    private List<PatientProfile> patientProfiles = new ArrayList<>();
 
     @Column(name = "is_deleted")
     private boolean isDeleted;
