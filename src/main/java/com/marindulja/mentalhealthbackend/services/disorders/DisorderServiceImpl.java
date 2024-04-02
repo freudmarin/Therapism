@@ -113,7 +113,7 @@ public class DisorderServiceImpl implements DisorderService {
 
         CriteriaQuery<Object[]> mainQuery = cb.createQuery(Object[].class);
         Root<Disorder> disorderRoot = mainQuery.from(Disorder.class);
-        Join<Disorder, UserProfile> userProfilesJoin = disorderRoot.join("userProfiles");
+        Join<Disorder, UserProfile> userProfilesJoin = disorderRoot.join("patientProfiles");
 
         // Assuming 'userProfiles' is the collection in Disorder entity pointing to UserProfile
         mainQuery.multiselect(disorderRoot.get("name"), cb.count(disorderRoot.get("id")))

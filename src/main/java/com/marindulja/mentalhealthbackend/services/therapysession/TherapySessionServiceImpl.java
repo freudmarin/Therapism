@@ -123,6 +123,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
         zoomMeetingRequest.setStartTime(zoomDateTime);
         ZoomMeetingResponse response = zoomApiIntegration.callCreateMeetingApi(meetingDetailsHelper, zoomMeetingRequest, tokenResponse.getAccessToken());
+        session.setMeetingId(response.getMeetingId());
         session.setZoomStartLinkUrl(response.getStartUrl());
         session.setZoomJoinLinkUrl(response.getJoinUrl());
         session.setMeetingId(response.getMeetingId());

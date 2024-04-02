@@ -43,7 +43,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         // Update mood entry fields
         moodJournalEntry.setUser(profileRepository.findById(Utilities.getCurrentUser().get().getId()).get());
         // Update other fields as needed
-        moodJournalEntry.setEntryDate(moodEntryDTO.getEntryDate());
+        moodJournalEntry.setEntryDate(LocalDateTime.now());
         MoodJournal savedMoodEntry = moodJournalRepository.save(moodJournalEntry);
         return mapper.map(savedMoodEntry, MoodJournalReadDto.class);
     }
@@ -91,7 +91,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     public List<MoodTrendDto> getMoodTrends(Long userId, ChronoUnit interval) {
         final var currentUser = Utilities.getCurrentUser().get();
-        if (currentUser.getRole() == Role.PATIENT && userId != currentUser.getId())
+        if (currentUser.getRole() == Role.PATIENT && !userId.equals(currentUser.getId()))
             throw new UnauthorizedException("Patient can view only his/her mood journal trends");
         else if (currentUser.getRole() == Role.THERAPIST && !Utilities.patientBelongsToTherapist(userId, profileRepository))
             throw new UnauthorizedException("Therapist can view only his/her patient's mood trends");
