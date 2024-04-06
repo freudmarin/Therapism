@@ -10,6 +10,6 @@ public interface AnxietyRecordService {
 
     PatientProfileReadDto registerAnxietyLevels(AnxietyRecordWriteDto anxietyRecord);
 
-    List<AnxietyRecordReadDto> getAllOfCurrentUser();
+    List<AnxietyRecordReadDto> getAllOfCurrentPatient();
     List<AnxietyRecordReadDto> viewPatientAnxietyLevels(long patientId);
 }

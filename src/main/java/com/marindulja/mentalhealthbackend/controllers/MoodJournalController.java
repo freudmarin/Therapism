@@ -29,9 +29,9 @@ public class MoodJournalController {
         return new ResponseEntity<>(createdMoodEntry, HttpStatus.CREATED);
     }
     @PreAuthorize("hasAnyRole('THERAPIST','PATIENT')")
-    @GetMapping("patients/{userId}")
-    public ResponseEntity<List<MoodJournalReadDto>> getMoodJournalsByPatient(@PathVariable Long userId) {
-        final var moodEntries = moodEntryService.getMoodJournalsByPatient(userId);
+    @GetMapping("patients/{patientId}")
+    public ResponseEntity<List<MoodJournalReadDto>> getMoodJournalsByPatient(@PathVariable Long patientId) {
+        final var moodEntries = moodEntryService.getMoodJournalsByPatient(patientId);
         return new ResponseEntity<>(moodEntries, HttpStatus.OK);
     }
 

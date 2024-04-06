@@ -84,7 +84,7 @@ class AnxietyRecordControllerTest {
                 new AnxietyRecordReadDto(2L, 7, LocalDateTime.of(2024, 3, 20, 15, 0))
         );
 
-        given(anxietyRecordService.getAllOfCurrentUser()).willReturn(anxietyRecords);
+        given(anxietyRecordService.getAllOfCurrentPatient()).willReturn(anxietyRecords);
 
         // When & Then
         mockMvc.perform(get("/api/v1/anxiety-records/current-user")

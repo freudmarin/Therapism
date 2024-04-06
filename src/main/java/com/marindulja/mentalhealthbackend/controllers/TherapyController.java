@@ -4,6 +4,7 @@ import com.marindulja.mentalhealthbackend.dtos.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
 import com.marindulja.mentalhealthbackend.services.therapysession.TherapySessionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,12 +15,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/therapySessions")
+@RequiredArgsConstructor
 public class TherapyController {
     private final TherapySessionService therapySessionService;
 
-    public TherapyController(TherapySessionService therapySessionService) {
-        this.therapySessionService = therapySessionService;
-    }
     @GetMapping("all")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> getAllSessionsOfTherapist(@RequestParam("from") LocalDateTime from,

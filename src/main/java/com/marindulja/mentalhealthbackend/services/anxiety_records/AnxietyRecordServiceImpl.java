@@ -69,7 +69,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
     }
 
     @Override
-    public List<AnxietyRecordReadDto> getAllOfCurrentUser() {
+    public List<AnxietyRecordReadDto> getAllOfCurrentPatient() {
         User currentUser = Utilities.getCurrentUser().get();
         UserProfile currentUserProfile = userProfileRepository.findByUserId(currentUser.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + currentUser + "not found"));

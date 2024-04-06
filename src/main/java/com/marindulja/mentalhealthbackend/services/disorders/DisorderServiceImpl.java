@@ -14,6 +14,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DisorderServiceImpl implements DisorderService {
 
     private final ModelMappingUtility mapper;
@@ -34,11 +36,6 @@ public class DisorderServiceImpl implements DisorderService {
     @Autowired
     private EntityManager entityManager;
 
-    public DisorderServiceImpl(ModelMappingUtility mapper, DisorderRepository disorderRepository, ProfileRepository userProfileRepository) {
-        this.mapper = mapper;
-        this.disorderRepository = disorderRepository;
-        this.userProfileRepository = userProfileRepository;
-    }
 
     @Override
     public List<DisorderDto> getAllDisorders() {

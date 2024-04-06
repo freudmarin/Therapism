@@ -122,7 +122,7 @@ public class AnxietyRecordServiceTest {
             when(modelMapper.map(any(AnxietyRecord.class), eq(AnxietyRecordReadDto.class))).thenReturn(expectedDto);
 
             // Execute
-            List<AnxietyRecordReadDto> resultDtos = anxietyRecordService.getAllOfCurrentUser();
+            List<AnxietyRecordReadDto> resultDtos = anxietyRecordService.getAllOfCurrentPatient();
 
             // Verify
             assertEquals(expectedDtos.size(), resultDtos.size(), "The size of returned DTO list should match the expected size.");

@@ -13,6 +13,7 @@ import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TaskRepository;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
     private final ModelMapper mapper;
@@ -28,11 +30,6 @@ public class TaskServiceImpl implements TaskService {
 
     private final ProfileRepository userProfileRepository;
 
-    public TaskServiceImpl(ModelMapper mapper, TaskRepository taskRepository, ProfileRepository userProfileRepository) {
-        this.mapper = mapper;
-        this.taskRepository = taskRepository;
-        this.userProfileRepository = userProfileRepository;
-    }
     @Override
     public List<AssignedTaskDto> allTasksAssignedToPatient() {
         final var allTasksAssignedToPatient = taskRepository.getAllByAssignedToUser(Utilities.getCurrentUser().get());
@@ -95,7 +92,7 @@ public class TaskServiceImpl implements TaskService {
             throw new UnauthorizedException("The role of current user should be Therapist or Patient");
 
         var results = taskRepository.findTaskCompletionAndMoodByUserId(patientId);
-        var taskCompletionMoodDtos =  results.stream()
+        var taskCompletionMoodDtos = results.stream()
                 .map(result -> new TaskCompletionMoodDto(
                         (Long) result[0], // assignedToUserId
                         ((Number) result[1]).doubleValue(), // completionRate, safely cast to Number then to Double

@@ -4,6 +4,7 @@ import com.marindulja.mentalhealthbackend.dtos.AssignedTaskDto;
 import com.marindulja.mentalhealthbackend.dtos.TaskCompletionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TaskDto;
 import com.marindulja.mentalhealthbackend.services.tasks.TaskService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,13 +14,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/tasks")
-@PreAuthorize("hasAnyRole('PATIENT', 'THERAPIST')")
+@RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
-
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
 
     @GetMapping("all/patient")
     @PreAuthorize("hasAnyRole('PATIENT')")

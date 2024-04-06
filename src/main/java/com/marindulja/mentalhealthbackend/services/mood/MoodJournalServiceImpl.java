@@ -12,6 +12,7 @@ import com.marindulja.mentalhealthbackend.repositories.MoodJournalRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class MoodJournalServiceImpl implements MoodJournalService {
 
     private final MoodJournalRepository moodJournalRepository;
@@ -29,14 +31,6 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     private final ProfileRepository profileRepository;
     private final ModelMappingUtility mapper;
-
-    public MoodJournalServiceImpl(MoodJournalRepository moodEntryRepository, UserRepository userRepository, ProfileRepository profileRepository, ModelMappingUtility mapper) {
-        this.moodJournalRepository = moodEntryRepository;
-        this.userRepository = userRepository;
-        this.profileRepository = profileRepository;
-        this.mapper = mapper;
-    }
-
 
     public MoodJournalReadDto createMoodEntry(MoodJournalWriteDto moodEntryDTO) {
         final var moodJournalEntry = mapper.map(moodEntryDTO, MoodJournal.class);
@@ -48,20 +42,20 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         return mapper.map(savedMoodEntry, MoodJournalReadDto.class);
     }
 
-    public List<MoodJournalReadDto> getMoodJournalsByPatient(Long userId) {
+    public List<MoodJournalReadDto> getMoodJournalsByPatient(Long patientId) {
         final var currentUser = Utilities.getCurrentUser().get();
-        if (currentUser.getRole() == Role.PATIENT && !userId.equals(currentUser.getId()))
+        if (currentUser.getRole() == Role.PATIENT && !patientId.equals(currentUser.getId()))
             throw new UnauthorizedException("Patient can view only his/her mood journal entries");
-        else if (currentUser.getRole() == Role.THERAPIST && !Utilities.patientBelongsToTherapist(userId, profileRepository))
+        else if (currentUser.getRole() == Role.THERAPIST && !Utilities.patientBelongsToTherapist(patientId, profileRepository))
             throw new UnauthorizedException("Therapist can view only his/her patient's mood journal");
-        final var moodEntries = moodJournalRepository.findAllByUserId(userId);
+        final var moodEntries = moodJournalRepository.findAllByUserId(patientId);
         return moodEntries.stream()
                 .map(moodEntry -> mapper.map(moodEntry, MoodJournalReadDto.class))
                 .collect(Collectors.toList());
     }
 
     public List<MoodJournalReadDto> getMoodJournalsByTherapist() {
-        final var therapist = userRepository.findById(Utilities.getCurrentUser().get().getId()).get();
+        final var therapist = Utilities.getCurrentUser().get();
         final var patients = userRepository.findAllByTherapist(therapist);
         return patients.stream()
                 .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId())

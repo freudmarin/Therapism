@@ -12,7 +12,7 @@ public interface MoodJournalService {
 
     List<MoodJournalReadDto> getMoodJournalsByTherapist();
 
-    List<MoodJournalReadDto> getMoodJournalsByPatient(Long userId);
+    List<MoodJournalReadDto> getMoodJournalsByPatient(Long patientId);
 
     void deleteMoodEntry(Long moodEntryId);
 

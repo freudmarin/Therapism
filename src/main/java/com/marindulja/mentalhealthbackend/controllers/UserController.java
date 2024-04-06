@@ -1,11 +1,9 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.UserProfileReadDto;
-import com.marindulja.mentalhealthbackend.dtos.UserProfileWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
-import com.marindulja.mentalhealthbackend.dtos.UserWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.*;
 import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import com.marindulja.mentalhealthbackend.services.users.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,20 +15,16 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/users")
 @Slf4j
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
     private final ProfileService userProfileService;
 
-    public UserController(UserService userService, ProfileService userProfileService) {
-        this.userService = userService;
-        this.userProfileService = userProfileService;
-    }
-
     @PostMapping("therapists/{therapistId}/assignPatients")
     @PreAuthorize("hasAnyRole('ADMIN', 'THERAPIST')")
-    public ResponseEntity<?> assignPatientsToTherapist(@RequestBody List<Long> userIds, @PathVariable("therapistId") Long therapistId) {
-        userService.assignPatientsToTherapist(userIds, therapistId);
+    public ResponseEntity<?> assignPatientsToTherapist(@RequestBody List<Long> patientIds, @PathVariable("therapistId") Long therapistId) {
+        userService.assignPatientsToTherapist(patientIds, therapistId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -55,6 +49,13 @@ public class UserController {
         return new ResponseEntity<>(userService.findAllByRoleFilteredAndSorted(searchValue), HttpStatus.OK);
     }
 
+    @DeleteMapping("{id}/profile")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userService.deleteById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
 
     @GetMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
@@ -77,10 +78,10 @@ public class UserController {
         return new ResponseEntity<>(profile, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("{id}/profile")
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        userService.deleteById(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @PutMapping("therapistProfile/{therapistId}")
+    @PreAuthorize("hasRole('THERAPIST')")
+    public ResponseEntity<?> updateTherapistProfile(@PathVariable Long therapistId, @RequestBody TherapistProfileUpdateDto profileCompletionDto) {
+        userProfileService.updateTherapistProfile(therapistId, profileCompletionDto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

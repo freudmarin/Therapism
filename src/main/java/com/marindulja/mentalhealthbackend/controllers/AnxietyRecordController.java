@@ -22,17 +22,17 @@ public class AnxietyRecordController {
         this.anxietyRecordService = anxietyRecordService;
     }
 
-    @PostMapping("current-user/register-anxiety")
+    @PostMapping("patient/register-anxiety")
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<PatientProfileReadDto> registerAnxietyLevels(@RequestBody AnxietyRecordWriteDto anxietyRecordDto) {
         final var userProfileDto = anxietyRecordService.registerAnxietyLevels(anxietyRecordDto);
         return new ResponseEntity<>(userProfileDto, HttpStatus.OK);
     }
 
-    @GetMapping("current-user")
+    @GetMapping("current-patient")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<List<AnxietyRecordReadDto>> getAllRecordsOfCurrentUser() {
-        final var anxietyRecords = anxietyRecordService.getAllOfCurrentUser();
+    public ResponseEntity<List<AnxietyRecordReadDto>> getAllRecordsOfCurrentPatient() {
+        final var anxietyRecords = anxietyRecordService.getAllOfCurrentPatient();
         return new ResponseEntity<>(anxietyRecords, HttpStatus.OK);
     }
 

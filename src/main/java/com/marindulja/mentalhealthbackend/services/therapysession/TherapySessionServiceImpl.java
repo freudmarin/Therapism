@@ -14,6 +14,7 @@ import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TherapySessionRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class TherapySessionServiceImpl implements TherapySessionService {
 
     private final ModelMappingUtility mapper;
@@ -38,15 +40,6 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     private final UserRepository userRepository;
 
     private final ZoomApiIntegration zoomApiIntegration;
-
-    public TherapySessionServiceImpl(ModelMappingUtility mapper, TherapySessionRepository therapySessionRepository, ProfileRepository userProfileRepository,
-                                     UserRepository userRepository, ZoomApiIntegration zoomApiIntegration) {
-        this.mapper = mapper;
-        this.therapySessionRepository = therapySessionRepository;
-        this.userProfileRepository = userProfileRepository;
-        this.userRepository = userRepository;
-        this.zoomApiIntegration = zoomApiIntegration;
-    }
 
     @Override
     public List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) {
@@ -145,6 +138,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
                 + "doesn't belong to therapist with id" + session.getTherapist().getId());
     }
 
+    @Override
     public void declineSession(Long sessionId) {
         TherapySession session = therapySessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found"));

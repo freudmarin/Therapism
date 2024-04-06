@@ -15,6 +15,7 @@ import com.marindulja.mentalhealthbackend.repositories.specifications.UserSpecif
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import static com.marindulja.mentalhealthbackend.models.Role.THERAPIST;
 
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final ModelMappingUtility mapper;
@@ -35,19 +37,12 @@ public class UserServiceImpl implements UserService {
     private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(ModelMappingUtility mapper, UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
-        this.mapper = mapper;
-        this.userRepository = userRepository;
-        this.profileRepository = profileRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
     @Override
     @Transactional
-    public void assignPatientsToTherapist(List<Long> userIds, Long therapistId) {
+    public void assignPatientsToTherapist(List<Long> patientIds, Long therapistId) {
         final var currentUser = Utilities.getCurrentUser().get();
         final var therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
-        final var patients = userRepository.findAllById(userIds);
+        final var patients = userRepository.findAllById(patientIds);
         if (currentUser.getRole() == Role.ADMIN) {
             assignTherapistToPatients(therapist, patients);
         } else if (currentUser.getRole() == THERAPIST && currentUser.getId().equals(therapistId)) {

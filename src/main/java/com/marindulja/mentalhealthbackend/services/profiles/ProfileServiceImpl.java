@@ -6,13 +6,17 @@ import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.*;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
+import com.marindulja.mentalhealthbackend.repositories.SpecializationRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
 
     private final ProfileRepository userProfileRepository;
@@ -20,12 +24,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final ModelMappingUtility mapper;
     private final UserRepository userRepository;
 
-    public ProfileServiceImpl(ProfileRepository userProfileRepository, ModelMappingUtility mapper,
-                              UserRepository userRepository) {
-        this.userProfileRepository = userProfileRepository;
-        this.mapper = mapper;
-        this.userRepository = userRepository;
-    }
+    private final SpecializationRepository specializationRepository;
 
     @Override
     public UserProfileReadDto createProfile(Long userId, UserProfileWriteDto userProfileCreationDto) {
@@ -85,6 +84,27 @@ public class ProfileServiceImpl implements ProfileService {
         final var userDto = mapper.map(userProfile.getUser(), UserReadDto.class);
 
         return getUserProfileReadDto(userProfile, userDto);
+    }
+
+    @Override
+    public void updateTherapistProfile(Long therapistId, TherapistProfileUpdateDto therapistProfileCompletionDto) {
+        final var currentUser = Utilities.getCurrentUser().get();
+
+        if (!therapistId.equals(currentUser.getId())) {
+            throw new UnauthorizedException("User with id " + currentUser.getId() + " not authorized to update profile with id " + therapistId);
+        }
+
+        final var userProfile = userProfileRepository.findByUserId(therapistId)
+                .orElseThrow(() -> new EntityNotFoundException("Profile not found for therapist with ID: " + therapistId));
+        List<Specialization> therapistSpecializationList = specializationRepository
+                .findAllById(therapistProfileCompletionDto.getSpecializationIds());
+
+        if (userProfile instanceof TherapistProfile therapistProfile ) {
+            therapistProfile.setSpecializations(therapistSpecializationList);
+            therapistProfile.setQualifications(therapistProfileCompletionDto.getQualifications());
+            therapistProfile.setYearsOfExperience(therapistProfileCompletionDto.getYearsOfExperience());
+            userProfileRepository.save(userProfile);
+        }
     }
 
     public UserProfileReadDto getUserProfileReadDto(UserProfile userProfile, UserReadDto userDto) {

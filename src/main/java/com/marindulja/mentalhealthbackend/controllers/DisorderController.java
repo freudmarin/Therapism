@@ -3,6 +3,7 @@ package com.marindulja.mentalhealthbackend.controllers;
 import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
 import com.marindulja.mentalhealthbackend.dtos.MostCommonDisordersDto;
 import com.marindulja.mentalhealthbackend.services.disorders.DisorderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,13 +13,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/disorders")
-@PreAuthorize("hasAnyRole('SUPERADMIN', 'THERAPIST')")
+@RequiredArgsConstructor
 public class DisorderController {
     private final DisorderService disorderService;
-
-    public DisorderController(DisorderService disorderService) {
-        this.disorderService = disorderService;
-    }
 
     @GetMapping("all")
     @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT', 'ADMIN', 'SUPERADMIN')")
