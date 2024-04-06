@@ -144,7 +144,7 @@ public class UserServiceImpl implements UserService {
         }
         return userListResult
                 .stream()
-                .map(user -> new UserReadDto(user.getId(), user.getUsername(), user.getEmail(), user.getRole()))
+                .map(user -> new UserReadDto(user.getId(), user.getActualUsername(), user.getEmail(), user.getRole()))
                 .collect(Collectors.toList());
     }
 }

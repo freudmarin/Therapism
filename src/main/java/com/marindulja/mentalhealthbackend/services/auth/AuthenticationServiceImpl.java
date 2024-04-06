@@ -29,7 +29,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .role(request.getRole()).build();
         userRepository.save(user);
         final var jwt = jwtService.generateToken(user);
-        return JwtAuthenticationResponse.builder().username(user.getUsername()).role(user.getRole()).token(jwt).build();
+        return JwtAuthenticationResponse.builder().username(user.getActualUsername()).role(user.getRole()).token(jwt).build();
     }
 
     @Override
@@ -41,7 +41,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
         final var jwt = jwtService.generateToken(user);
         final var refreshToken = refreshTokenService.generateRefreshToken(user);
-        return JwtAuthenticationResponse.builder().username(user.getUsername()).role(user.getRole()).token(jwt)
+        return JwtAuthenticationResponse.builder().username(user.getActualUsername()).role(user.getRole()).token(jwt)
                 .refreshToken(refreshToken.getToken()).build();
     }
 }

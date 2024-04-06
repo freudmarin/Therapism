@@ -4,6 +4,7 @@ import com.marindulja.mentalhealthbackend.dtos.MoodJournalReadDto;
 import com.marindulja.mentalhealthbackend.dtos.MoodJournalWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.MoodTrendDto;
 import com.marindulja.mentalhealthbackend.services.mood.MoodJournalService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,13 +15,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/mood-journal")
+@RequiredArgsConstructor
 public class MoodJournalController {
 
     private final MoodJournalService moodEntryService;
-
-    public MoodJournalController(MoodJournalService moodEntryService) {
-        this.moodEntryService = moodEntryService;
-    }
 
     @PreAuthorize("hasRole('PATIENT')")
     @PostMapping

@@ -4,6 +4,7 @@ import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.PatientProfileReadDto;
 import com.marindulja.mentalhealthbackend.services.anxiety_records.AnxietyRecordService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,13 +15,10 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/anxiety-records")
 @PreAuthorize("hasAnyRole('PATIENT', 'THERAPIST')")
+@RequiredArgsConstructor
 public class AnxietyRecordController {
 
     private final AnxietyRecordService anxietyRecordService;
-
-    public AnxietyRecordController(AnxietyRecordService anxietyRecordService) {
-        this.anxietyRecordService = anxietyRecordService;
-    }
 
     @PostMapping("patient/register-anxiety")
     @PreAuthorize("hasRole('PATIENT')")

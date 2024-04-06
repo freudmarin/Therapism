@@ -50,6 +50,10 @@ public class User implements UserDetails {
     public String getUsername() {
         return email;
     }
+
+    public String getActualUsername() {
+        return this.username;
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.toString());
