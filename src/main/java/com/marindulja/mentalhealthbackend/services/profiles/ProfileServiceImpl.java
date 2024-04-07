@@ -9,6 +9,7 @@ import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.SpecializationRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,44 +28,27 @@ public class ProfileServiceImpl implements ProfileService {
     private final SpecializationRepository specializationRepository;
 
     @Override
+    @Transactional
     public UserProfileReadDto createProfile(Long userId, UserProfileWriteDto userProfileCreationDto) {
-        final var cUser = Utilities.getCurrentUser().get();
+        var currentUser = getCurrentAuthenticatedUser();
+        authorizeUserAction(userId, currentUser.getId());
 
-        if (!userId.equals(cUser.getId())) {
-            throw new UnauthorizedException("User with id " + cUser.getId() + " not authorized to create profile for user with id " + userId);
-        }
-
-        final var currentUser = userRepository.findById(cUser.getId())
+        // Since we're within a transaction, this should ensure currentUser is managed
+        currentUser = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found."));
 
-        UserProfile newUserProfile;
-        if (currentUser.getRole() == Role.ADMIN) {
-            newUserProfile = mapper.map(userProfileCreationDto, AdminProfile.class);
-        } else if (currentUser.getRole() == Role.PATIENT) {
-            newUserProfile = mapper.map(userProfileCreationDto, PatientProfile.class);
-        } else if (currentUser.getRole() == Role.THERAPIST) {
-            newUserProfile = mapper.map(userProfileCreationDto, TherapistProfile.class);
-        } else {
-            newUserProfile = mapper.map(userProfileCreationDto, SuperAdminProfile.class);
-        }
+        final var newUserProfile = determineProfileTypeByRole(currentUser, userProfileCreationDto);
         newUserProfile.setUser(currentUser);
-        // Save the UserProfile
-        final var savedUserProfile = userProfileRepository.save(newUserProfile);
-        // Map the saved UserProfile to DTO and return
-        final var userDto = mapper.map(savedUserProfile.getUser(), UserReadDto.class);
 
-        return getUserProfileReadDto(savedUserProfile, userDto);
+        UserProfile savedUserProfile = userProfileRepository.save(newUserProfile);
+        return getUserProfileReadDto(savedUserProfile, mapper.map(savedUserProfile.getUser(), UserReadDto.class));
     }
 
     @Override
+    @Transactional
     public UserProfileReadDto updateProfile(Long userId, UserProfileWriteDto userProfileCreationOrUpdateDto) {
-
-        final var currentUser = Utilities.getCurrentUser().get();
-
-        if (!userId.equals(currentUser.getId())) {
-            throw new UnauthorizedException("User with id " + currentUser.getId() + " not authorized to update user with id " + userId);
-        }
-
+        final var currentUser = getCurrentAuthenticatedUser();
+        authorizeUserAction(userId, currentUser.getId());
         final var existingProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
         existingProfile.setPhoneNumber(userProfileCreationOrUpdateDto.getPhoneNumber());
@@ -77,39 +61,60 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public UserProfileReadDto findByUserId(Long userId) {
-
-        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+        final var userProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
 
-        final var userDto = mapper.map(userProfile.getUser(), UserReadDto.class);
+        final var userDto = new UserReadDto(userId, userProfile.getUser().getActualUsername(),
+                userProfile.getUser().getEmail(), userProfile.getUser().getRole());
 
         return getUserProfileReadDto(userProfile, userDto);
     }
 
     @Override
-    public void updateTherapistProfile(Long therapistId, TherapistProfileUpdateDto therapistProfileCompletionDto) {
-        final var currentUser = Utilities.getCurrentUser().get();
+    public void updateTherapistProfile(Long therapistId, TherapistProfileUpdateDto therapistProfileUpdateDto) {
+        User currentUser = getCurrentAuthenticatedUser();
+        authorizeUserAction(therapistId, currentUser.getId());
 
-        if (!therapistId.equals(currentUser.getId())) {
-            throw new UnauthorizedException("User with id " + currentUser.getId() + " not authorized to update profile with id " + therapistId);
+        TherapistProfile therapistProfile = userProfileRepository.findByUserId(therapistId)
+                .filter(TherapistProfile.class::isInstance)
+                .map(TherapistProfile.class::cast)
+                .orElseThrow(() -> new EntityNotFoundException("Therapist profile not found for ID: " + therapistId));
+
+        updateTherapistSpecializations(therapistProfile, therapistProfileUpdateDto.getSpecializationIds());
+        therapistProfile.setQualifications(therapistProfileUpdateDto.getQualifications());
+        therapistProfile.setYearsOfExperience(therapistProfileUpdateDto.getYearsOfExperience());
+
+        userProfileRepository.save(therapistProfile);
+    }
+
+    private User getCurrentAuthenticatedUser() {
+        return Utilities.getCurrentUser()
+                .orElseThrow(() -> new UnauthorizedException("No authenticated user found."));
+    }
+
+    private void authorizeUserAction(Long targetUserId, Long authenticatedUserId) {
+        if (!targetUserId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("User with id " + authenticatedUserId + " not authorized.");
         }
+    }
 
-        final var userProfile = userProfileRepository.findByUserId(therapistId)
-                .orElseThrow(() -> new EntityNotFoundException("Profile not found for therapist with ID: " + therapistId));
-        List<Specialization> therapistSpecializationList = specializationRepository
-                .findAllById(therapistProfileCompletionDto.getSpecializationIds());
+    private UserProfile determineProfileTypeByRole(User user, UserProfileWriteDto dto) {
+        return switch (user.getRole()) {
+            case ADMIN -> mapper.map(dto, AdminProfile.class);
+            case PATIENT -> mapper.map(dto, PatientProfile.class);
+            case THERAPIST -> mapper.map(dto, TherapistProfile.class);
+            default -> mapper.map(dto, SuperAdminProfile.class);
+        };
+    }
 
-        if (userProfile instanceof TherapistProfile therapistProfile ) {
-            therapistProfile.setSpecializations(therapistSpecializationList);
-            therapistProfile.setQualifications(therapistProfileCompletionDto.getQualifications());
-            therapistProfile.setYearsOfExperience(therapistProfileCompletionDto.getYearsOfExperience());
-            userProfileRepository.save(userProfile);
-        }
+    private void updateTherapistSpecializations(TherapistProfile therapistProfile, List<Long> specializationIds) {
+        final var specializations = specializationRepository.findAllById(specializationIds);
+        therapistProfile.setSpecializations(specializations);
     }
 
     public UserProfileReadDto getUserProfileReadDto(UserProfile userProfile, UserReadDto userDto) {
         if (userProfile instanceof PatientProfile patientProfile) {
-            PatientProfileReadDto patientProfileReadDto = new PatientProfileReadDto();
+            final var patientProfileReadDto = new PatientProfileReadDto();
             patientProfileReadDto.setProfileId(patientProfile.getId());
             patientProfileReadDto.setPhoneNumber(patientProfile.getPhoneNumber());
             patientProfileReadDto.setGender(patientProfile.getGender());
@@ -119,7 +124,7 @@ public class ProfileServiceImpl implements ProfileService {
             return patientProfileReadDto;
         }
         if (userProfile instanceof TherapistProfile therapistProfile) {
-            TherapistProfileReadDto therapistProfileReadDto = new TherapistProfileReadDto();
+            final var therapistProfileReadDto = new TherapistProfileReadDto();
             therapistProfileReadDto.setProfileId(therapistProfile.getId());
             therapistProfileReadDto.setPhoneNumber(therapistProfile.getPhoneNumber());
             therapistProfileReadDto.setGender(therapistProfile.getGender());
@@ -129,7 +134,7 @@ public class ProfileServiceImpl implements ProfileService {
             therapistProfileReadDto.setSpecializations(therapistProfile.getSpecializations());
             return therapistProfileReadDto;
         } else {
-            UserProfileReadDto userProfileReadDto = new UserProfileReadDto();
+            final var userProfileReadDto = new UserProfileReadDto();
             userProfileReadDto.setProfileId(userProfile.getId());
             userProfileReadDto.setPhoneNumber(userProfile.getPhoneNumber());
             userProfileReadDto.setGender(userProfile.getGender());

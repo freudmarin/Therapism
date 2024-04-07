@@ -10,5 +10,5 @@ import java.util.List;
 public class TherapistProfileUpdateDto {
      private Integer yearsOfExperience;
      private String qualifications;
-     private List<Integer> specializationIds;
+     private List<Long> specializationIds;
 }

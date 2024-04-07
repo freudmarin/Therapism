@@ -69,7 +69,7 @@ public class DisorderServiceImpl implements DisorderService {
         final var retainedDisorders = currentDisordersList.stream().filter(newDisorders::contains).collect(Collectors.toList());
 
         // Get medications from the new list that are not in the current list
-        final var disordersToAdd = newDisorders.stream().filter(medication -> !retainedDisorders.contains(medication)).toList();
+        final var disordersToAdd = newDisorders.stream().filter(disorder -> !retainedDisorders.contains(disorder)).toList();
 
         // Combine the two lists
         retainedDisorders.addAll(disordersToAdd);
@@ -117,7 +117,8 @@ public class DisorderServiceImpl implements DisorderService {
                 .orderBy(cb.desc(cb.count(disorderRoot.get("id"))));
 
         List<Object[]> disorderCounts = entityManager.createQuery(mainQuery).getResultList();
-        List<MostCommonDisordersDto> dtos = disorderCounts.stream().map(result -> {
+
+        return disorderCounts.stream().map(result -> {
             MostCommonDisordersDto dto = new MostCommonDisordersDto();
             dto.setDisorderName((String) result[0]);
             dto.setDisorderFrequency(((Long) result[1]));
@@ -129,8 +130,6 @@ public class DisorderServiceImpl implements DisorderService {
 
             return dto;
         }).collect(Collectors.toList());
-
-        return dtos;
     }
 
 

@@ -12,7 +12,9 @@ import java.util.List;
 
 @Repository
 public interface TherapySessionRepository extends JpaRepository<TherapySession, Long> {
-    List<TherapySession> getTherapySessionsByTherapistAndSessionDateBetween(User therapist, LocalDateTime startDate, LocalDateTime endDate);
+    List<TherapySession> findTherapySessionsByTherapistAndSessionDateBetween(User therapist, LocalDateTime startDate, LocalDateTime endDate);
+
+
     @Query(value = "WITH SessionWithMood AS (" +
             "SELECT " +
             "s.patient_id, " +
@@ -39,7 +41,7 @@ public interface TherapySessionRepository extends JpaRepository<TherapySession, 
             "FROM SessionWithMood sub " +
             "WHERE " +
             "sub.patient_id = swm.patient_id AND sub.entry_date > swm.session_date " +
-            "ORDER BY sub.entry_date ASC" +
+            "ORDER BY sub.entry_date " +
             ") AS nearest_entry_date_after " +
             "FROM SessionWithMood swm " +
             "WHERE entry_date <= session_date " +

@@ -50,7 +50,7 @@ public class TherapyController {
         return new ResponseEntity<>(acceptedSession, HttpStatus.OK);
     }
 
-    @PatchMapping("/session/{sessionId}")
+    @GetMapping("/session/{sessionId}")
     @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT')")
     public ResponseEntity<TherapySessionReadDto> getTherapySession(@PathVariable Long sessionId) {
         var therapySession = therapySessionService.getTherapySession(sessionId);

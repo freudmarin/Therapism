@@ -17,19 +17,19 @@ import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AnxietyRecordServiceImpl implements AnxietyRecordService {
 
     private final AnxietyRecordRepository anxietyRecordRepository;
-
-    private final UserRepository userRepository;
 
     private final ProfileRepository userProfileRepository;
 
@@ -37,62 +37,64 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
 
     private final ModelMappingUtility mapper;
 
-    public AnxietyRecordServiceImpl(AnxietyRecordRepository anxietyRecordRepository, UserRepository userRepository, ProfileRepository userProfileRepository, ProfileService profileService, ModelMappingUtility mapper) {
-        this.anxietyRecordRepository = anxietyRecordRepository;
-        this.userRepository = userRepository;
-        this.userProfileRepository = userProfileRepository;
-        this.profileService = profileService;
-        this.mapper = mapper;
-    }
-
     @Override
     @Transactional
     public PatientProfileReadDto registerAnxietyLevels(AnxietyRecordWriteDto anxietyRecordDto) {
-        User currentUser = Utilities.getCurrentUser().get();
+        User currentUser = Utilities.getCurrentUser()
+                .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
+
         if (anxietyRecordDto.getAnxietyLevel() == null) {
             throw new InvalidInputException("Anxiety level should be defined");
         }
-        UserProfile userProfile = userProfileRepository.findByUserId(currentUser.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + currentUser + "not found"));
 
-        if (userProfile instanceof PatientProfile patientProfile) {
-            AnxietyRecord anxietyRecordToBeSaved = mapper.map(anxietyRecordDto, AnxietyRecord.class);
-            anxietyRecordToBeSaved.setUser(patientProfile);
-            anxietyRecordToBeSaved.setRecordDate(LocalDateTime.now());
-            anxietyRecordRepository.save(anxietyRecordToBeSaved);
-            patientProfile.getAnxietyRecords().add(anxietyRecordToBeSaved);
-            userProfileRepository.save(patientProfile);
-            if (profileService.findByUserId(currentUser.getId()) instanceof PatientProfileReadDto patientProfileReadDto)
-                return patientProfileReadDto;
-        }
+        UserProfile userProfile = userProfileRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + currentUser.getId() + " not found"));
+
+        return Optional.of(userProfile)
+                .filter(PatientProfile.class::isInstance)
+                .map(PatientProfile.class::cast)
+                .map(patientProfile -> saveAnxietyRecord(currentUser, anxietyRecordDto, patientProfile))
+                .orElseThrow(() -> new UnauthorizedException("Only patients can register their anxiety levels"));
+    }
+
+    private PatientProfileReadDto saveAnxietyRecord(User currentUser, AnxietyRecordWriteDto anxietyRecordDto, PatientProfile patientProfile) {
+        AnxietyRecord anxietyRecordToBeSaved = mapper.map(anxietyRecordDto, AnxietyRecord.class);
+        anxietyRecordToBeSaved.setUser(patientProfile);
+        anxietyRecordToBeSaved.setRecordDate(LocalDateTime.now());
+        anxietyRecordRepository.save(anxietyRecordToBeSaved);
+        patientProfile.getAnxietyRecords().add(anxietyRecordToBeSaved);
+        userProfileRepository.save(patientProfile);
+        if (profileService.findByUserId(currentUser.getId()) instanceof PatientProfileReadDto patientProfileReadDto)
+            return patientProfileReadDto;
         throw new UnauthorizedException("Only patients can register their anxiety levels");
     }
 
     @Override
     public List<AnxietyRecordReadDto> getAllOfCurrentPatient() {
-        User currentUser = Utilities.getCurrentUser().get();
-        UserProfile currentUserProfile = userProfileRepository.findByUserId(currentUser.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + currentUser + "not found"));
-        if (currentUserProfile instanceof PatientProfile patientProfile) {
-            return patientProfile.getAnxietyRecords().stream().map(anxietyRecord -> mapper.map(anxietyRecord, AnxietyRecordReadDto.class)).collect(Collectors.toList());
-        }
-        return null;
+        return Utilities.getCurrentUser()
+                .flatMap(user -> userProfileRepository.findByUserId(user.getId()))
+                .filter(PatientProfile.class::isInstance)
+                .map(PatientProfile.class::cast)
+                .map(PatientProfile::getAnxietyRecords)
+                .map(records -> records.stream().map(record -> mapper.map(record, AnxietyRecordReadDto.class)).collect(Collectors.toList()))
+                .orElseThrow(() -> new EntityNotFoundException("Current user's patient profile not found"));
     }
 
     @Override
     public List<AnxietyRecordReadDto> viewPatientAnxietyLevels(long patientId) {
-        /*TODO : Filter patient records by date */
-        User currentUser = Utilities.getCurrentUser().get();
-        User patient = userRepository.findById(patientId).orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + " doesn't exist"));
-        if (patient.getTherapist() == null || !Objects.equals(patient.getTherapist().getId(), currentUser.getId())) {
+        User currentUser = Utilities.getCurrentUser()
+                .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
+
+        if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository))
             throw new UnauthorizedException("Patient with id " + patientId + " is not a patient of the therapist with id " + currentUser.getId());
-        }
 
-        UserProfile userProfile = userProfileRepository.findByUserId(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + patient + "not found"));
+        PatientProfile patientProfile = userProfileRepository.findByUserId(patientId)
+                .filter(PatientProfile.class::isInstance)
+                .map(PatientProfile.class::cast)
+                .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + patientId + " not found"));
 
-        if (userProfile instanceof PatientProfile patientProfile)
-            return patientProfile.getAnxietyRecords().stream().map(anxietyRecord -> mapper.map(anxietyRecord, AnxietyRecordReadDto.class)).collect(Collectors.toList());
-        return null;
+        return patientProfile.getAnxietyRecords().stream()
+                .map(anxietyRecord -> mapper.map(anxietyRecord, AnxietyRecordReadDto.class))
+                .collect(Collectors.toList());
     }
 }

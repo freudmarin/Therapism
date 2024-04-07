@@ -10,6 +10,7 @@ import com.marindulja.mentalhealthbackend.integrations.zoom.*;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.SessionStatus;
 import com.marindulja.mentalhealthbackend.models.TherapySession;
+import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TherapySessionRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
@@ -17,6 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -43,59 +45,70 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
     @Override
     public List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) {
-        final var allSessionsOfTherapist = therapySessionRepository.getTherapySessionsByTherapistAndSessionDateBetween(Utilities.getCurrentUser().get(), start, end);
-        return allSessionsOfTherapist.stream().map(therapySession -> mapper.map(therapySession, TherapySessionReadDto.class)).collect(Collectors.toList());
+        User therapist = getCurrentUserOrThrow();
+        List<TherapySession> sessions = therapySessionRepository.findTherapySessionsByTherapistAndSessionDateBetween(therapist, start, end);
+        return sessions.stream()
+                .map(session -> mapper.map(session, TherapySessionReadDto.class))
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto) {
-        if (Utilities.therapistBelongsToPatient(therapistId, userProfileRepository)
-                && checkTherapistAvailability(therapySessionDto.getSessionDate())) {
-            final var newTherapySession = mapper.map(therapySessionDto, TherapySession.class);
-            newTherapySession.setTherapist(userRepository.findById(therapistId).get());
-            newTherapySession.setPatient(Utilities.getCurrentUser().get());
-            newTherapySession.setSessionDate(therapySessionDto.getSessionDate());
-            newTherapySession.setStatus(SessionStatus.REQUESTED);
-            therapySessionRepository.save(newTherapySession);
-            return mapper.map(newTherapySession, TherapySessionReadDto.class);
+        User therapist = userRepository.findById(therapistId)
+                .orElseThrow(() -> new EntityNotFoundException("Therapist not found"));
+        User patient = getCurrentUserOrThrow();
+
+        if (!Utilities.therapistBelongsToPatient(therapistId, userProfileRepository)) {
+            throw new UnauthorizedException("Patient is not authorized to create a session with therapist");
         }
-        return null;
+
+        TherapySession newSession = mapper.map(therapySessionDto, TherapySession.class);
+        newSession.setTherapist(therapist);
+        newSession.setPatient(patient);
+        newSession.setStatus(SessionStatus.REQUESTED);
+        TherapySession savedSession = therapySessionRepository.save(newSession);
+
+        return mapper.map(savedSession, TherapySessionReadDto.class);
     }
 
     @Override
     public TherapySessionReadDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionWriteDto therapySessionDto, String zoomOAuthCode) {
-        if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository)) {
-            final var existingTherapySession = therapySessionRepository.findById(therapySessionId).orElseThrow(() -> new EntityNotFoundException("TherapySession with id " + therapySessionId + "not found"));
-            existingTherapySession.setTherapist(Utilities.getCurrentUser().get());
-            existingTherapySession.setPatient(userProfileRepository.findByUserId(patientId).get().getUser());
-            existingTherapySession.setTherapistNotes(therapySessionDto.getTherapistNotes());
-            existingTherapySession.setSessionDate(therapySessionDto.getSessionDate());
-            TokenResponse tokenResponse = null;
-            try {
-                tokenResponse = zoomApiIntegration.callTokenApi(zoomOAuthCode);
-            } catch (IOException e) {
-                log.error("Could not retrieve zoom access token");
-            }
-            ZoomMeetingRequest zoomMeetingRequest = new ZoomMeetingRequest();
-            zoomMeetingRequest.setType(2);
-
-            ZonedDateTime utcDateTime = therapySessionDto.getSessionDate().atZone(ZoneOffset.UTC); // Convert to UTC
-
-            // Format for Zoom
-            String zoomDateTime = utcDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-
-            zoomMeetingRequest.setStartTime(zoomDateTime);
-            zoomApiIntegration.callUpdateMeetingApi(zoomMeetingRequest, existingTherapySession.getMeetingId(), tokenResponse.getAccessToken());
-            existingTherapySession.setStatus(SessionStatus.SCHEDULED);
-            therapySessionRepository.save(existingTherapySession);
-            return mapper.map(existingTherapySession, TherapySessionReadDto.class);
+        if (!Utilities.patientBelongsToTherapist(patientId, userProfileRepository)) {
+            throw new UnauthorizedException("Therapist is not authorized to update a session of this patient");
         }
-        return null;
+        final var existingTherapySession = therapySessionRepository.findById(therapySessionId).orElseThrow(()
+                -> new EntityNotFoundException("TherapySession with id " + therapySessionId + "not found"));
+        final var patientProfile = userProfileRepository.findByUserId(patientId).orElseThrow(() ->
+                new EntityNotFoundException("Patient's profile with id " + patientId + "not found"));
+        existingTherapySession.setTherapist(getCurrentUserOrThrow());
+        existingTherapySession.setPatient(patientProfile.getUser());
+        existingTherapySession.setTherapistNotes(therapySessionDto.getTherapistNotes());
+        existingTherapySession.setSessionDate(therapySessionDto.getSessionDate());
+        TokenResponse tokenResponse = null;
+        try {
+            tokenResponse = zoomApiIntegration.callTokenApi(zoomOAuthCode);
+        } catch (IOException e) {
+            log.error("Could not retrieve zoom access token");
+        }
+        ZoomMeetingRequest zoomMeetingRequest = new ZoomMeetingRequest();
+        zoomMeetingRequest.setType(2);
+
+        ZonedDateTime utcDateTime = therapySessionDto.getSessionDate().atZone(ZoneOffset.UTC); // Convert to UTC
+
+        // Format for Zoom
+        String zoomDateTime = utcDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+
+        zoomMeetingRequest.setStartTime(zoomDateTime);
+        zoomApiIntegration.callUpdateMeetingApi(zoomMeetingRequest, existingTherapySession.getMeetingId(), tokenResponse.getAccessToken());
+        existingTherapySession.setStatus(SessionStatus.SCHEDULED);
+        therapySessionRepository.save(existingTherapySession);
+        return mapper.map(existingTherapySession, TherapySessionReadDto.class);
     }
 
     public TherapySessionReadDto acceptSession(Long sessionId, String zoomOAuthCode) {
         TherapySession session = therapySessionRepository.findById(sessionId)
-                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Session with id" + sessionId + "not found"));
         session.setStatus(SessionStatus.SCHEDULED);
         TokenResponse tokenResponse = null;
         try {
@@ -127,15 +140,14 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     @Override
     public TherapySessionReadDto getTherapySession(Long sessionId) {
         TherapySession session = therapySessionRepository.findById(sessionId)
-                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
-        if ((Utilities.getCurrentUser().get().getRole() == Role.THERAPIST &&
-                Utilities.patientBelongsToTherapist(session.getTherapist().getId(), userProfileRepository)) ||
-                (Utilities.getCurrentUser().get().getRole() == Role.PATIENT &&
-                        Utilities.therapistBelongsToPatient(session.getTherapist().getId(), userProfileRepository))) {
-            return mapper.map(session, TherapySessionReadDto.class);
-        }
-        throw new IllegalArgumentException("Patient with id " + session.getPatient().getId()
-                + "doesn't belong to therapist with id" + session.getTherapist().getId());
+                .orElseThrow(() -> new EntityNotFoundException("Session with id" + sessionId + "not found"));
+        User currentUser = getCurrentUserOrThrow();
+        validateUserRole(currentUser);
+        // Validate access rights
+        validateAccessToPatientData(currentUser, session.getPatient().getId());
+
+        // If validation passes, the user has access rights, so proceed to map and return the DTO
+        return mapper.map(session, TherapySessionReadDto.class);
     }
 
     @Override
@@ -168,37 +180,49 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
     @Override
     public List<TherapySessionMoodDto> findMoodChangesAroundTherapySessions(Long patientId) {
-        var currentUser = Utilities.getCurrentUser().get();
-        if (currentUser.getRole() != Role.THERAPIST && currentUser.getRole() != Role.PATIENT)
+        User currentUser = getCurrentUserOrThrow();
+        validateUserRole(currentUser);
+        validateAccessToPatientData(currentUser, patientId);
+
+        List<Object[]> moodData = therapySessionRepository.findMoodChangesAroundTherapySessions(patientId);
+        return moodData.stream()
+                .map(this::convertToTherapySessionMoodDto)
+                .collect(Collectors.toList());
+    }
+
+    private User getCurrentUserOrThrow() {
+        return Utilities.getCurrentUser()
+                .orElseThrow(() -> new UnauthorizedException("User not authenticated"));
+    }
+
+    private void validateUserRole(User user) {
+        if (user.getRole() != Role.THERAPIST && user.getRole() != Role.PATIENT) {
             throw new UnauthorizedException("The role of current user should be Therapist or Patient");
-        var therapySessionMoodDtos = therapySessionRepository.findMoodChangesAroundTherapySessions(patientId).stream().map(objects -> {
-            // Convert Timestamp to LocalDateTime
-            LocalDateTime sessionDate = objects[1] != null ? ((Timestamp) objects[1]).toLocalDateTime() : null;
-            LocalDateTime nearestEntryDateBefore = objects[5] != null ? ((Timestamp) objects[5]).toLocalDateTime() : null;
-            LocalDateTime nearestEntryDateAfter = objects[6] != null ? ((Timestamp) objects[6]).toLocalDateTime() : null;
-
-            return new TherapySessionMoodDto(
-                    (Long) objects[0], // patient_id
-                    sessionDate, // Converted session_date
-                    (Integer) objects[2], // mood_before
-                    (Integer) objects[3], // mood_day_of
-                    (Integer) objects[4], // mood_after
-                    nearestEntryDateBefore, // Converted nearest_entry_date_before
-                    nearestEntryDateAfter  // Converted nearest_entry_date_after
-            );
-        }).collect(Collectors.toList());
-        if (currentUser.getRole() == Role.THERAPIST)
-            if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository))
-                return therapySessionMoodDtos;
-
-        if (currentUser.getRole() == Role.PATIENT) {
-            if (!currentUser.getId().equals(patientId))
-                throw new UnauthorizedException("You have provided the wrong patientId");
-
-            if (Utilities.therapistBelongsToPatient(currentUser.getTherapist().getId(), userProfileRepository)) {
-                return therapySessionMoodDtos;
-            }
         }
-        return null;
+    }
+
+    private void validateAccessToPatientData(User currentUser, Long patientId) {
+        if (currentUser.getRole() == Role.THERAPIST && !Utilities.patientBelongsToTherapist(patientId, userProfileRepository)) {
+            throw new UnauthorizedException("Therapist does not have access to the requested patient's data");
+        }
+        if (currentUser.getRole() == Role.PATIENT && !currentUser.getId().equals(patientId)) {
+            throw new UnauthorizedException("Patients can only access their own data");
+        }
+    }
+
+    private TherapySessionMoodDto convertToTherapySessionMoodDto(Object[] data) {
+        LocalDateTime sessionDate = data[1] != null ? ((Timestamp) data[1]).toLocalDateTime() : null;
+        LocalDateTime nearestEntryDateBefore = data[5] != null ? ((Timestamp) data[5]).toLocalDateTime() : null;
+        LocalDateTime nearestEntryDateAfter = data[6] != null ? ((Timestamp) data[6]).toLocalDateTime() : null;
+
+        return new TherapySessionMoodDto(
+                (Long) data[0], // patient_id
+                sessionDate, // Converted session_date
+                (Integer) data[2], // mood_before
+                (Integer) data[3], // mood_day_of
+                (Integer) data[4], // mood_after
+                nearestEntryDateBefore, // Converted nearest_entry_date_before
+                nearestEntryDateAfter  // Converted nearest_entry_date_after
+        );
     }
 }
