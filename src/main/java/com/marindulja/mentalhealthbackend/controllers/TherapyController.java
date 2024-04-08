@@ -67,8 +67,8 @@ public class TherapyController {
     @PatchMapping("{therapyId}")
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<TherapySessionReadDto> updatePatientNotes(@PathVariable Long therapyId, @RequestBody TherapySessionWriteDto therapySessionDto) {
-        var therapySessionReadDto =  therapySessionService.updatePatientNotes(therapyId, therapySessionDto);
-        return new ResponseEntity<>(therapySessionReadDto,HttpStatus.OK);
+        var therapySessionReadDto = therapySessionService.updatePatientNotes(therapyId, therapySessionDto);
+        return new ResponseEntity<>(therapySessionReadDto, HttpStatus.OK);
     }
 
     @DeleteMapping("{therapyId}")

@@ -9,7 +9,9 @@ public enum TaskStatus {
     IN_PROGRESS,
 
     COMPLETED;
+
     public static TaskStatus fromString(String status) {
         return TaskStatus.valueOf(status.toUpperCase());
-    };
+    }
+
 }

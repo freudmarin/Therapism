@@ -13,6 +13,7 @@ public interface DisorderService {
     void assignDisordersToUser(Long userId, List<Long> disorderIds);
 
     void updateDisordersToUser(Long patientId, Collection<Long> disorderIds);
+
     void removeDisordersFromPatient(Long patientId, List<Long> disorderIds);
 
     List<MostCommonDisordersDto> findCommonDisordersAmongHighAnxietyPatients();

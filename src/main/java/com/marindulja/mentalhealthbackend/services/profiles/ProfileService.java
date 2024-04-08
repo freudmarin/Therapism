@@ -7,6 +7,7 @@ import com.marindulja.mentalhealthbackend.dtos.UserProfileWriteDto;
 public interface ProfileService {
 
     UserProfileReadDto createProfile(Long userId, UserProfileWriteDto userProfileCreationDto);
+
     UserProfileReadDto updateProfile(Long userId, UserProfileWriteDto userProfileCreationOrUpdateDto);
 
     UserProfileReadDto findByUserId(Long userId);

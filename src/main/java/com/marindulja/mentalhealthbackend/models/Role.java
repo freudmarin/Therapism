@@ -9,11 +9,12 @@ public enum Role implements GrantedAuthority {
 
     SUPERADMIN;
 
+    public static Role fromString(String role) {
+        return Role.valueOf(role.toUpperCase());
+    }
+
     @Override
     public String getAuthority() {
         return name();
-    }
-    public static Role fromString(String role) {
-        return Role.valueOf(role.toUpperCase());
     }
 }

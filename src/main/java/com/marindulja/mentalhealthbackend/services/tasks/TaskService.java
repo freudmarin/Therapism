@@ -12,6 +12,7 @@ public interface TaskService {
     List<AssignedTaskDto> allTasksAssignedToPatient();
 
     List<AssignedTaskDto> allTasksAssignedByTherapist();
+
     AssignedTaskDto assignTaskToUser(Long patientId, TaskDto taskDto);
 
     AssignedTaskDto updatePatientTask(Long patientId, Long taskId, TaskDto taskDto);

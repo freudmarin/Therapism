@@ -37,7 +37,8 @@ public class DisorderServiceImpl implements DisorderService {
 
     @Override
     public List<DisorderDto> getAllDisorders() {
-        return disorderRepository.findAll().stream().map(disorder -> mapper.map(disorder, DisorderDto.class)).collect(Collectors.toList());
+        return disorderRepository.findAll().stream().map(disorder -> mapper.map(disorder, DisorderDto.class))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -131,7 +132,6 @@ public class DisorderServiceImpl implements DisorderService {
             return dto;
         }).collect(Collectors.toList());
     }
-
 
     public double calculateAverageAnxietyLevelForDisorder(String disorderName, List<Long> highAnxietyUserIds) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();

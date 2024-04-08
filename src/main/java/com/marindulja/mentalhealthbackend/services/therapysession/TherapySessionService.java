@@ -9,10 +9,11 @@ import java.util.List;
 
 public interface TherapySessionService {
     List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end);
+
     TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto);
 
     TherapySessionReadDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionWriteDto therapySessionDto,
-    String zoomOAuthCode);
+                                               String zoomOAuthCode);
 
     TherapySessionReadDto updatePatientNotes(Long therapySessionId, TherapySessionWriteDto therapySessionDto);
 
@@ -21,6 +22,7 @@ public interface TherapySessionService {
     TherapySessionReadDto getTherapySession(Long sessionId);
 
     void declineSession(Long sessionId);
+
     void deleteTherapySession(Long therapyId);
 
     List<TherapySessionMoodDto> findMoodChangesAroundTherapySessions(Long patientId);

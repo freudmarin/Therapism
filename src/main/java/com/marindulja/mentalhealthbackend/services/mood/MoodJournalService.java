@@ -18,5 +18,5 @@ public interface MoodJournalService {
 
     MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodEntryDTO);
 
-    List<MoodTrendDto> getMoodTrends(Long userId, ChronoUnit interval);
+    List<MoodTrendDto> getMoodTrends(Long patientId, ChronoUnit interval);
 }

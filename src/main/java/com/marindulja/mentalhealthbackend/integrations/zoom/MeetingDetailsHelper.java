@@ -32,6 +32,7 @@ import java.util.Objects;
         "type"
 })
 public class MeetingDetailsHelper implements Serializable {
+    private final static long serialVersionUID = -7358039937780347836L;
     @JsonProperty("meeting_name")
     private String meetingName;
     @JsonProperty("agenda")
@@ -52,17 +53,13 @@ public class MeetingDetailsHelper implements Serializable {
     private String timezone;
     @JsonProperty("type")
     private String type;
-
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<>();
-    private final static long serialVersionUID = -7358039937780347836L;
-
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof MeetingDetailsHelper)) return false;
-        MeetingDetailsHelper that = (MeetingDetailsHelper) o;
+        if (!(o instanceof MeetingDetailsHelper that)) return false;
         return getMeetingName().equals(that.getMeetingName()) &&
                 Objects.equals(getTopic(), that.getTopic()) &&
                 Objects.equals(getAgenda(), that.getAdditionalProperties()) &&

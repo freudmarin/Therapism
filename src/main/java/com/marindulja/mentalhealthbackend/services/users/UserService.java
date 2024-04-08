@@ -6,7 +6,7 @@ import com.marindulja.mentalhealthbackend.models.User;
 
 import java.util.List;
 
-public interface UserService  {
+public interface UserService {
 
     UserReadDto update(Long id, UserWriteDto userDto);
 

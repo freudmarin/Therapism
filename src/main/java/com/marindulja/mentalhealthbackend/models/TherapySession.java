@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity

@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface ChatMessageService {
     List<ChatMessageDto> getChatMessages(Long senderId, Long recipientId);
+
     ChatMessageDto saveMessage(ChatMessageDto messageDTO);
 }

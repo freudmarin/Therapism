@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AnxietyRecordRepository  extends JpaRepository<AnxietyRecord, Long>, JpaSpecificationExecutor<AnxietyRecord> {
+public interface AnxietyRecordRepository extends JpaRepository<AnxietyRecord, Long>, JpaSpecificationExecutor<AnxietyRecord> {
 
 }

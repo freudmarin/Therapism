@@ -1,3 +1,4 @@
 package com.marindulja.mentalhealthbackend.dtos;
 
-public record ErrorDto (String message) { }
+public record ErrorDto(String message) {
+}

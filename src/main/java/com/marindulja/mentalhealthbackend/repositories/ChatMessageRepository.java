@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     List<ChatMessage> findBySenderAndRecipient(User sender, User recipient);
+
     List<ChatMessage> findBySenderOrRecipient(User user1, User user2);
 }

@@ -22,18 +22,14 @@ import java.util.Base64;
 @Slf4j
 public class ZoomApiIntegration {
 
+    private final CloseableHttpClient httpClient;
+    private final ObjectMapper objectMapper;
     @Value("${app.zoom.clientId}")
     private String clientId;
-
     @Value("${app.zoom.clientSecret}")
     private String clientSecret;
-
     @Value("${app.zoom.redirectUrl}")
     private String redirectUrl;
-
-    private final CloseableHttpClient httpClient;
-
-    private final ObjectMapper objectMapper;
 
     public ZoomApiIntegration(CloseableHttpClient httpClient, ObjectMapper objectMapper) {
         this.httpClient = httpClient;

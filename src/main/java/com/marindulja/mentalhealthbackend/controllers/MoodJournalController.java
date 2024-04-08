@@ -26,6 +26,7 @@ public class MoodJournalController {
         final var createdMoodEntry = moodEntryService.createMoodEntry(moodEntryDto);
         return new ResponseEntity<>(createdMoodEntry, HttpStatus.CREATED);
     }
+
     @PreAuthorize("hasAnyRole('THERAPIST','PATIENT')")
     @GetMapping("patients/{patientId}")
     public ResponseEntity<List<MoodJournalReadDto>> getMoodJournalsByPatient(@PathVariable Long patientId) {
@@ -34,7 +35,7 @@ public class MoodJournalController {
     }
 
     @PreAuthorize("hasRole('THERAPIST')")
-    @GetMapping("therapists/{therapistId}")
+    @GetMapping("therapist")
     public ResponseEntity<List<MoodJournalReadDto>> getMoodJournalsByTherapist() {
         final var moodEntries = moodEntryService.getMoodJournalsByTherapist();
         return new ResponseEntity<>(moodEntries, HttpStatus.OK);
@@ -55,9 +56,9 @@ public class MoodJournalController {
     }
 
     @PreAuthorize("hasAnyRole('PATIENT', 'THERAPIST')")
-    @GetMapping("trends/{userId}")
-    public ResponseEntity<List<MoodTrendDto>> getMoodTrends(@PathVariable Long userId, @RequestParam ChronoUnit interval) {
-        final var moodTrends = moodEntryService.getMoodTrends(userId, interval);
+    @GetMapping("trends/{patientId}")
+    public ResponseEntity<List<MoodTrendDto>> getMoodTrends(@PathVariable Long patientId, @RequestParam ChronoUnit interval) {
+        final var moodTrends = moodEntryService.getMoodTrends(patientId, interval);
         return new ResponseEntity<>(moodTrends, HttpStatus.OK);
     }
 }

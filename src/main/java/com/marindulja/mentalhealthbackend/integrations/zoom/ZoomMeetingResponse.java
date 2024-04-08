@@ -61,14 +61,14 @@ public class ZoomMeetingResponse implements Serializable {
     int duration;
     @JsonProperty("timezone")
     String timezone;
-    @JsonProperty("agenda")
-    private String agenda;
     @JsonProperty("created_at")
     String createdAt;
     @JsonProperty("start_url")
     String startUrl;
     @JsonProperty("join_url")
     String joinUrl;
+    @JsonProperty("agenda")
+    private String agenda;
     @JsonProperty("password")
     private String password;
     @JsonProperty("h323_password")

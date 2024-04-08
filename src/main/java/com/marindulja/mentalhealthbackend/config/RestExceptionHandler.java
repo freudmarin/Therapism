@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @ControllerAdvice
 public class RestExceptionHandler {
 
-    @ExceptionHandler(value = { InvalidInputException.class, IllegalArgumentException.class})
+    @ExceptionHandler(value = {InvalidInputException.class, IllegalArgumentException.class})
     @ResponseBody
     public ResponseEntity<ErrorDto> handleInvalidInputException(InvalidInputException ex) {
         return ResponseEntity
@@ -21,7 +21,7 @@ public class RestExceptionHandler {
                 .body(new ErrorDto(ex.getMessage()));
     }
 
-    @ExceptionHandler(value = { EntityNotFoundException.class })
+    @ExceptionHandler(value = {EntityNotFoundException.class})
     @ResponseBody
     public ResponseEntity<ErrorDto> handleEntityNotFoundException(EntityNotFoundException ex) {
         return ResponseEntity
@@ -29,7 +29,7 @@ public class RestExceptionHandler {
                 .body(new ErrorDto(ex.getMessage()));
     }
 
-    @ExceptionHandler(value = { UnauthorizedException.class })
+    @ExceptionHandler(value = {UnauthorizedException.class})
     @ResponseBody
     public ResponseEntity<ErrorDto> handleUnauthorizedException(UnauthorizedException ex) {
         return ResponseEntity

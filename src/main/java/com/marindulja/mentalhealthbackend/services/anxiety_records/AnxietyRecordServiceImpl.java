@@ -13,7 +13,6 @@ import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.AnxietyRecordRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
-import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
