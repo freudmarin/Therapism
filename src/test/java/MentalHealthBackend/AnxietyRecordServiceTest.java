@@ -24,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,7 +62,7 @@ public class AnxietyRecordServiceTest {
         profileService = Mockito.mock(ProfileServiceImpl.class);
 
         // Manually create the instance of AnxietyRecordServiceImpl
-        anxietyRecordService = new AnxietyRecordServiceImpl(anxietyRecordRepository, userRepository, userProfileRepository, profileService, modelMapper);
+        anxietyRecordService = new AnxietyRecordServiceImpl(anxietyRecordRepository, userProfileRepository, profileService, modelMapper);
 
         currentUser = new User(1L, "user", "test", "user@example.com",
                 null, null, false, Role.PATIENT);
@@ -109,7 +108,7 @@ public class AnxietyRecordServiceTest {
         // Setup
         LocalDateTime recordDate = LocalDateTime.now();
         AnxietyRecord anxietyRecord = new AnxietyRecord(1L, patientProfile, recordDate, 10);
-        patientProfile.setAnxietyRecords(Arrays.asList(anxietyRecord)); // Ensure the user profile contains the anxiety records
+        patientProfile.setAnxietyRecords(List.of(anxietyRecord)); // Ensure the user profile contains the anxiety records
 
         AnxietyRecordReadDto expectedDto = new AnxietyRecordReadDto(anxietyRecord.getId(), anxietyRecord.getAnxietyLevel(), anxietyRecord.getRecordDate());
         List<AnxietyRecordReadDto> expectedDtos = Collections.singletonList(expectedDto);

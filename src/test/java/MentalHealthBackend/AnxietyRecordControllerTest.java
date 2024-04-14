@@ -61,7 +61,7 @@ class AnxietyRecordControllerTest {
                 1L, "+355684448934", Gender.MALE, anxietyRecords, new ArrayList<>());
         when(anxietyRecordService.registerAnxietyLevels(any(AnxietyRecordWriteDto.class))).thenReturn(patientProfileReadDto);
 
-        mockMvc.perform(post("/api/v1/anxiety-records/current-user/register-anxiety")
+        mockMvc.perform(post("/api/v1/anxiety-records/patient/register-anxiety")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(anxietyRecordWriteDto)))
                 .andExpect(status().isOk())
@@ -87,7 +87,7 @@ class AnxietyRecordControllerTest {
         given(anxietyRecordService.getAllOfCurrentPatient()).willReturn(anxietyRecords);
 
         // When & Then
-        mockMvc.perform(get("/api/v1/anxiety-records/current-user")
+        mockMvc.perform(get("/api/v1/anxiety-records/current-patient")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(anxietyRecords.size()))
