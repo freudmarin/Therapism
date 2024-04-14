@@ -40,7 +40,7 @@ public class ProfileServiceImpl implements ProfileService {
         final var newUserProfile = determineProfileTypeByRole(currentUser, userProfileCreationDto);
         newUserProfile.setUser(currentUser);
 
-        UserProfile savedUserProfile = userProfileRepository.save(newUserProfile);
+        final var savedUserProfile = userProfileRepository.save(newUserProfile);
         return getUserProfileReadDto(savedUserProfile, mapper.map(savedUserProfile.getUser(), UserReadDto.class));
     }
 
@@ -53,7 +53,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
         existingProfile.setPhoneNumber(userProfileCreationOrUpdateDto.getPhoneNumber());
         existingProfile.setGender(userProfileCreationOrUpdateDto.getGender());
-        UserProfile userProfile = userProfileRepository.save(existingProfile);
+        final var userProfile = userProfileRepository.save(existingProfile);
         final var userDto = mapper.map(userProfile.getUser(), UserReadDto.class);
 
         return getUserProfileReadDto(userProfile, userDto);
@@ -72,10 +72,10 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public void updateTherapistProfile(Long therapistId, TherapistProfileUpdateDto therapistProfileUpdateDto) {
-        User currentUser = getCurrentAuthenticatedUser();
+        final var currentUser = getCurrentAuthenticatedUser();
         authorizeUserAction(therapistId, currentUser.getId());
 
-        TherapistProfile therapistProfile = userProfileRepository.findByUserId(therapistId)
+        final var therapistProfile = userProfileRepository.findByUserId(therapistId)
                 .filter(TherapistProfile.class::isInstance)
                 .map(TherapistProfile.class::cast)
                 .orElseThrow(() -> new EntityNotFoundException("Therapist profile not found for ID: " + therapistId));

@@ -8,7 +8,6 @@ import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
-import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.repositories.specifications.UserSpecification;
@@ -96,30 +95,24 @@ public class UserServiceImpl implements UserService {
     public void deleteById(Long id) {
         final var currentUser = getCurrentUserOrThrow();
         final var userToBeDeleted = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id "
-                        + id + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
 
-
-        if (currentUser.getRole() == Role.SUPERADMIN && userToBeDeleted.getRole() == Role.ADMIN)
-            deleteUserById(id);
-
-        else if (currentUser.getRole() == Role.ADMIN && (userToBeDeleted.getRole() == THERAPIST
-                || userToBeDeleted.getRole() == Role.PATIENT))
-            deleteUserById(id);
-        else
-            throw new UnauthorizedException("User with id " + currentUser.getId() + "is not authorized to delete user with id" + id);
+        // Check authorization before proceeding with deletion
+        if (canDeleteUser(currentUser, userToBeDeleted)) {
+            userToBeDeleted.setDeleted(true);
+            userRepository.save(userToBeDeleted);
+            final var userProfile = profileRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Profile for user with id " + userToBeDeleted.getId() + " not found"));
+            userProfile.setDeleted(true);
+            profileRepository.save(userProfile);
+        } else {
+            throw new UnauthorizedException("User with id " + currentUser.getId() + " is not authorized to delete user with id " + id);
+        }
     }
 
-    private void deleteUserById(Long id) {
-        final var user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id"
-                        + id + " not found"));
-        user.setDeleted(true);
-        userRepository.save(user);
-        UserProfile userProfile = profileRepository.findByUserId(id).orElseThrow(() -> new EntityNotFoundException("Profile for user "
-                + id + " not found"));
-        userProfile.setDeleted(true);
-        profileRepository.save(userProfile);
+    private boolean canDeleteUser(User currentUser, User userToBeDeleted) {
+        return (currentUser.getRole() == Role.SUPERADMIN && userToBeDeleted.getRole() == Role.ADMIN) ||
+                (currentUser.getRole() == Role.ADMIN && (userToBeDeleted.getRole() == Role.THERAPIST || userToBeDeleted.getRole() == Role.PATIENT));
     }
 
     @Override

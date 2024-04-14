@@ -2,7 +2,7 @@ package com.marindulja.mentalhealthbackend.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "user_accounts")
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted <> 1")
 @AllArgsConstructor
 @NoArgsConstructor
 public class User implements UserDetails {

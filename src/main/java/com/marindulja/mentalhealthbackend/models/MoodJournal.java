@@ -3,7 +3,7 @@ package com.marindulja.mentalhealthbackend.models;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "mood_journals")
 @Getter
 @Setter
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted <> 1")
 public class MoodJournal {
 
     @Id
