@@ -41,7 +41,6 @@ public class ZoomApiIntegration {
     public TokenResponse callTokenApi(String oAuthToken) throws IOException {
         String credentials = clientId + ":" + clientSecret;
         String authorizationHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-
         HttpPost httpPost = new HttpPost("https://zoom.us/oauth/token");
         httpPost.setHeader("Authorization", authorizationHeader);
         httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");

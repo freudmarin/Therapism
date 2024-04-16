@@ -5,6 +5,7 @@ import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.SuperAdminProfile;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
+@OpenAPIDefinition
 public class MentalHealthBackendApplication {
 
     public static void main(String[] args) {

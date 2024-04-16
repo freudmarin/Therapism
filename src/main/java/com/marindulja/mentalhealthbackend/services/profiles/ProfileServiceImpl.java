@@ -83,7 +83,6 @@ public class ProfileServiceImpl implements ProfileService {
         updateTherapistSpecializations(therapistProfile, therapistProfileUpdateDto.getSpecializationIds());
         therapistProfile.setQualifications(therapistProfileUpdateDto.getQualifications());
         therapistProfile.setYearsOfExperience(therapistProfileUpdateDto.getYearsOfExperience());
-
         userProfileRepository.save(therapistProfile);
     }
 
