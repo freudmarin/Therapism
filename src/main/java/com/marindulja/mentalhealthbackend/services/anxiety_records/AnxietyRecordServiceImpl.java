@@ -91,7 +91,6 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
                 .filter(PatientProfile.class::isInstance)
                 .map(PatientProfile.class::cast)
                 .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + patientId + " not found"));
-
         return patientProfile.getAnxietyRecords().stream()
                 .map(anxietyRecord -> mapper.map(anxietyRecord, AnxietyRecordReadDto.class))
                 .collect(Collectors.toList());

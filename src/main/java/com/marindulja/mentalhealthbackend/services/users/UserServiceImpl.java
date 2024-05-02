@@ -25,9 +25,8 @@ import java.util.stream.Collectors;
 
 import static com.marindulja.mentalhealthbackend.models.Role.THERAPIST;
 
-
-@Service
 @RequiredArgsConstructor
+@Service
 public class UserServiceImpl implements UserService {
 
     private final ModelMappingUtility mapper;

@@ -26,7 +26,6 @@ public class UserSpecification implements Specification<User> {
     @Override
     public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
-
         if (!roles.isEmpty()) {
             CriteriaBuilder.In<Object> inClause = criteriaBuilder.in(root.get("role"));
             for (Role role : roles) {

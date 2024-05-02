@@ -113,32 +113,22 @@ public class ProfileServiceImpl implements ProfileService {
 
     public UserProfileReadDto getUserProfileReadDto(UserProfile userProfile, UserReadDto userDto) {
         if (userProfile instanceof PatientProfile patientProfile) {
-            final var patientProfileReadDto = new PatientProfileReadDto();
-            patientProfileReadDto.setProfileId(patientProfile.getId());
-            patientProfileReadDto.setPhoneNumber(patientProfile.getPhoneNumber());
-            patientProfileReadDto.setGender(patientProfile.getGender());
-            patientProfileReadDto.setUserDto(userDto);
-            patientProfileReadDto.setDisorders(patientProfile.getDisorders().stream().map((element) -> mapper.map(element, DisorderDto.class)).collect(Collectors.toList()));
-            patientProfileReadDto.setAnxietyRecords(patientProfile.getAnxietyRecords().stream().map((element) -> mapper.map(element, AnxietyRecordReadDto.class)).collect(Collectors.toList()));
-            return patientProfileReadDto;
+            return new PatientProfileReadDto(userDto, patientProfile.getId(), patientProfile.getPhoneNumber(), patientProfile.getGender(),
+                    patientProfile.getAnxietyRecords().stream().map((element) -> mapper.map(element, AnxietyRecordReadDto.class)).collect(Collectors.toList()),
+                    patientProfile.getDisorders().stream().map((element) -> mapper.map(element, DisorderDto.class)).collect(Collectors.toList()));
         }
         if (userProfile instanceof TherapistProfile therapistProfile) {
-            final var therapistProfileReadDto = new TherapistProfileReadDto();
-            therapistProfileReadDto.setProfileId(therapistProfile.getId());
-            therapistProfileReadDto.setPhoneNumber(therapistProfile.getPhoneNumber());
-            therapistProfileReadDto.setGender(therapistProfile.getGender());
-            therapistProfileReadDto.setUserDto(userDto);
-            therapistProfileReadDto.setQualifications(therapistProfile.getQualifications());
-            therapistProfileReadDto.setYearsOfExperience(therapistProfile.getYearsOfExperience());
-            therapistProfileReadDto.setSpecializations(therapistProfile.getSpecializations());
-            return therapistProfileReadDto;
+            return new TherapistProfileReadDto(
+                    userDto,
+                    therapistProfile.getId(),
+                    therapistProfile.getPhoneNumber(),
+                    therapistProfile.getGender(),
+                    therapistProfile.getYearsOfExperience(),
+                    therapistProfile.getQualifications(),
+                    therapistProfile.getSpecializations());
         } else {
-            final var userProfileReadDto = new UserProfileReadDto();
-            userProfileReadDto.setProfileId(userProfile.getId());
-            userProfileReadDto.setPhoneNumber(userProfile.getPhoneNumber());
-            userProfileReadDto.setGender(userProfile.getGender());
-            userProfileReadDto.setUserDto(userDto);
-            return userProfileReadDto;
+            return new UserProfileReadDto(userDto, userProfile.getId(),
+                    userProfile.getPhoneNumber(), userProfile.getGender());
         }
     }
 }

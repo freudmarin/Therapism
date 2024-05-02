@@ -24,8 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -43,7 +42,6 @@ class UserProfileServiceTest {
 
     @InjectMocks
     private ProfileServiceImpl profileService;
-
 
     @Test
     void createProfile_authorizedUser_Success() {
@@ -80,7 +78,7 @@ class UserProfileServiceTest {
     void createProfile_unauthorizedUser_ThrowsUnauthorizedException() {
         // Arrange
         Long userId = 2L; // Assume a different user id
-        UserProfileWriteDto userProfileCreationDto = new UserProfileWriteDto( "+355684448934", Gender.MALE);
+        UserProfileWriteDto userProfileCreationDto = new UserProfileWriteDto("+355684448934", Gender.MALE);
         User currentUser = new User(1L, "user", "test",
                 "admin@example.com", null, null, false, Role.ADMIN);
 
