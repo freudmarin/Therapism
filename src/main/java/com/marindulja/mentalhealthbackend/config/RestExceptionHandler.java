@@ -1,6 +1,7 @@
 package com.marindulja.mentalhealthbackend.config;
 
 import com.marindulja.mentalhealthbackend.dtos.ErrorDto;
+import com.marindulja.mentalhealthbackend.exceptions.AuthenticationFailedException;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +21,13 @@ public class RestExceptionHandler {
     public ResponseEntity<ErrorDto> handleInvalidInputException(InvalidInputException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorDto(ex.getMessage()));
+    }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ErrorDto> handleAuthenticationFailedException(AuthenticationFailedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorDto(ex.getMessage()));
     }
 

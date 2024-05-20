@@ -3,12 +3,14 @@ package com.marindulja.mentalhealthbackend.services.auth;
 import com.marindulja.mentalhealthbackend.dtos.JwtAuthenticationResponse;
 import com.marindulja.mentalhealthbackend.dtos.SignInRequest;
 import com.marindulja.mentalhealthbackend.dtos.SignUpRequest;
+import com.marindulja.mentalhealthbackend.exceptions.AuthenticationFailedException;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.RefreshTokenRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,16 +34,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return JwtAuthenticationResponse.builder().username(user.getActualUsername()).role(user.getRole()).token(jwt).build();
     }
 
-    @Override
     public JwtAuthenticationResponse signIn(SignInRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        } catch (AuthenticationException e) {
+            throw new AuthenticationFailedException("Invalid email or password.", e);
+        }
         final var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
+                .orElseThrow(() -> new AuthenticationFailedException("Invalid email or password."));
         refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
         final var jwt = jwtService.generateToken(user);
         final var refreshToken = refreshTokenService.generateRefreshToken(user);
-        return JwtAuthenticationResponse.builder().username(user.getActualUsername()).role(user.getRole()).token(jwt)
-                .refreshToken(refreshToken.getToken()).build();
+        return JwtAuthenticationResponse.builder()
+                .username(user.getActualUsername())
+                .role(user.getRole())
+                .token(jwt)
+                .refreshToken(refreshToken.getToken())
+                .build();
     }
 }

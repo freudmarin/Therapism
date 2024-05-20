@@ -22,11 +22,9 @@ public class ZoomOAuthController {
     }
 
     @GetMapping("/authorize")
-    public RedirectView redirectToZoomAuth() {
+    public String redirectToZoomAuth() {
         // Construct the authorization URL and redirect the user
         String baseUrl = "https://therapism.com"; // Set your base URL here
-        String authorizationUrl = "https://zoom.us/oauth/authorize?response_type=code&client_id=" + clientId + "&redirect_uri=" + URLEncoder.encode(baseUrl, StandardCharsets.UTF_8);
-        // Use RedirectView for redirection
-        return new RedirectView(authorizationUrl);
+        return "https://zoom.us/oauth/authorize?response_type=code&client_id=" + clientId + "&redirect_uri=" + URLEncoder.encode(baseUrl, StandardCharsets.UTF_8);
     }
 }

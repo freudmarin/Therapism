@@ -39,7 +39,8 @@ public class ProfileServiceImpl implements ProfileService {
 
         final var newUserProfile = determineProfileTypeByRole(currentUser, userProfileCreationDto);
         newUserProfile.setUser(currentUser);
-
+        newUserProfile.setPhoneNumber(userProfileCreationDto.getPhoneNumber());
+        newUserProfile.setGender(userProfileCreationDto.getGender());
         final var savedUserProfile = userProfileRepository.save(newUserProfile);
         return getUserProfileReadDto(savedUserProfile, mapper.map(savedUserProfile.getUser(), UserReadDto.class));
     }

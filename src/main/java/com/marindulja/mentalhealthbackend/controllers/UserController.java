@@ -65,7 +65,7 @@ public class UserController {
     }
 
     @PutMapping("{id}/profile")
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST','PATIENT')")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PATIENT')")
     public ResponseEntity<UserProfileReadDto> updateUserProfile(@PathVariable Long id, @RequestBody UserProfileWriteDto updatedProfile) {
         final var profile = userProfileService.updateProfile(id, updatedProfile);
         return new ResponseEntity<>(profile, HttpStatus.OK);

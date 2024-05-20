@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 public class TherapySessionWriteDto {
     private LocalDateTime sessionDate;
+
     private String patientNotes;
 
     private String therapistNotes;
