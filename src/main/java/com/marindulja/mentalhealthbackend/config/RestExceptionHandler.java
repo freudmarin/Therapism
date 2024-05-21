@@ -24,7 +24,7 @@ public class RestExceptionHandler {
                 .body(new ErrorDto(ex.getMessage()));
     }
 
-    @ExceptionHandler(AuthenticationFailedException.class)
+    @ExceptionHandler(value = {AuthenticationFailedException.class, UnauthorizedException.class})
     public ResponseEntity<ErrorDto> handleAuthenticationFailedException(AuthenticationFailedException ex) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
@@ -37,15 +37,6 @@ public class RestExceptionHandler {
     public ResponseEntity<ErrorDto> handleEntityNotFoundException(EntityNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorDto(ex.getMessage()));
-    }
-
-    @ExceptionHandler(value = {UnauthorizedException.class})
-    @ResponseBody
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ErrorDto> handleUnauthorizedException(UnauthorizedException ex) {
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorDto(ex.getMessage()));
     }
 }
