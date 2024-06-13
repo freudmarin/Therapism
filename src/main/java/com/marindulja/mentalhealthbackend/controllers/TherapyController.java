@@ -3,7 +3,7 @@ package com.marindulja.mentalhealthbackend.controllers;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
-import com.marindulja.mentalhealthbackend.services.therapysession.TherapySessionService;
+import com.marindulja.mentalhealthbackend.services.therapysessions.TherapySessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
