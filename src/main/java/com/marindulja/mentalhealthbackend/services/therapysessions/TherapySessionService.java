@@ -1,4 +1,4 @@
-package com.marindulja.mentalhealthbackend.services.therapysession;
+package com.marindulja.mentalhealthbackend.services.therapysessions;
 
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
