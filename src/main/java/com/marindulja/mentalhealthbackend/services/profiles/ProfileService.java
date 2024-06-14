@@ -8,7 +8,7 @@ public interface ProfileService {
 
     UserProfileReadDto createProfile(Long userId, UserProfileWriteDto userProfileCreationDto);
 
-    UserProfileReadDto updateProfile(Long userId, UserProfileWriteDto userProfileCreationOrUpdateDto);
+    void updateProfile(Long userId, UserProfileWriteDto userProfileUpdateDto);
 
     UserProfileReadDto findByUserId(Long userId);
 

@@ -11,4 +11,5 @@ public class TherapistProfileUpdateDto {
     private Integer yearsOfExperience;
     private String qualifications;
     private List<Long> specializationIds;
+    private String phoneNumber;
 }

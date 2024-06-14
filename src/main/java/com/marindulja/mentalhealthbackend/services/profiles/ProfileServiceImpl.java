@@ -7,6 +7,7 @@ import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.*;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.SpecializationRepository;
+import com.marindulja.mentalhealthbackend.repositories.SymptomRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -46,18 +47,15 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    @Transactional
-    public UserProfileReadDto updateProfile(Long userId, UserProfileWriteDto userProfileCreationOrUpdateDto) {
-        final var currentUser = getCurrentAuthenticatedUser();
+    public void updateProfile(Long userId, UserProfileWriteDto userProfileUpdateDto) {
+        var currentUser = getCurrentAuthenticatedUser();
         authorizeUserAction(userId, currentUser.getId());
-        final var existingProfile = userProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
-        existingProfile.setPhoneNumber(userProfileCreationOrUpdateDto.getPhoneNumber());
-        existingProfile.setGender(userProfileCreationOrUpdateDto.getGender());
-        final var userProfile = userProfileRepository.save(existingProfile);
-        final var userDto = mapper.map(userProfile.getUser(), UserReadDto.class);
 
-        return getUserProfileReadDto(userProfile, userDto);
+        final var userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
+        userProfile.setPhoneNumber(userProfileUpdateDto.getPhoneNumber());
+        userProfile.setGender(userProfileUpdateDto.getGender());
+        userProfileRepository.save(userProfile);
     }
 
     @Override
@@ -80,7 +78,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .filter(TherapistProfile.class::isInstance)
                 .map(TherapistProfile.class::cast)
                 .orElseThrow(() -> new EntityNotFoundException("Therapist profile not found for ID: " + therapistId));
-
+        therapistProfile.setPhoneNumber(therapistProfileUpdateDto.getPhoneNumber());
         updateTherapistSpecializations(therapistProfile, therapistProfileUpdateDto.getSpecializationIds());
         therapistProfile.setQualifications(therapistProfileUpdateDto.getQualifications());
         therapistProfile.setYearsOfExperience(therapistProfileUpdateDto.getYearsOfExperience());
@@ -109,6 +107,9 @@ public class ProfileServiceImpl implements ProfileService {
 
     private void updateTherapistSpecializations(TherapistProfile therapistProfile, List<Long> specializationIds) {
         final var specializations = specializationRepository.findAllById(specializationIds);
+        if (specializations.size() != specializationIds.size()) {
+            throw new IllegalArgumentException("One or more specializations not found.");
+        }
         therapistProfile.setSpecializations(specializations);
     }
 

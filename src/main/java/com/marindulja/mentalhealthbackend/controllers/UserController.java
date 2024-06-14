@@ -64,18 +64,17 @@ public class UserController {
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
-    @PutMapping("{id}/profile")
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PATIENT')")
-    public ResponseEntity<UserProfileReadDto> updateUserProfile(@PathVariable Long id, @RequestBody UserProfileWriteDto updatedProfile) {
-        final var profile = userProfileService.updateProfile(id, updatedProfile);
-        return new ResponseEntity<>(profile, HttpStatus.OK);
-    }
-
     @PostMapping("{id}/profile")
     @PreAuthorize("hasAnyRole('ADMIN','THERAPIST','PATIENT')")
     public ResponseEntity<UserProfileReadDto> createUserProfile(@PathVariable Long id, @RequestBody UserProfileWriteDto userProfileCreationDto) {
         final var profile = userProfileService.createProfile(id, userProfileCreationDto);
         return new ResponseEntity<>(profile, HttpStatus.CREATED);
+    }
+
+    @PutMapping("{patientId}/profile")
+    public ResponseEntity<?> updatePatientProfile(@PathVariable Long patientId, @RequestBody UserProfileWriteDto userProfileUpdateDto) {
+        userProfileService.updateProfile(patientId, userProfileUpdateDto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("therapistProfile/{therapistId}")
