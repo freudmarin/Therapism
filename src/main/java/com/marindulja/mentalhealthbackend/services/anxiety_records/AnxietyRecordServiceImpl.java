@@ -32,13 +32,11 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
 
     private final ProfileRepository userProfileRepository;
 
-    private final ProfileService profileService;
-
     private final ModelMappingUtility mapper;
 
     @Override
     @Transactional
-    public PatientProfileReadDto registerAnxietyLevels(AnxietyRecordWriteDto anxietyRecordDto) {
+    public void registerAnxietyLevels(AnxietyRecordWriteDto anxietyRecordDto) {
         User currentUser = Utilities.getCurrentUser()
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
 
@@ -49,23 +47,21 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
         UserProfile userProfile = userProfileRepository.findByUserId(currentUser.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + currentUser.getId() + " not found"));
 
-        return Optional.of(userProfile)
+        PatientProfile patientProfile =  Optional.of(userProfile)
                 .filter(PatientProfile.class::isInstance)
                 .map(PatientProfile.class::cast)
-                .map(patientProfile -> saveAnxietyRecord(currentUser, anxietyRecordDto, patientProfile))
                 .orElseThrow(() -> new UnauthorizedException("Only patients can register their anxiety levels"));
+
+        saveAnxietyRecord(anxietyRecordDto, patientProfile);
     }
 
-    private PatientProfileReadDto saveAnxietyRecord(User currentUser, AnxietyRecordWriteDto anxietyRecordDto, PatientProfile patientProfile) {
+    private void saveAnxietyRecord(AnxietyRecordWriteDto anxietyRecordDto, PatientProfile patientProfile) {
         AnxietyRecord anxietyRecordToBeSaved = mapper.map(anxietyRecordDto, AnxietyRecord.class);
         anxietyRecordToBeSaved.setUser(patientProfile);
         anxietyRecordToBeSaved.setRecordDate(LocalDateTime.now());
         anxietyRecordRepository.save(anxietyRecordToBeSaved);
         patientProfile.getAnxietyRecords().add(anxietyRecordToBeSaved);
         userProfileRepository.save(patientProfile);
-        if (profileService.findByUserId(currentUser.getId()) instanceof PatientProfileReadDto patientProfileReadDto)
-            return patientProfileReadDto;
-        throw new UnauthorizedException("Only patients can register their anxiety levels");
     }
 
     @Override

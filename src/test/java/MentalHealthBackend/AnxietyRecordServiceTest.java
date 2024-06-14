@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AnxietyRecordServiceTest {
@@ -62,7 +62,7 @@ public class AnxietyRecordServiceTest {
         profileService = Mockito.mock(ProfileServiceImpl.class);
 
         // Manually create the instance of AnxietyRecordServiceImpl
-        anxietyRecordService = new AnxietyRecordServiceImpl(anxietyRecordRepository, userProfileRepository, profileService, modelMapper);
+        anxietyRecordService = new AnxietyRecordServiceImpl(anxietyRecordRepository, userProfileRepository, modelMapper);
 
         currentUser = new User(1L, "user", "test", "user@example.com",
                 null, null, false, Role.PATIENT);
@@ -92,13 +92,9 @@ public class AnxietyRecordServiceTest {
             when(profileService.findByUserId(any(Long.class))).thenReturn(patientProfileReadDto);
 
             // Act
-            PatientProfileReadDto result = anxietyRecordService.registerAnxietyLevels(recordDto);
-            // Assert
-            assertEquals(patientProfileReadDto.getAnxietyRecords().get(0).getAnxietyLevel(), result.getAnxietyRecords().get(0).getAnxietyLevel());
-            assertEquals(patientProfileReadDto.getAnxietyRecords().get(0).getRecordDate(), result.getAnxietyRecords().get(0).getRecordDate());
-            assertEquals(patientProfileReadDto.getProfileId(), result.getProfileId());
-            assertEquals(patientProfileReadDto.getPhoneNumber(), result.getPhoneNumber());
-            assertEquals(patientProfileReadDto.getGender(), result.getGender());
+            anxietyRecordService.registerAnxietyLevels(recordDto);
+            verify(anxietyRecordService, times(1)).registerAnxietyLevels(recordDto);
+            assertEquals(1, patientProfile.getAnxietyRecords().size(), "The patient profile should contain the newly created anxiety record.");
             // Verify other properties as needed
         }
     }
