@@ -2,7 +2,6 @@ package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.PatientProfileReadDto;
 import com.marindulja.mentalhealthbackend.services.anxiety_records.AnxietyRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
