@@ -13,13 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SignUpRequest {
-    @NotEmpty
+    @NotEmpty(message = "Username cannot be empty")
     private String username;
-    @NotEmpty
-    @Email
+    @Email(message = "Email is not valid", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
+    @NotEmpty(message = "Email cannot be empty")
     private String email;
-    @NotEmpty
+    @NotEmpty(message = "Password cannot be empty")
     private String password;
-    @NotEmpty
     private Role role;
 }

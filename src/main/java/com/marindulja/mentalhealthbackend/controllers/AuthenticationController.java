@@ -9,6 +9,7 @@ import com.marindulja.mentalhealthbackend.models.RefreshToken;
 import com.marindulja.mentalhealthbackend.services.auth.AuthenticationService;
 import com.marindulja.mentalhealthbackend.services.auth.JwtService;
 import com.marindulja.mentalhealthbackend.services.auth.RefreshTokenService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,12 +28,12 @@ public class AuthenticationController {
     private final JwtService jwtService;
 
     @PostMapping("signup")
-    public ResponseEntity<JwtAuthenticationResponse> signup(@RequestBody SignUpRequest request) {
+    public ResponseEntity<JwtAuthenticationResponse> signup(@RequestBody @Valid SignUpRequest request) {
         return ResponseEntity.ok(authenticationService.signUp(request));
     }
 
     @PostMapping("signin")
-    public ResponseEntity<JwtAuthenticationResponse> signIn(@RequestBody SignInRequest request) {
+    public ResponseEntity<JwtAuthenticationResponse> signIn(@RequestBody @Valid SignInRequest request) {
         return ResponseEntity.ok(authenticationService.signIn(request));
     }
 
