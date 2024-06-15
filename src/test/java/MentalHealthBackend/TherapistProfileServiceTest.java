@@ -2,16 +2,12 @@ package MentalHealthBackend;
 
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.UserProfileReadDto;
-import com.marindulja.mentalhealthbackend.dtos.UserProfileWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
+import com.marindulja.mentalhealthbackend.dtos.*;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
-import com.marindulja.mentalhealthbackend.models.AdminProfile;
-import com.marindulja.mentalhealthbackend.models.Gender;
-import com.marindulja.mentalhealthbackend.models.Role;
-import com.marindulja.mentalhealthbackend.models.User;
+import com.marindulja.mentalhealthbackend.models.*;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
+import com.marindulja.mentalhealthbackend.repositories.SpecializationRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.services.profiles.TherapistProfileServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -22,7 +18,10 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,10 +29,14 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UserProfileServiceTest {
+class TherapistProfileServiceTest {
 
     @Mock
     private ProfileRepository userProfileRepository;
+
+    @Mock
+
+    private SpecializationRepository specializationRepository;
 
     @Mock
     private ModelMappingUtility modelMapper;
@@ -48,12 +51,11 @@ class UserProfileServiceTest {
     void createProfile_authorizedUser_Success() {
         // Arrange
         Long userId = 1L;
-        UserProfileReadDto userProfileDto = new UserProfileReadDto( new UserReadDto(1L, "test", "admin@example.com", Role.ADMIN), 1L, "+355684448934", Gender.MALE);
-        UserProfileWriteDto userProfileCreationDto = new UserProfileWriteDto( "+355684448934", Gender.MALE);
+        TherapistProfileWriteDto therapistProfileWriteDto = new TherapistProfileWriteDto("+355684448934", Gender.MALE, 3, "Bsc. in Psychology", List.of(1L));
         User currentUser = new User(1L, "user", "test",
-                "admin@example.com",  null, null, false, Role.ADMIN);
-        AdminProfile mockedUserProfile = new AdminProfile(1L, "+355684448934",  Gender.MALE, currentUser);
-        UserReadDto userReadDto = new UserReadDto(1L, "user", "admin@example.com", Role.ADMIN);
+                "admin@example.com", null, null, false, Role.THERAPIST);
+        TherapistProfile mockedUserProfile = new TherapistProfile(5, "Bsc. in Psychology", new ArrayList<>());
+        UserReadDto userReadDto = new UserReadDto(1L, "user", "admin@example.com", Role.THERAPIST);
         // Mocking Utilities.getCurrentUser()
         try (MockedStatic<Utilities> utilitiesMockedStatic = Mockito.mockStatic(Utilities.class)) {
             // Mocking the current user behavior
@@ -61,17 +63,18 @@ class UserProfileServiceTest {
             when(userRepository.findById(any(Long.class))).thenReturn(java.util.Optional.of(currentUser));
             // Mocking UserProfileRepository save method
             when(userRepository.findById(anyLong())).thenReturn(Optional.of(currentUser));
-            when(userProfileRepository.save(any(AdminProfile.class))).thenReturn(mockedUserProfile);
-            when(modelMapper.map(any(UserProfileWriteDto.class), eq(AdminProfile.class))).thenReturn(mockedUserProfile);
+            when(modelMapper.map(any(TherapistProfileWriteDto.class), eq(TherapistProfile.class))).thenReturn(mockedUserProfile);
             when(modelMapper.map(any(User.class), eq(UserReadDto.class))).thenReturn(userReadDto);
+            when(specializationRepository.findAllById(anyList())).thenReturn(List.of(new Specialization(1L, "Specialization 1", new ArrayList<>())));
+            when(userProfileRepository.save(any(TherapistProfile.class))).thenReturn(mockedUserProfile);
+            when(modelMapper.map(any(Specialization.class), eq(SpecializationDto.class))).thenReturn(new SpecializationDto(1L, "Specialization 1"));
             // Act + Assert
-            UserProfileReadDto userProfileDTOSaved = profileService.createProfile(userId, userProfileCreationDto);
-
-
-            assertEquals(userProfileDto.getProfileId(), userProfileDTOSaved.getProfileId());
-            assertEquals(userProfileDto.getGender(), userProfileDTOSaved.getGender());
-            assertEquals(userProfileDto.getPhoneNumber(), userProfileDTOSaved.getPhoneNumber());
-
+            TherapistProfileReadDto therapistProfileReadDto = (TherapistProfileReadDto) profileService.createProfile(userId, therapistProfileWriteDto);
+            assertEquals(therapistProfileWriteDto.getGender(), therapistProfileReadDto.getGender());
+            assertEquals(therapistProfileWriteDto.getPhoneNumber(), therapistProfileReadDto.getPhoneNumber());
+            assertEquals(therapistProfileWriteDto.getQualifications(), therapistProfileReadDto.getQualifications());
+            assertEquals(therapistProfileWriteDto.getPhoneNumber(), therapistProfileReadDto.getPhoneNumber());
+            assertEquals(therapistProfileWriteDto.getSpecializationIds(), therapistProfileReadDto.getSpecializations().stream().map(SpecializationDto::getId).collect(Collectors.toList()));
         }
     }
 
@@ -81,7 +84,7 @@ class UserProfileServiceTest {
         Long userId = 2L; // Assume a different user id
         UserProfileWriteDto userProfileCreationDto = new UserProfileWriteDto("+355684448934", Gender.MALE);
         User currentUser = new User(1L, "user", "test",
-                "admin@example.com", null, null, false, Role.ADMIN);
+                "admin@example.com", null, null, false, Role.THERAPIST);
 
         try (MockedStatic<Utilities> utilitiesMockedStatic = Mockito.mockStatic(Utilities.class)) {
             // Mocking the current user behavior

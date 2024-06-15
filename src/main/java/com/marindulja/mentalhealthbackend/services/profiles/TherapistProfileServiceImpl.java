@@ -29,7 +29,7 @@ public class TherapistProfileServiceImpl implements ProfileService {
     private final SpecializationRepository specializationRepository;
 
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    private final ModelMappingUtility modelMapper;
 
     @Override
     @Transactional
