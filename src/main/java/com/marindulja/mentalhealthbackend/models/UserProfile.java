@@ -33,10 +33,4 @@ public class UserProfile {
     @MapsId
     @JoinColumn(name = "user_id")
     private User user;
-
-    public UserProfile(Long id, String phoneNumber, Gender gender) {
-        this.id = id;
-        this.phoneNumber = phoneNumber;
-        this.gender = gender;
-    }
 }

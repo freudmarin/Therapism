@@ -15,11 +15,14 @@ import java.util.List;
 public class PatientProfileReadDto extends UserProfileReadDto {
     private List<AnxietyRecordReadDto> anxietyRecords;
     private List<DisorderDto> disorders;
+    private List<SymptomDto> symptoms;
 
     public PatientProfileReadDto(UserReadDto userDto, Long profileId, String phoneNumber, Gender gender,
-                                 List<AnxietyRecordReadDto> anxietyRecords, List<DisorderDto> disorders) {
+                                 List<AnxietyRecordReadDto> anxietyRecords, List<DisorderDto> disorders,
+                                 List<SymptomDto> symptoms) {
         super(userDto, profileId, phoneNumber, gender);
         this.anxietyRecords = anxietyRecords;
         this.disorders = disorders;
+        this.symptoms = symptoms;
     }
 }

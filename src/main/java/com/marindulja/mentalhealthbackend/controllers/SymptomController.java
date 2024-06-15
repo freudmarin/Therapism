@@ -27,7 +27,7 @@ public class SymptomController {
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<List<DisorderDto>> chooseSymptoms(@PathVariable Long patientId,
                                                             @RequestBody List<Long> symptomIds) {
-         symptomService.chooseSymptoms(patientId, symptomIds);
+        symptomService.chooseSymptoms(patientId, symptomIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -7,9 +7,8 @@ import java.util.List;
 
 @Getter
 @Setter
-public class TherapistProfileUpdateDto {
+public class TherapistProfileWriteDto extends UserProfileWriteDto {
     private Integer yearsOfExperience;
     private String qualifications;
     private List<Long> specializationIds;
-    private String phoneNumber;
 }

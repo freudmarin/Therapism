@@ -9,7 +9,6 @@ import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.AnxietyRecord;
 import com.marindulja.mentalhealthbackend.models.PatientProfile;
 import com.marindulja.mentalhealthbackend.models.User;
-import com.marindulja.mentalhealthbackend.models.UserProfile;
 import com.marindulja.mentalhealthbackend.repositories.AnxietyRecordRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,22 +33,18 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
     @Override
     @Transactional
     public void registerAnxietyLevels(AnxietyRecordWriteDto anxietyRecordDto) {
-        User currentUser = Utilities.getCurrentUser()
-                .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
-
         if (anxietyRecordDto.getAnxietyLevel() == null) {
             throw new InvalidInputException("Anxiety level should be defined");
         }
 
-        UserProfile userProfile = userProfileRepository.findByUserId(currentUser.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + currentUser.getId() + " not found"));
-
-        PatientProfile patientProfile =  Optional.of(userProfile)
+        Utilities.getCurrentUser()
+                .flatMap(user -> userProfileRepository.findByUserId(user.getId()))
                 .filter(PatientProfile.class::isInstance)
                 .map(PatientProfile.class::cast)
-                .orElseThrow(() -> new UnauthorizedException("Only patients can register their anxiety levels"));
-
-        saveAnxietyRecord(anxietyRecordDto, patientProfile);
+                .ifPresentOrElse(patientProfile -> saveAnxietyRecord(anxietyRecordDto, patientProfile),
+                        () -> {
+                            throw new UnauthorizedException("Current user is not a patient");
+                        });
     }
 
     private void saveAnxietyRecord(AnxietyRecordWriteDto anxietyRecordDto, PatientProfile patientProfile) {

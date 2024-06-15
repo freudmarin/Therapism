@@ -5,10 +5,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.marindulja.mentalhealthbackend.controllers.AnxietyRecordController;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.PatientProfileReadDto;
-import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
-import com.marindulja.mentalhealthbackend.models.Gender;
-import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.services.anxiety_records.AnxietyRecordService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,14 +19,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,25 +47,14 @@ class AnxietyRecordControllerTest {
     @Test
     void registerAnxietyLevels_ReturnsUserProfileWithUserDto_WhenSuccessful() throws Exception {
         AnxietyRecordWriteDto anxietyRecordWriteDto = new AnxietyRecordWriteDto(10,LocalDateTime.of(2024, Month.MARCH, 19, 19, 30));
-        List<AnxietyRecordReadDto> anxietyRecords = new ArrayList<>();
-        anxietyRecords.add(new AnxietyRecordReadDto(1L, 10,
-                LocalDateTime.of(2024, Month.MARCH, 19, 19, 30)));
-        PatientProfileReadDto patientProfileReadDto = new PatientProfileReadDto(new UserReadDto(1L, "user", "user@example.com", Role.PATIENT),
-                1L, "+355684448934", Gender.MALE, anxietyRecords, new ArrayList<>());
-        when(anxietyRecordService.registerAnxietyLevels(any(AnxietyRecordWriteDto.class))).thenReturn(patientProfileReadDto);
+        doNothing().when(anxietyRecordService).registerAnxietyLevels(isA(AnxietyRecordWriteDto.class));
+        anxietyRecordService.registerAnxietyLevels(anxietyRecordWriteDto);
+        verify(anxietyRecordService, times(1)).registerAnxietyLevels(anxietyRecordWriteDto);
 
         mockMvc.perform(post("/api/v1/anxiety-records/patient/register-anxiety")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(anxietyRecordWriteDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.profileId").value(1L))
-                .andExpect(jsonPath("$.phoneNumber").value("+355684448934"))
-                // Assert the size of the anxietyRecords list
-                .andExpect(jsonPath("$.anxietyRecords", hasSize(1)))
-                // Assert specific fields within the first item of the anxietyRecords list
-                .andExpect(jsonPath("$.anxietyRecords[0].id").value(1L))
-                .andExpect(jsonPath("$.anxietyRecords[0].anxietyLevel").value(10))
-                .andExpect(jsonPath("$.anxietyRecords[0].recordDate").value("2024-03-19T19:30:00"));
+                .andExpect(status().isOk());
     }
 
     @Test

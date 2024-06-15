@@ -13,7 +13,7 @@ import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
-import com.marindulja.mentalhealthbackend.services.profiles.ProfileServiceImpl;
+import com.marindulja.mentalhealthbackend.services.profiles.TherapistProfileServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,7 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +42,7 @@ class UserProfileServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private ProfileServiceImpl profileService;
+    private TherapistProfileServiceImpl profileService;
 
     @Test
     void createProfile_authorizedUser_Success() {

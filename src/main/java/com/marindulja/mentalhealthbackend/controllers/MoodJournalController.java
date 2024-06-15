@@ -14,7 +14,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/mood-journal")
+@RequestMapping("api/v1/mood-journal")
 @RequiredArgsConstructor
 public class MoodJournalController {
 
