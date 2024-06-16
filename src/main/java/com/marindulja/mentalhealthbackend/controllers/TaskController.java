@@ -1,8 +1,8 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.AssignedTaskDto;
-import com.marindulja.mentalhealthbackend.dtos.TaskCompletionMoodDto;
-import com.marindulja.mentalhealthbackend.dtos.TaskDto;
+import com.marindulja.mentalhealthbackend.dtos.task.AssignedTaskDto;
+import com.marindulja.mentalhealthbackend.dtos.task.TaskCompletionMoodDto;
+import com.marindulja.mentalhealthbackend.dtos.task.TaskDto;
 import com.marindulja.mentalhealthbackend.services.tasks.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

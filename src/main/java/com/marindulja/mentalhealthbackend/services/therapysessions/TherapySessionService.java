@@ -1,8 +1,8 @@
 package com.marindulja.mentalhealthbackend.services.therapysessions;
 
-import com.marindulja.mentalhealthbackend.dtos.TherapySessionMoodDto;
-import com.marindulja.mentalhealthbackend.dtos.TherapySessionReadDto;
-import com.marindulja.mentalhealthbackend.dtos.TherapySessionWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionMoodDto;
+import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionReadDto;
+import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionWriteDto;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,9 +1,9 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.JwtAuthenticationResponse;
-import com.marindulja.mentalhealthbackend.dtos.SignInRequest;
-import com.marindulja.mentalhealthbackend.dtos.SignUpRequest;
-import com.marindulja.mentalhealthbackend.dtos.TokenRefreshResponse;
+import com.marindulja.mentalhealthbackend.dtos.auth.JwtAuthenticationResponse;
+import com.marindulja.mentalhealthbackend.dtos.auth.SignInRequest;
+import com.marindulja.mentalhealthbackend.dtos.auth.SignUpRequest;
+import com.marindulja.mentalhealthbackend.dtos.auth.TokenRefreshResponse;
 import com.marindulja.mentalhealthbackend.exceptions.TokenRefreshException;
 import com.marindulja.mentalhealthbackend.models.RefreshToken;
 import com.marindulja.mentalhealthbackend.services.auth.AuthenticationService;

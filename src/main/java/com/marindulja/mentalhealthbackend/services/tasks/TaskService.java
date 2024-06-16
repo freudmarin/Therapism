@@ -1,8 +1,8 @@
 package com.marindulja.mentalhealthbackend.services.tasks;
 
-import com.marindulja.mentalhealthbackend.dtos.AssignedTaskDto;
-import com.marindulja.mentalhealthbackend.dtos.TaskCompletionMoodDto;
-import com.marindulja.mentalhealthbackend.dtos.TaskDto;
+import com.marindulja.mentalhealthbackend.dtos.task.AssignedTaskDto;
+import com.marindulja.mentalhealthbackend.dtos.task.TaskCompletionMoodDto;
+import com.marindulja.mentalhealthbackend.dtos.task.TaskDto;
 import com.marindulja.mentalhealthbackend.models.TaskStatus;
 
 import java.util.List;

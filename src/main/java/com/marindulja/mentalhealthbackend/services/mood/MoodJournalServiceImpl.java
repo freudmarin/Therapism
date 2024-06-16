@@ -1,10 +1,10 @@
 package com.marindulja.mentalhealthbackend.services.mood;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.MoodJournalReadDto;
-import com.marindulja.mentalhealthbackend.dtos.MoodJournalWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.MoodTrendDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodJournalReadDto;
+import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodJournalWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodTrendDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.MoodJournal;
 import com.marindulja.mentalhealthbackend.models.Role;

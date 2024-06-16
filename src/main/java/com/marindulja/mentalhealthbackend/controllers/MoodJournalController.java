@@ -1,8 +1,8 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.MoodJournalReadDto;
-import com.marindulja.mentalhealthbackend.dtos.MoodJournalWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.MoodTrendDto;
+import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodJournalReadDto;
+import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodJournalWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodTrendDto;
 import com.marindulja.mentalhealthbackend.services.mood.MoodJournalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

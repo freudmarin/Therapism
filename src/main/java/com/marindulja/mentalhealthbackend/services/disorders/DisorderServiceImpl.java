@@ -1,8 +1,8 @@
 package com.marindulja.mentalhealthbackend.services.disorders;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
-import com.marindulja.mentalhealthbackend.dtos.MostCommonDisordersDto;
+import com.marindulja.mentalhealthbackend.dtos.disorder.DisorderDto;
+import com.marindulja.mentalhealthbackend.dtos.disorder.MostCommonDisordersDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.models.AnxietyRecord;
 import com.marindulja.mentalhealthbackend.models.Disorder;

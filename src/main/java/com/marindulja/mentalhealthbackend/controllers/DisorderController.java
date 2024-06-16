@@ -1,7 +1,7 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
-import com.marindulja.mentalhealthbackend.dtos.MostCommonDisordersDto;
+import com.marindulja.mentalhealthbackend.dtos.disorder.DisorderDto;
+import com.marindulja.mentalhealthbackend.dtos.disorder.MostCommonDisordersDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.models.Disorder;
 import com.marindulja.mentalhealthbackend.repositories.DisorderRepository;

@@ -1,8 +1,8 @@
 package com.marindulja.mentalhealthbackend.services.anxiety_records;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordReadDto;
-import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordReadDto;
+import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;

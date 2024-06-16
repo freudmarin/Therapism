@@ -2,8 +2,12 @@ package MentalHealthBackend;
 
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.*;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.profile.TherapistProfileReadDto;
+import com.marindulja.mentalhealthbackend.dtos.profile.TherapistProfileWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.profile.UserProfileWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.specialization.SpecializationDto;
+import com.marindulja.mentalhealthbackend.dtos.user.UserReadDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.*;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;

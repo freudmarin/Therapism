@@ -1,9 +1,9 @@
 package com.marindulja.mentalhealthbackend.services.users;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
-import com.marindulja.mentalhealthbackend.dtos.UserWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.user.UserReadDto;
+import com.marindulja.mentalhealthbackend.dtos.user.UserWriteDto;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Role;
@@ -111,7 +111,8 @@ public class UserServiceImpl implements UserService {
 
     private boolean canDeleteUser(User currentUser, User userToBeDeleted) {
         return (currentUser.getRole() == Role.SUPERADMIN && userToBeDeleted.getRole() == Role.ADMIN) ||
-                (currentUser.getRole() == Role.ADMIN && (userToBeDeleted.getRole() == Role.THERAPIST || userToBeDeleted.getRole() == Role.PATIENT));
+                (currentUser.getRole() == Role.ADMIN && (userToBeDeleted.getRole() == Role.THERAPIST || userToBeDeleted.getRole() == Role.PATIENT))
+                || (currentUser.getId().equals(userToBeDeleted.getId()) && currentUser.getRole() == userToBeDeleted.getRole());
     }
 
     @Override
@@ -130,9 +131,9 @@ public class UserServiceImpl implements UserService {
             // currentUser.getRole() = patient
             spec = spec.and(new UserSpecification(List.of(THERAPIST), searchValue));
         }
-        final var userListResult = userRepository.findAll(spec);
+        var userListResult = userRepository.findAll(spec);
         if (currentUser.getRole() == THERAPIST) {
-            userListResult.stream().filter(u -> u.getTherapist() == currentUser).collect(Collectors.toList());
+            userListResult = userListResult.stream().filter(u -> u.getTherapist() == currentUser).toList();
         }
         return userListResult
                 .stream()

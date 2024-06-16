@@ -1,7 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.users;
 
-import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
-import com.marindulja.mentalhealthbackend.dtos.UserWriteDto;
+import com.marindulja.mentalhealthbackend.dtos.user.UserReadDto;
+import com.marindulja.mentalhealthbackend.dtos.user.UserWriteDto;
 import com.marindulja.mentalhealthbackend.models.User;
 
 import java.util.List;

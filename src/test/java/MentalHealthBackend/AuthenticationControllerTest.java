@@ -2,9 +2,9 @@ package MentalHealthBackend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marindulja.mentalhealthbackend.controllers.AuthenticationController;
-import com.marindulja.mentalhealthbackend.dtos.JwtAuthenticationResponse;
-import com.marindulja.mentalhealthbackend.dtos.SignInRequest;
-import com.marindulja.mentalhealthbackend.dtos.SignUpRequest;
+import com.marindulja.mentalhealthbackend.dtos.auth.JwtAuthenticationResponse;
+import com.marindulja.mentalhealthbackend.dtos.auth.SignInRequest;
+import com.marindulja.mentalhealthbackend.dtos.auth.SignUpRequest;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.services.auth.AuthenticationService;
 import com.marindulja.mentalhealthbackend.services.auth.JwtService;

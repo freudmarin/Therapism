@@ -1,7 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.disorders;
 
-import com.marindulja.mentalhealthbackend.dtos.DisorderDto;
-import com.marindulja.mentalhealthbackend.dtos.MostCommonDisordersDto;
+import com.marindulja.mentalhealthbackend.dtos.disorder.DisorderDto;
+import com.marindulja.mentalhealthbackend.dtos.disorder.MostCommonDisordersDto;
 
 import java.util.Collection;
 import java.util.List;

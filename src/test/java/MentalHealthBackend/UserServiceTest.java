@@ -1,7 +1,7 @@
 package MentalHealthBackend;
 
-import com.marindulja.mentalhealthbackend.dtos.UserReadDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.user.UserReadDto;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;

@@ -1,10 +1,8 @@
 package MentalHealthBackend;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.AnxietyRecordWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordWriteDto;
 import com.marindulja.mentalhealthbackend.models.*;
-import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.services.anxiety_records.AnxietyRecordServiceImpl;
 import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import com.marindulja.mentalhealthbackend.services.profiles.TherapistProfileServiceImpl;
@@ -15,8 +13,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -28,16 +24,6 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class AnxietyRecordServiceTest {
-
-
-    private static final Logger log = LoggerFactory.getLogger(AnxietyRecordServiceTest.class);
-
-    @Mock
-    private ProfileRepository userProfileRepository;
-
-
-    @Mock
-    private ModelMappingUtility modelMapper;
 
     private ProfileService profileService;
 
