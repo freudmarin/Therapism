@@ -96,7 +96,7 @@ public class PatientProfileServiceImpl implements ProfileService {
         }
     }
 
-    public UserProfileReadDto getPatientProfileReadDto(PatientProfile patientProfile, UserReadDto userDto) {
+    private UserProfileReadDto getPatientProfileReadDto(PatientProfile patientProfile, UserReadDto userDto) {
             return new PatientProfileReadDto(userDto, patientProfile.getId(), patientProfile.getPhoneNumber(), patientProfile.getGender(),
                     patientProfile.getAnxietyRecords().stream().map((element) -> mapper.map(element, AnxietyRecordReadDto.class)).collect(Collectors.toList()),
                     patientProfile.getDisorders().stream().map((element) -> mapper.map(element, DisorderDto.class)).collect(Collectors.toList()),

@@ -42,5 +42,4 @@ public class PatientProfile extends UserProfile {
         this.anxietyRecords = anxietyRecords;
     }
 
-    // Getters and setters for the new fields
 }

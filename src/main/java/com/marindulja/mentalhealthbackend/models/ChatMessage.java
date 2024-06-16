@@ -25,5 +25,4 @@ public class ChatMessage {
 
     @Column(name = "expiry_date", columnDefinition = "DATETIME")
     private LocalDateTime timestamp;
-    // Getters and setters
 }
