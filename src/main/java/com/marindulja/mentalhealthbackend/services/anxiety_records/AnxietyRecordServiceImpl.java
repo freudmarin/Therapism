@@ -49,6 +49,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
 
     private void saveAnxietyRecord(AnxietyRecordWriteDto anxietyRecordDto, PatientProfile patientProfile) {
         AnxietyRecord anxietyRecordToBeSaved = mapper.map(anxietyRecordDto, AnxietyRecord.class);
+        anxietyRecordToBeSaved.setAnxietyLevel(anxietyRecordDto.getAnxietyLevel());
         anxietyRecordToBeSaved.setUser(patientProfile);
         anxietyRecordToBeSaved.setRecordDate(LocalDateTime.now());
         anxietyRecordRepository.save(anxietyRecordToBeSaved);
@@ -82,5 +83,23 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
         return patientProfile.getAnxietyRecords().stream()
                 .map(anxietyRecord -> mapper.map(anxietyRecord, AnxietyRecordReadDto.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void updateAnxietyRecord(AnxietyRecordWriteDto anxietyRecord, long recordId) {
+        PatientProfile patientProfile = Utilities.getCurrentUser()
+                .flatMap(user -> userProfileRepository.findByUserId(user.getId()))
+                .filter(PatientProfile.class::isInstance)
+                .map(PatientProfile.class::cast).orElseThrow(() -> new UnauthorizedException("Current user is not a patient"));
+
+
+        var anxietyRecordToUpdate = anxietyRecordRepository.findById(recordId)
+                .orElseThrow(() -> new EntityNotFoundException("Anxiety record with id " + recordId + " not found"));
+        anxietyRecordToUpdate.setAnxietyLevel(anxietyRecord.getAnxietyLevel());
+        anxietyRecordToUpdate.setRecordDate(LocalDateTime.now());
+        anxietyRecordRepository.save(anxietyRecordToUpdate);
+        patientProfile.getAnxietyRecords().add(anxietyRecordToUpdate);
+        userProfileRepository.save(patientProfile);
     }
 }

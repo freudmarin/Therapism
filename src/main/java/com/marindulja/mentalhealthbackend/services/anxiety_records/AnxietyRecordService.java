@@ -12,4 +12,7 @@ public interface AnxietyRecordService {
     List<AnxietyRecordReadDto> getAllOfCurrentPatient();
 
     List<AnxietyRecordReadDto> viewPatientAnxietyLevels(long patientId);
+
+    void updateAnxietyRecord(AnxietyRecordWriteDto anxietyRecord, long recordId);
+
 }
