@@ -51,7 +51,7 @@ class AnxietyRecordControllerTest {
         anxietyRecordService.registerAnxietyLevels(anxietyRecordWriteDto);
         verify(anxietyRecordService, times(1)).registerAnxietyLevels(anxietyRecordWriteDto);
 
-        mockMvc.perform(post("/api/v1/anxiety-records/patient/register-anxiety")
+        mockMvc.perform(post("/api/v1/anxiety-records")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(anxietyRecordWriteDto)))
                 .andExpect(status().isOk());
