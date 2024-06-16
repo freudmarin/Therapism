@@ -32,7 +32,7 @@ public class TaskController {
         return new ResponseEntity<>(allTasksAssignedByTherapist, HttpStatus.OK);
     }
 
-    @PutMapping("users/{userId}/assignTask")
+    @PostMapping("users/{userId}/assignTask")
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> assignTaskToUser(@PathVariable Long userId, @RequestBody TaskDto request) {
         final var assignedTask = taskService.assignTaskToUser(userId, request);
