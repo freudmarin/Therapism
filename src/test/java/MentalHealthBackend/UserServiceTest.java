@@ -1,6 +1,6 @@
 package MentalHealthBackend;
 
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.user.UserReadDto;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
@@ -24,7 +24,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private ModelMappingUtility modelMapper;
+    private DTOMappings modelMapper;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -38,7 +38,7 @@ class UserServiceTest {
         User mockUser = new User(1L, "admin", "test",
                 "admin@example.com", null, null, false, Role.ADMIN);
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
-        when(modelMapper.map(mockUser, UserReadDto.class)).thenReturn(userDto);
+        when(modelMapper.toUserDTO(mockUser)).thenReturn(userDto);
         // Act
         UserReadDto result = userService.findById(userId);
 

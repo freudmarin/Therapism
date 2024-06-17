@@ -2,7 +2,7 @@ package MentalHealthBackend;
 
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.profile.TherapistProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.profile.TherapistProfileWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.profile.UserProfileWriteDto;
@@ -43,7 +43,7 @@ class TherapistProfileServiceTest {
     private SpecializationRepository specializationRepository;
 
     @Mock
-    private ModelMappingUtility modelMapper;
+    private DTOMappings modelMapper;
 
     @Mock
     private UserRepository userRepository;
@@ -67,11 +67,11 @@ class TherapistProfileServiceTest {
             when(userRepository.findById(any(Long.class))).thenReturn(java.util.Optional.of(currentUser));
             // Mocking UserProfileRepository save method
             when(userRepository.findById(anyLong())).thenReturn(Optional.of(currentUser));
-            when(modelMapper.map(any(TherapistProfileWriteDto.class), eq(TherapistProfile.class))).thenReturn(mockedUserProfile);
-            when(modelMapper.map(any(User.class), eq(UserReadDto.class))).thenReturn(userReadDto);
+            when(modelMapper.toTherapistProfile(any(TherapistProfileWriteDto.class))).thenReturn(mockedUserProfile);
+            when(modelMapper.toUserDTO(any(User.class))).thenReturn(userReadDto);
             when(specializationRepository.findAllById(anyList())).thenReturn(List.of(new Specialization(1L, "Specialization 1", new ArrayList<>())));
             when(userProfileRepository.save(any(TherapistProfile.class))).thenReturn(mockedUserProfile);
-            when(modelMapper.map(any(Specialization.class), eq(SpecializationDto.class))).thenReturn(new SpecializationDto(1L, "Specialization 1"));
+            when(modelMapper.toSpecializationDto(any(Specialization.class))).thenReturn(new SpecializationDto(1L, "Specialization 1"));
             // Act + Assert
             TherapistProfileReadDto therapistProfileReadDto = (TherapistProfileReadDto) profileService.createProfile(userId, therapistProfileWriteDto);
             assertEquals(therapistProfileWriteDto.getGender(), therapistProfileReadDto.getGender());
