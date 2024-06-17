@@ -1,7 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.mood;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodJournalReadDto;
 import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodJournalWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodTrendDto;
@@ -31,17 +31,17 @@ public class MoodJournalServiceImpl implements MoodJournalService {
     private final UserRepository userRepository;
 
     private final ProfileRepository profileRepository;
-    private final ModelMappingUtility mapper;
+    private final DTOMappings mapper;
 
     public MoodJournalReadDto createMoodEntry(MoodJournalWriteDto moodEntryDTO) {
-        final var moodJournalEntry = mapper.map(moodEntryDTO, MoodJournal.class);
+        final var moodJournalEntry = mapper.toMoodJournal(moodEntryDTO);
         // Update mood entry fields
         moodJournalEntry.setUser(profileRepository.findById(getCurrentUserOrThrow().getId()).orElseThrow(
                 () -> new EntityNotFoundException("Profile with id " + getCurrentUserOrThrow().getId() + " not found")));
         // Update other fields as needed
         moodJournalEntry.setEntryDate(LocalDateTime.now());
         MoodJournal savedMoodEntry = moodJournalRepository.save(moodJournalEntry);
-        return mapper.map(savedMoodEntry, MoodJournalReadDto.class);
+        return mapper.toMoodJournalReadDto(savedMoodEntry);
     }
 
     public List<MoodJournalReadDto> getMoodJournalsByPatient(Long patientId) {
@@ -52,7 +52,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
             throw new UnauthorizedException("Therapist can view only his/her patient's mood journal");
         final var moodEntries = moodJournalRepository.findAllByUserId(patientId);
         return moodEntries.stream()
-                .map(moodEntry -> mapper.map(moodEntry, MoodJournalReadDto.class))
+                .map(mapper::toMoodJournalReadDto)
                 .collect(Collectors.toList());
     }
 
@@ -62,7 +62,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         return patients.stream()
                 .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId())
                         .stream()
-                        .map(moodEntry -> mapper.map(moodEntry, MoodJournalReadDto.class))
+                        .map(mapper::toMoodJournalReadDto)
                 )
                 .collect(Collectors.toList());
     }
@@ -72,7 +72,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         final var existingMoodEntry = moodJournalRepository.findById(moodEntryId)
                 .orElseThrow(() -> new EntityNotFoundException("MoodEntry with id :" + moodEntryId + "not found"));
 
-        final var updatedMoodJournal = mapper.map(updatedMoodJournalDTO, MoodJournal.class);
+        final var updatedMoodJournal = mapper.toMoodJournal(updatedMoodJournalDTO);
         // Update mood entry fields
         existingMoodEntry.setEntryDate(updatedMoodJournal.getEntryDate());
         existingMoodEntry.setMoodLevel(updatedMoodJournal.getMoodLevel());
@@ -82,7 +82,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         // Update other fields as needed
 
         MoodJournal savedMoodEntry = moodJournalRepository.save(existingMoodEntry);
-        return mapper.map(savedMoodEntry, MoodJournalReadDto.class);
+        return mapper.toMoodJournalReadDto(savedMoodEntry);
     }
 
     public List<MoodTrendDto> getMoodTrends(Long patientId, ChronoUnit interval) {

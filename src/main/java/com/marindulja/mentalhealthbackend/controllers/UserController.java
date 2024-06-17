@@ -73,14 +73,14 @@ public class UserController {
     }
 
 
-    @GetMapping("{id}/therapist-profile")
+    @GetMapping("therapist-profile/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST', 'PATIENT')")
     public ResponseEntity<UserProfileReadDto> getTherapistProfileById(@PathVariable Long id) {
         final var profile = therapistProfileService.findByUserId(id);
         return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
-    @GetMapping("{id}/patient-profile")
+    @GetMapping("patient-profile/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','THERAPIST', 'PATIENT')")
     public ResponseEntity<UserProfileReadDto> getPatientProfileById(@PathVariable Long id) {
         final var profile = patientProfileService.findByUserId(id);

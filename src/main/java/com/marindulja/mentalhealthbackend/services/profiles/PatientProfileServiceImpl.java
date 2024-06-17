@@ -1,14 +1,11 @@
 package com.marindulja.mentalhealthbackend.services.profiles;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordReadDto;
-import com.marindulja.mentalhealthbackend.dtos.disorder.DisorderDto;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.profile.PatientProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.profile.PatientProfileWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.profile.UserProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.profile.UserProfileWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.symptom.SymptomDto;
 import com.marindulja.mentalhealthbackend.dtos.user.UserReadDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.PatientProfile;
@@ -30,7 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PatientProfileServiceImpl implements ProfileService {
 
-    private final ModelMappingUtility mapper;
+    private final DTOMappings mapper;
     private final SymptomRepository symptomRepository;
     private final ProfileRepository userProfileRepository;
     private final UserRepository userRepository;
@@ -42,12 +39,11 @@ public class PatientProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
         authorizeUserAction(userId, user);
         PatientProfileWriteDto patientProfileDto = (PatientProfileWriteDto) userProfileCreationDto;
-        PatientProfile newPatientProfile = mapper.map(patientProfileDto, PatientProfile.class);
+        PatientProfile newPatientProfile = mapper.toPatientProfile(patientProfileDto);
         newPatientProfile.setUser(user);
         setPatientProfileData(newPatientProfile, patientProfileDto);
         var savedPatientProfile = userProfileRepository.save(newPatientProfile);
-        return getPatientProfileReadDto(savedPatientProfile, mapper.map(savedPatientProfile.getUser(), UserReadDto.class));
-
+        return getPatientProfileReadDto(savedPatientProfile, mapper.toUserDTO(savedPatientProfile.getUser()));
     }
 
     @Override
@@ -68,6 +64,9 @@ public class PatientProfileServiceImpl implements ProfileService {
     public UserProfileReadDto findByUserId(Long userId) {
         final var userProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
+        if (userProfile.getUser().getRole() != Role.PATIENT) {
+            throw new UnauthorizedException("User with id " + userId + " is not a patient.");
+        }
         final var patientProfile = (PatientProfile) userProfile;
         final var userDto = new UserReadDto(userId, patientProfile.getUser().getActualUsername(),
                 patientProfile.getUser().getEmail(), patientProfile.getUser().getRole());
@@ -98,8 +97,8 @@ public class PatientProfileServiceImpl implements ProfileService {
 
     private UserProfileReadDto getPatientProfileReadDto(PatientProfile patientProfile, UserReadDto userDto) {
             return new PatientProfileReadDto(userDto, patientProfile.getId(), patientProfile.getPhoneNumber(), patientProfile.getGender(),
-                    patientProfile.getAnxietyRecords().stream().map((element) -> mapper.map(element, AnxietyRecordReadDto.class)).collect(Collectors.toList()),
-                    patientProfile.getDisorders().stream().map((element) -> mapper.map(element, DisorderDto.class)).collect(Collectors.toList()),
-                    patientProfile.getSymptoms().stream().map((element) -> mapper.map(element, SymptomDto.class)).collect(Collectors.toList()));
+                    patientProfile.getAnxietyRecords().stream().map(mapper::toAnxietyRecordReadDto).collect(Collectors.toList()),
+                    patientProfile.getDisorders().stream().map(mapper::toDisorderDto).collect(Collectors.toList()),
+                    patientProfile.getSymptoms().stream().map(mapper::toSymptomDto).collect(Collectors.toList()));
         }
 }

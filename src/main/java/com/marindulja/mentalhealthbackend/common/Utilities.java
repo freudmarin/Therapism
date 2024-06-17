@@ -24,7 +24,7 @@ public class Utilities {
         final var therapist = Utilities.getCurrentUser()
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
         final var patientProfile = userProfileRepository.findByUserId(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + "not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + " not found"));
 
         if (patientProfile.getUser().getTherapist() == null || !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
             throw new UnauthorizedException("The patient with id " + patientId + " is not patient of the therapist with id " + therapist.getId());

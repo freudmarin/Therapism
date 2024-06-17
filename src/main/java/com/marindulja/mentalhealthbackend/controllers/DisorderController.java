@@ -2,7 +2,7 @@ package com.marindulja.mentalhealthbackend.controllers;
 
 import com.marindulja.mentalhealthbackend.dtos.disorder.DisorderDto;
 import com.marindulja.mentalhealthbackend.dtos.disorder.MostCommonDisordersDto;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.models.Disorder;
 import com.marindulja.mentalhealthbackend.repositories.DisorderRepository;
 import com.marindulja.mentalhealthbackend.services.disorders.DisorderService;
@@ -27,9 +27,9 @@ public class DisorderController {
 
     private final ChatClient chatClient;
 
-    private final ModelMappingUtility mapper;
+    private final DTOMappings mapper;
 
-    public DisorderController(DisorderService disorderService, DisorderRepository disorderRepository, ChatClient.Builder builder, ModelMappingUtility mapper) {
+    public DisorderController(DisorderService disorderService, DisorderRepository disorderRepository, ChatClient.Builder builder, DTOMappings mapper) {
         this.disorderService = disorderService;
         this.disorderRepository = disorderRepository;
         this.chatClient = builder.build();
@@ -89,7 +89,6 @@ public class DisorderController {
             }
         });
 
-        return disorders.stream().map(disorder -> mapper.map(disorder, DisorderDto.class))
-                .collect(Collectors.toList());
+        return disorders.stream().map(mapper::toDisorderDto).collect(Collectors.toList());
     }
 }

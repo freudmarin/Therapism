@@ -3,7 +3,7 @@ package com.marindulja.mentalhealthbackend.services.anxiety_records;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.AnxietyRecord;
@@ -28,7 +28,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
 
     private final ProfileRepository userProfileRepository;
 
-    private final ModelMappingUtility mapper;
+    private final DTOMappings mapper;
 
     @Override
     @Transactional
@@ -48,7 +48,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
     }
 
     private void saveAnxietyRecord(AnxietyRecordWriteDto anxietyRecordDto, PatientProfile patientProfile) {
-        AnxietyRecord anxietyRecordToBeSaved = mapper.map(anxietyRecordDto, AnxietyRecord.class);
+        AnxietyRecord anxietyRecordToBeSaved = mapper.toAnxietyRecord(anxietyRecordDto);
         anxietyRecordToBeSaved.setAnxietyLevel(anxietyRecordDto.getAnxietyLevel());
         anxietyRecordToBeSaved.setUser(patientProfile);
         anxietyRecordToBeSaved.setRecordDate(LocalDateTime.now());
@@ -64,7 +64,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
                 .filter(PatientProfile.class::isInstance)
                 .map(PatientProfile.class::cast)
                 .map(PatientProfile::getAnxietyRecords)
-                .map(records -> records.stream().map(record -> mapper.map(record, AnxietyRecordReadDto.class)).collect(Collectors.toList()))
+                .map(records -> records.stream().map(mapper::toAnxietyRecordReadDto).collect(Collectors.toList()))
                 .orElseThrow(() -> new EntityNotFoundException("Current user's patient profile not found"));
     }
 
@@ -81,7 +81,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
                 .map(PatientProfile.class::cast)
                 .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + patientId + " not found"));
         return patientProfile.getAnxietyRecords().stream()
-                .map(anxietyRecord -> mapper.map(anxietyRecord, AnxietyRecordReadDto.class))
+                .map(mapper::toAnxietyRecordReadDto)
                 .collect(Collectors.toList());
     }
 

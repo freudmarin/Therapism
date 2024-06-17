@@ -3,7 +3,7 @@ package com.marindulja.mentalhealthbackend.services.disorders;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.disorder.DisorderDto;
 import com.marindulja.mentalhealthbackend.dtos.disorder.MostCommonDisordersDto;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.models.AnxietyRecord;
 import com.marindulja.mentalhealthbackend.models.Disorder;
 import com.marindulja.mentalhealthbackend.models.UserProfile;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DisorderServiceImpl implements DisorderService {
 
-    private final ModelMappingUtility mapper;
+    private final DTOMappings mapper;
 
     private final DisorderRepository disorderRepository;
 
@@ -37,8 +37,7 @@ public class DisorderServiceImpl implements DisorderService {
 
     @Override
     public List<DisorderDto> getAllDisorders() {
-        return disorderRepository.findAll().stream().map(disorder -> mapper.map(disorder, DisorderDto.class))
-                .collect(Collectors.toList());
+        return disorderRepository.findAll().stream().map(mapper::toDisorderDto).collect(Collectors.toList());
     }
 
     @Override

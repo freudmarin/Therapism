@@ -1,7 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.users;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.user.UserReadDto;
 import com.marindulja.mentalhealthbackend.dtos.user.UserWriteDto;
 import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
@@ -21,15 +21,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.marindulja.mentalhealthbackend.models.Role.THERAPIST;
+import static java.util.stream.Collectors.toList;
 
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final ModelMappingUtility mapper;
+    private final DTOMappings mapper;
     private final UserRepository userRepository;
 
     private final ProfileRepository profileRepository;
@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
                     user.setPassword(passwordEncoder.encode(userDto.getPassword()));
                     user.setUsername(userDto.getUsername());
                     User updatedUser = userRepository.save(user);
-                    return mapper.map(updatedUser, UserReadDto.class);
+                    return mapper.toUserDTO(updatedUser);
                 })
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
     }
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserReadDto findById(Long id) {
         return userRepository.findById(id).
-                map(user -> mapper.map(user, UserReadDto.class)).orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+                map(mapper::toUserDTO).orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
     }
 
     @Override
@@ -126,19 +126,24 @@ public class UserServiceImpl implements UserService {
         else if (currentUser.getRole() == Role.ADMIN) {
             spec = spec.and(new UserSpecification(Arrays.asList(Role.ADMIN, Role.PATIENT, Role.THERAPIST), searchValue));
         } else if (currentUser.getRole() == THERAPIST) {
-            spec = spec.and(new UserSpecification(List.of(Role.PATIENT, THERAPIST), searchValue));
+            spec = spec.and(new UserSpecification(List.of(Role.ADMIN, Role.PATIENT, Role.THERAPIST), searchValue));
         } else {
             // currentUser.getRole() = patient
             spec = spec.and(new UserSpecification(List.of(THERAPIST), searchValue));
         }
         var userListResult = userRepository.findAll(spec);
         if (currentUser.getRole() == THERAPIST) {
-            userListResult = userListResult.stream().filter(u -> u.getTherapist() == currentUser).toList();
+            userListResult = userListResult.stream().filter(u -> {
+                if (u.getRole() == Role.PATIENT) {
+                    return u.getTherapist() == currentUser;
+                }
+                return true;
+            }).toList();
         }
         return userListResult
                 .stream()
                 .map(user -> new UserReadDto(user.getId(), user.getActualUsername(), user.getEmail(), user.getRole()))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private User getCurrentUserOrThrow() {

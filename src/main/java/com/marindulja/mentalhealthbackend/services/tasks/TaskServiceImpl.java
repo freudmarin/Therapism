@@ -1,6 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.tasks;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.task.AssignedTaskDto;
 import com.marindulja.mentalhealthbackend.dtos.task.TaskCompletionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.task.TaskDto;
@@ -15,7 +16,6 @@ import com.marindulja.mentalhealthbackend.repositories.TaskRepository;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
-    private final ModelMapper mapper;
+    private final DTOMappings mapper;
 
     private final TaskRepository taskRepository;
 
@@ -35,13 +35,13 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<AssignedTaskDto> allTasksAssignedToPatient() {
         final var allTasksAssignedToPatient = taskRepository.getAllByAssignedToUser(getCurrentUserOrThrow());
-        return allTasksAssignedToPatient.stream().map(task -> mapper.map(task, AssignedTaskDto.class)).collect(Collectors.toList());
+        return allTasksAssignedToPatient.stream().map(mapper::toAssignedTaskDto).collect(Collectors.toList());
     }
 
     @Override
     public List<AssignedTaskDto> allTasksAssignedByTherapist() {
         final var allTasksAssignedToPatient = taskRepository.getAllByAssignedByUser(getCurrentUserOrThrow());
-        return allTasksAssignedToPatient.stream().map(task -> mapper.map(task, AssignedTaskDto.class)).collect(Collectors.toList());
+        return allTasksAssignedToPatient.stream().map(mapper::toAssignedTaskDto).collect(Collectors.toList());
     }
 
     @Override
@@ -58,12 +58,12 @@ public class TaskServiceImpl implements TaskService {
             throw new UnauthorizedException("Therapist not authorized to assign task to this patient");
         }
 
-        final var taskToBeAssigned = mapper.map(taskDto, Task.class);
+        final var taskToBeAssigned = mapper.toTask(taskDto);
         taskToBeAssigned.setAssignedByUser(therapist);
         taskToBeAssigned.setAssignedToUser(patientUser);
         taskToBeAssigned.setStatus(TaskStatus.ASSIGNED);
         taskRepository.save(taskToBeAssigned);
-        return mapper.map(taskToBeAssigned, AssignedTaskDto.class);
+        return mapper.toAssignedTaskDto(taskToBeAssigned);
     }
 
     private User getCurrentUserOrThrow() {
@@ -91,7 +91,7 @@ public class TaskServiceImpl implements TaskService {
         updateTaskDetailsFromDto(existingTask, taskDto);
         final var updatedTask = taskRepository.save(existingTask);
 
-        return mapper.map(updatedTask, AssignedTaskDto.class);
+        return mapper.toAssignedTaskDto(updatedTask);
     }
 
 
@@ -113,7 +113,7 @@ public class TaskServiceImpl implements TaskService {
         if (newTaskStatus.equals(TaskStatus.IN_PROGRESS) || newTaskStatus.equals(TaskStatus.COMPLETED)) {
             existingTask.setStatus(newTaskStatus);
             taskRepository.save(existingTask);
-            return mapper.map(existingTask, AssignedTaskDto.class);
+            return mapper.toAssignedTaskDto(existingTask);
         }
         throw new IllegalArgumentException("Not appliable task status");
     }

@@ -1,7 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.therapysessions;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionWriteDto;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TherapySessionServiceImpl implements TherapySessionService {
 
-    private final ModelMappingUtility mapper;
+    private final DTOMappings mapper;
 
     private final TherapySessionRepository therapySessionRepository;
 
@@ -48,7 +48,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         User therapist = getCurrentUserOrThrow();
         List<TherapySession> sessions = therapySessionRepository.findTherapySessionsByTherapistAndSessionDateBetween(therapist, start, end);
         return sessions.stream()
-                .map(session -> mapper.map(session, TherapySessionReadDto.class))
+                .map(mapper::toTherapySessionReadDto)
                 .collect(Collectors.toList());
     }
 
@@ -63,13 +63,13 @@ public class TherapySessionServiceImpl implements TherapySessionService {
             throw new UnauthorizedException("Patient is not authorized to create a session with therapist");
         }
 
-        TherapySession newSession = mapper.map(therapySessionDto, TherapySession.class);
+        TherapySession newSession = mapper.toTherapySession(therapySessionDto);
         newSession.setTherapist(therapist);
         newSession.setPatient(patient);
         newSession.setStatus(SessionStatus.REQUESTED);
         TherapySession savedSession = therapySessionRepository.save(newSession);
 
-        return mapper.map(savedSession, TherapySessionReadDto.class);
+        return mapper.toTherapySessionReadDto(savedSession);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         zoomApiIntegration.callUpdateMeetingApi(zoomMeetingRequest, existingTherapySession.getMeetingId(), tokenResponse.getAccessToken());
         existingTherapySession.setStatus(SessionStatus.SCHEDULED);
         therapySessionRepository.save(existingTherapySession);
-        return mapper.map(existingTherapySession, TherapySessionReadDto.class);
+        return mapper.toTherapySessionReadDto(existingTherapySession);
     }
 
     public TherapySessionReadDto acceptSession(Long sessionId, String zoomOAuthCode) {
@@ -134,7 +134,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         session.setZoomJoinLinkUrl(response.getJoinUrl());
         session.setMeetingId(response.getMeetingId());
         therapySessionRepository.save(session);
-        return mapper.map(session, TherapySessionReadDto.class);
+        return mapper.toTherapySessionReadDto(session);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         validateAccessToPatientData(currentUser, session.getPatient().getId());
 
         // If validation passes, the user has access rights, so proceed to map and return the DTO
-        return mapper.map(session, TherapySessionReadDto.class);
+        return mapper.toTherapySessionReadDto(session);
     }
 
     @Override
@@ -164,7 +164,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
                 new EntityNotFoundException("TherapySession with id " + therapySessionId + " not found"));
         existingTherapySession.setPatientNotes(therapySessionDto.getPatientNotes());
         therapySessionRepository.save(existingTherapySession);
-        return mapper.map(existingTherapySession, TherapySessionReadDto.class);
+        return mapper.toTherapySessionReadDto(existingTherapySession);
     }
 
     @Override

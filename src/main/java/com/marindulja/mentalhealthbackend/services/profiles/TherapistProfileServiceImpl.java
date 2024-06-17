@@ -1,12 +1,11 @@
 package com.marindulja.mentalhealthbackend.services.profiles;
 
 import com.marindulja.mentalhealthbackend.common.Utilities;
-import com.marindulja.mentalhealthbackend.dtos.mapping.ModelMappingUtility;
+import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.profile.TherapistProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.profile.TherapistProfileWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.profile.UserProfileReadDto;
 import com.marindulja.mentalhealthbackend.dtos.profile.UserProfileWriteDto;
-import com.marindulja.mentalhealthbackend.dtos.specialization.SpecializationDto;
 import com.marindulja.mentalhealthbackend.dtos.user.UserReadDto;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Role;
@@ -28,12 +27,12 @@ public class TherapistProfileServiceImpl implements ProfileService {
 
     private final ProfileRepository userProfileRepository;
 
-    private final ModelMappingUtility mapper;
+    private final DTOMappings mapper;
 
     private final SpecializationRepository specializationRepository;
 
     private final UserRepository userRepository;
-    private final ModelMappingUtility modelMapper;
+    private final DTOMappings modelMapper;
 
     @Override
     @Transactional
@@ -42,11 +41,11 @@ public class TherapistProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
         authorizeUserAction(userId, currentUser);
         TherapistProfileWriteDto therapistProfileDto = (TherapistProfileWriteDto) profileDto;
-        TherapistProfile therapistProfile = mapper.map(therapistProfileDto, TherapistProfile.class);
+        TherapistProfile therapistProfile = mapper.toTherapistProfile(therapistProfileDto);
         therapistProfile.setUser(currentUser);
         setTherapistProfileData(therapistProfile, therapistProfileDto);
         var savedTherapistProfile = userProfileRepository.save(therapistProfile);
-        return getTherapistProfileReadDto(savedTherapistProfile, mapper.map(savedTherapistProfile.getUser(), UserReadDto.class));
+        return getTherapistProfileReadDto(savedTherapistProfile, mapper.toUserDTO(savedTherapistProfile.getUser()));
     }
 
     @Override
@@ -76,6 +75,9 @@ public class TherapistProfileServiceImpl implements ProfileService {
     public UserProfileReadDto findByUserId(Long userId) {
         final var userProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Profile not found for user ID: " + userId));
+        if (userProfile.getUser().getRole() != Role.THERAPIST) {
+            throw new UnauthorizedException("User with id " + userId + " is not a therapist.");
+        }
         final var therapistProfile = (TherapistProfile) userProfile;
         final var userDto = new UserReadDto(userId, therapistProfile.getUser().getActualUsername(),
                 therapistProfile.getUser().getEmail(), therapistProfile.getUser().getRole());
@@ -105,6 +107,6 @@ public class TherapistProfileServiceImpl implements ProfileService {
                 therapistProfile.getGender(),
                 therapistProfile.getYearsOfExperience(),
                 therapistProfile.getQualifications(),
-                therapistProfile.getSpecializations().stream().map((element) -> modelMapper.map(element, SpecializationDto.class)).toList());
+                therapistProfile.getSpecializations().stream().map(mapper::toSpecializationDto).toList());
     }
 }
