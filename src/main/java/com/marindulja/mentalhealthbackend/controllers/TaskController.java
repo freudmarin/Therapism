@@ -32,17 +32,17 @@ public class TaskController {
         return new ResponseEntity<>(allTasksAssignedByTherapist, HttpStatus.OK);
     }
 
-    @PostMapping("users/{userId}/assignTask")
+    @PostMapping("users/{patientId}/assignTask")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> assignTaskToUser(@PathVariable Long userId, @RequestBody TaskDto request) {
-        final var assignedTask = taskService.assignTaskToUser(userId, request);
+    public ResponseEntity<?> assignTaskToUser(@PathVariable Long patientId, @RequestBody TaskDto request) {
+        final var assignedTask = taskService.assignTaskToPatient(patientId, request);
         return new ResponseEntity<>(assignedTask, HttpStatus.OK);
     }
 
-    @PutMapping("users/{userId}/updateTask/{taskId}")
+    @PutMapping("users/{patientId}/updateTask/{taskId}")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> updateExistingTask(@PathVariable Long userId, @PathVariable Long taskId, @RequestBody TaskDto request) {
-        final var updatedTask = taskService.updatePatientTask(userId, taskId, request);
+    public ResponseEntity<?> updateExistingTask(@PathVariable Long patientId, @PathVariable Long taskId, @RequestBody TaskDto request) {
+        final var updatedTask = taskService.updatePatientTask(patientId, taskId, request);
         return new ResponseEntity<>(updatedTask, HttpStatus.OK);
     }
 

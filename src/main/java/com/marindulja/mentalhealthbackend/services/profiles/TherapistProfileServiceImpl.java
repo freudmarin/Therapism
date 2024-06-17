@@ -32,7 +32,6 @@ public class TherapistProfileServiceImpl implements ProfileService {
     private final SpecializationRepository specializationRepository;
 
     private final UserRepository userRepository;
-    private final DTOMappings modelMapper;
 
     @Override
     @Transactional
@@ -49,15 +48,15 @@ public class TherapistProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public void updateProfile(Long userId, UserProfileWriteDto profileDto) {
+    public void updateProfile(Long therapistId, UserProfileWriteDto profileDto) {
         User currentUser = Utilities.getCurrentUser().flatMap(cUser -> userRepository.findById(cUser.getId()))
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
-        authorizeUserAction(userId, currentUser);
+        authorizeUserAction(therapistId, currentUser);
 
-        TherapistProfile therapistProfile = userProfileRepository.findByUserId(userId)
+        TherapistProfile therapistProfile = userProfileRepository.findByUserId(therapistId)
                 .filter(TherapistProfile.class::isInstance)
                 .map(TherapistProfile.class::cast)
-                .orElseThrow(() -> new EntityNotFoundException("Therapist profile not found for user ID: " + userId));
+                .orElseThrow(() -> new EntityNotFoundException("Therapist profile not found for user ID: " + therapistId));
         TherapistProfileWriteDto therapistProfileDto = (TherapistProfileWriteDto) profileDto;
         setTherapistProfileData(therapistProfile, therapistProfileDto);
         userProfileRepository.save(therapistProfile);

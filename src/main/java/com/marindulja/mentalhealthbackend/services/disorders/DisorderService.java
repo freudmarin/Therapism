@@ -10,7 +10,7 @@ public interface DisorderService {
 
     List<DisorderDto> getAllDisorders();
 
-    void assignDisordersToUser(Long userId, List<Long> disorderIds);
+    void assignDisordersToPatient(Long patientId, List<Long> disorderIds);
 
     void updateDisordersToUser(Long patientId, Collection<Long> disorderIds);
 

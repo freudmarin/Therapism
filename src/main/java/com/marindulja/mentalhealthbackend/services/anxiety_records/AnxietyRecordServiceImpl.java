@@ -93,7 +93,6 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
                 .filter(PatientProfile.class::isInstance)
                 .map(PatientProfile.class::cast).orElseThrow(() -> new UnauthorizedException("Current user is not a patient"));
 
-
         var anxietyRecordToUpdate = anxietyRecordRepository.findById(recordId)
                 .orElseThrow(() -> new EntityNotFoundException("Anxiety record with id " + recordId + " not found"));
         anxietyRecordToUpdate.setAnxietyLevel(anxietyRecord.getAnxietyLevel());

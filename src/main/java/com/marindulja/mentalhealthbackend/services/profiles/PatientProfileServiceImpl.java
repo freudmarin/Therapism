@@ -47,14 +47,14 @@ public class PatientProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public void updateProfile(Long userId, UserProfileWriteDto userProfileUpdateDto) {
+    public void updateProfile(Long patientId, UserProfileWriteDto userProfileUpdateDto) {
         User user = Utilities.getCurrentUser().flatMap(currentUser -> userRepository.findById(currentUser.getId()))
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
-        authorizeUserAction(userId, user);
-        PatientProfile patientProfile = userProfileRepository.findByUserId(userId)
+        authorizeUserAction(patientId, user);
+        PatientProfile patientProfile = userProfileRepository.findByUserId(patientId)
                 .filter(PatientProfile.class::isInstance)
                 .map(PatientProfile.class::cast)
-                .orElseThrow(() -> new EntityNotFoundException("Patient profile not found for user ID: " + userId));
+                .orElseThrow(() -> new EntityNotFoundException("Patient profile not found for patient ID: " + patientId));
         PatientProfileWriteDto patientProfileDto = (PatientProfileWriteDto) userProfileUpdateDto;
         setPatientProfileData(patientProfile, patientProfileDto);
         userProfileRepository.save(patientProfile);

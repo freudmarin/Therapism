@@ -41,8 +41,8 @@ public class DisorderServiceImpl implements DisorderService {
     }
 
     @Override
-    public void assignDisordersToUser(Long userId, List<Long> disorderIds) {
-        final var patientProfile = Utilities.getPatientProfileIfBelongsToTherapist(userId, userProfileRepository);
+    public void assignDisordersToPatient(Long patientId, List<Long> disorderIds) {
+        final var patientProfile = Utilities.getPatientProfileIfBelongsToTherapist(patientId, userProfileRepository);
         final var disorders = disorderRepository.findAllById(disorderIds);
 
         if (disorders.size() != disorderIds.size()) {

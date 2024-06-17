@@ -45,7 +45,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public AssignedTaskDto assignTaskToUser(Long patientId, TaskDto taskDto) {
+    public AssignedTaskDto assignTaskToPatient(Long patientId, TaskDto taskDto) {
         if (StringUtils.isBlank(taskDto.getDescription())) {
             throw new InvalidInputException("Task description cannot be null or empty");
         }

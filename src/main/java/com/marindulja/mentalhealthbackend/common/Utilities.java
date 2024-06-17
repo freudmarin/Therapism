@@ -44,15 +44,15 @@ public class Utilities {
         return true;
     }
 
-    public static PatientProfile getPatientProfileIfBelongsToTherapist(Long userId, ProfileRepository userProfileRepository) {
+    public static PatientProfile getPatientProfileIfBelongsToTherapist(Long patientId, ProfileRepository userProfileRepository) {
         final var therapist = Utilities.getCurrentUser()
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
-        final var userProfile = userProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + userId + "not found"));
+        final var userProfile = userProfileRepository.findByUserId(patientId)
+                .orElseThrow(() -> new EntityNotFoundException("Patient with id " + patientId + "not found"));
         if (userProfile instanceof PatientProfile patientProfile) {
             if (patientProfile.getUser().getTherapist() == null ||
                     !therapist.getId().equals(patientProfile.getUser().getTherapist().getId())) {
-                throw new UnauthorizedException("The patient with id " + userId + " is not the patient of the therapist with id " + therapist.getId());
+                throw new UnauthorizedException("The patient with id " + patientId + " is not the patient of the therapist with id " + therapist.getId());
             }
             return patientProfile;
         }

@@ -43,24 +43,24 @@ public class DisorderController {
         return new ResponseEntity<>(allDisorders, HttpStatus.OK);
     }
 
-    @PutMapping("users/{userId}/assignDisorders")
+    @PutMapping("users/{patientId}/assignDisorders")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> assignDisordersToUser(@PathVariable Long userId, @RequestBody List<Long> disorderIds) {
-        disorderService.assignDisordersToUser(userId, disorderIds);
+    public ResponseEntity<?> assignDisordersToUser(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
+        disorderService.assignDisordersToPatient(patientId, disorderIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PatchMapping("users/{userId}/updateDisorders")
+    @PatchMapping("users/{patientId}/updateDisorders")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> updateDisordersToUser(@PathVariable Long userId, @RequestBody List<Long> disorderIds) {
-        disorderService.updateDisordersToUser(userId, disorderIds);
+    public ResponseEntity<?> updateDisordersToUser(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
+        disorderService.updateDisordersToUser(patientId, disorderIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("users/{userId}/removeDisorders")
+    @DeleteMapping("users/{patientId}/removeDisorders")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> removeDisordersFromPatient(@PathVariable Long userId, @RequestBody List<Long> disorderIds) {
-        disorderService.removeDisordersFromPatient(userId, disorderIds);
+    public ResponseEntity<?> removeDisordersFromPatient(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
+        disorderService.removeDisordersFromPatient(patientId, disorderIds);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
