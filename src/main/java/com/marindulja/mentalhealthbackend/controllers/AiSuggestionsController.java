@@ -44,6 +44,7 @@ public class AiSuggestionsController {
         return chatClient.prompt()
                 .user(u -> u.text(message).param("topic", topic))
                 .call()
-                .entity(new ParameterizedTypeReference<>() {});
+                .entity(new ParameterizedTypeReference<>() {
+                });
     }
 }

@@ -1,5 +1,6 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionWriteDto;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1/therapySessions")
@@ -23,7 +25,12 @@ public class TherapyController {
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> getAllSessionsOfTherapist(@RequestParam("from") LocalDateTime from,
                                                        @RequestParam("to") LocalDateTime to) {
-        var allSessionsOfTherapist = therapySessionService.allSessionsOfTherapist(from, to);
+        Map<String, List<TherapySessionReadDto>> allSessionsOfTherapist = null;
+        try {
+            allSessionsOfTherapist = therapySessionService.allSessionsOfTherapist(from, to);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         return new ResponseEntity<>(allSessionsOfTherapist, HttpStatus.OK);
     }
 
@@ -50,7 +57,7 @@ public class TherapyController {
         return new ResponseEntity<>(acceptedSession, HttpStatus.OK);
     }
 
-    @GetMapping("/session/{sessionId}")
+    @GetMapping("session/{sessionId}")
     @PreAuthorize("hasAnyRole('THERAPIST', 'PATIENT')")
     public ResponseEntity<TherapySessionReadDto> getTherapySession(@PathVariable Long sessionId) {
         var therapySession = therapySessionService.getTherapySession(sessionId);

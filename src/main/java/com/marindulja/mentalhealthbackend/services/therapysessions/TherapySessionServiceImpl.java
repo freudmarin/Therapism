@@ -1,5 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.therapysessions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionMoodDto;
@@ -14,9 +16,11 @@ import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TherapySessionRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
+import com.marindulja.mentalhealthbackend.services.profiles.ProfileService;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +30,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class TherapySessionServiceImpl implements TherapySessionService {
 
     private final DTOMappings mapper;
@@ -43,13 +48,50 @@ public class TherapySessionServiceImpl implements TherapySessionService {
 
     private final ZoomApiIntegration zoomApiIntegration;
 
+    private final ChatClient chatClient;
+
+    private final ObjectMapper objectMapper;
+
+    @Qualifier("therapistProfileServiceImpl")
+    private final ProfileService therapistProfileService;
+
+    public TherapySessionServiceImpl(DTOMappings mapper, TherapySessionRepository therapySessionRepository, ProfileRepository userProfileRepository,
+                                     UserRepository userRepository, ZoomApiIntegration zoomApiIntegration, ChatClient.Builder builder, ObjectMapper objectMapper,
+                                     @Qualifier("therapistProfileServiceImpl") ProfileService therapistProfileService) {
+        this.mapper = mapper;
+        this.therapySessionRepository = therapySessionRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.userRepository = userRepository;
+        this.zoomApiIntegration = zoomApiIntegration;
+        this.chatClient = builder.build();
+        this.objectMapper = objectMapper;
+        this.therapistProfileService = therapistProfileService;
+    }
+
     @Override
-    public List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) {
+    public Map<String, List<TherapySessionReadDto>> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) throws JsonProcessingException {
         User therapist = getCurrentUserOrThrow();
         List<TherapySession> sessions = therapySessionRepository.findTherapySessionsByTherapistAndSessionDateBetween(therapist, start, end);
-        return sessions.stream()
+        var therapySessions = sessions.stream()
                 .map(mapper::toTherapySessionReadDto)
-                .collect(Collectors.toList());
+                .toList();
+
+        String message = """
+                Interpret these data {data} of therapy sessions of this therapist {therapist}. What improvements can be made by the therapist? 
+                """;
+        String therapySessionsJson, therapistJson;
+        try {
+            therapySessionsJson = objectMapper.writeValueAsString(therapySessions);
+            therapistJson = objectMapper.writeValueAsString(therapistProfileService.findByUserId(therapist.getId()));
+        } catch (JsonProcessingException e) {
+            throw e;
+        }
+        var allSessionsResult = new HashMap<String, List<TherapySessionReadDto>>();
+        var aiInterpretation = chatClient.prompt()
+                .user(u -> u.text(message).param("data", therapySessionsJson).param("therapist", therapistJson))
+                .call().content();
+        allSessionsResult.put(aiInterpretation, therapySessions);
+        return allSessionsResult;
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.AnxietyRecord;
 import com.marindulja.mentalhealthbackend.models.PatientProfile;
+import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.AnxietyRecordRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
@@ -73,8 +74,14 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
         User currentUser = Utilities.getCurrentUser()
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
 
-        if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository))
-            throw new UnauthorizedException("Patient with id " + patientId + " is not a patient of the therapist with id " + currentUser.getId());
+        if (currentUser.getRole() == Role.THERAPIST) {
+            if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository))
+                throw new UnauthorizedException("Patient with id " + patientId + " is not a patient of the therapist with id " + currentUser.getId());
+        }
+
+        if (currentUser.getRole() == Role.PATIENT && currentUser.getId() != patientId) {
+            throw new UnauthorizedException("Current user is not authorized to view anxiety records of patient with id " + patientId);
+        }
 
         PatientProfile patientProfile = userProfileRepository.findByUserId(patientId)
                 .filter(PatientProfile.class::isInstance)

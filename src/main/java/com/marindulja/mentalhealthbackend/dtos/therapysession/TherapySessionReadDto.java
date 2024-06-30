@@ -28,4 +28,6 @@ public class TherapySessionReadDto {
 
     private String zoomStartLinkUrl;
     private Long meetingId;
+
+    private String aiSummary;
 }

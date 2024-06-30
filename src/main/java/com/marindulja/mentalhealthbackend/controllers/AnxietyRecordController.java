@@ -1,9 +1,11 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordWriteDto;
 import com.marindulja.mentalhealthbackend.services.anxiety_records.AnxietyRecordService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,10 +16,17 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/anxiety-records")
 @PreAuthorize("hasAnyRole('PATIENT', 'THERAPIST')")
-@RequiredArgsConstructor
 public class AnxietyRecordController {
 
     private final AnxietyRecordService anxietyRecordService;
+    private final ObjectMapper objectMapper;
+    private final ChatClient chatClient;
+
+    public AnxietyRecordController(AnxietyRecordService anxietyRecordService, ObjectMapper objectMapper, ChatClient.Builder builder) {
+        this.anxietyRecordService = anxietyRecordService;
+        this.objectMapper = objectMapper;
+        this.chatClient = builder.build();
+    }
 
     @PostMapping()
     @PreAuthorize("hasRole('PATIENT')")
@@ -45,5 +54,27 @@ public class AnxietyRecordController {
     public ResponseEntity<?> viewPatientAnxietyLevels(@PathVariable(name = "patientId") Long patientId) {
         final var anxietyRecordsList = anxietyRecordService.viewPatientAnxietyLevels(patientId);
         return new ResponseEntity<>(anxietyRecordsList, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAnyRole('PATIENT', 'THERAPIST')")
+    @GetMapping("predict/{patientId}")
+    public ResponseEntity<String> predictAnxietyAttack(@PathVariable Long patientId) {
+        var anxietyRecords = anxietyRecordService.viewPatientAnxietyLevels(patientId);
+        String anxietyRecordsJson;
+        try {
+            anxietyRecordsJson = objectMapper.writeValueAsString(anxietyRecords);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String message = """
+                Predict the likelihood of an anxiety attack based on these records: {anxietyRecords}
+                """;
+
+        var prediction = chatClient.prompt()
+                .user(u -> u.text(message).param("anxietyRecords", anxietyRecordsJson))
+                .call().content();
+
+        return new ResponseEntity<>(prediction, HttpStatus.OK);
     }
 }
