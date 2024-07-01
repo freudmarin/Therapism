@@ -34,6 +34,9 @@ public class MoodJournal {
     @Column(name = "activities", columnDefinition = "TEXT")
     private String activities;
 
+    @Column(name = "ai_notes", columnDefinition = "TEXT")
+    private String aiNotes;
+
     @Column(name = "is_deleted")
     private boolean isDeleted;
 

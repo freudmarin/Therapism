@@ -34,7 +34,12 @@ public class MoodJournalController {
     @PreAuthorize("hasRole('PATIENT')")
     @PostMapping
     public ResponseEntity<MoodJournalReadDto> createMoodEntry(@RequestBody MoodJournalWriteDto moodEntryDto) {
-        final var createdMoodEntry = moodEntryService.createMoodEntry(moodEntryDto);
+        final MoodJournalReadDto createdMoodEntry;
+        try {
+            createdMoodEntry = moodEntryService.createMoodEntry(moodEntryDto);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         return new ResponseEntity<>(createdMoodEntry, HttpStatus.CREATED);
     }
 

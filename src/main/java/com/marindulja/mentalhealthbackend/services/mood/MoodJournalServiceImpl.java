@@ -1,5 +1,7 @@
 package com.marindulja.mentalhealthbackend.services.mood;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.moodjounral.MoodJournalReadDto;
@@ -13,7 +15,7 @@ import com.marindulja.mentalhealthbackend.repositories.MoodJournalRepository;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class MoodJournalServiceImpl implements MoodJournalService {
 
     private final MoodJournalRepository moodJournalRepository;
@@ -32,14 +33,36 @@ public class MoodJournalServiceImpl implements MoodJournalService {
 
     private final ProfileRepository profileRepository;
     private final DTOMappings mapper;
+    private final ChatClient chatClient;
+    private final ObjectMapper objectMapper;
 
-    public MoodJournalReadDto createMoodEntry(MoodJournalWriteDto moodEntryDTO) {
+    public MoodJournalServiceImpl(MoodJournalRepository moodJournalRepository, UserRepository userRepository, ProfileRepository profileRepository, DTOMappings mapper, ChatClient.Builder builder, ObjectMapper objectMapper) {
+        this.moodJournalRepository = moodJournalRepository;
+        this.userRepository = userRepository;
+        this.profileRepository = profileRepository;
+        this.mapper = mapper;
+        this.chatClient = builder.build();
+        this.objectMapper = objectMapper;
+    }
+
+    public MoodJournalReadDto createMoodEntry(MoodJournalWriteDto moodEntryDTO) throws JsonProcessingException {
         final var moodJournalEntry = mapper.toMoodJournal(moodEntryDTO);
         // Update mood entry fields
         moodJournalEntry.setUser(profileRepository.findById(getCurrentUserOrThrow().getId()).orElseThrow(
                 () -> new EntityNotFoundException("Profile with id " + getCurrentUserOrThrow().getId() + " not found")));
         // Update other fields as needed
         moodJournalEntry.setEntryDate(LocalDateTime.now());
+
+
+        String moodJournalJson = objectMapper.writeValueAsString(moodEntryDTO);
+        String message = """
+                Generate AI notes for this mood journal entry  {moodJournal}.
+                Be specific to the mood level, mood type, thoughts and activities and suggest some activities to improve the mood.
+                """;
+
+        moodJournalEntry.setAiNotes(chatClient.prompt()
+                .user(m -> m.text(message).param("moodJournal", moodJournalJson))
+                .call().content());
         MoodJournal savedMoodEntry = moodJournalRepository.save(moodJournalEntry);
         return mapper.toMoodJournalReadDto(savedMoodEntry);
     }

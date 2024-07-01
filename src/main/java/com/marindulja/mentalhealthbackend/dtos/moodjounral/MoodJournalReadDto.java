@@ -15,4 +15,5 @@ public class MoodJournalReadDto {
     private MoodType moodType;
     private String thoughts;
     private String activities;
+    private String aiNotes;
 }
