@@ -8,6 +8,8 @@ import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordWriteD
 import com.marindulja.mentalhealthbackend.services.anxiety_records.AnxietyRecordService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -23,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,23 +35,33 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestSecurityConfig.class)
 class AnxietyRecordControllerTest {
 
+
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private AnxietyRecordService anxietyRecordService;
 
+    @MockBean
+    private ChatClient chatClient;
+
+    @MockBean
+    private ChatClient.Builder chatClientBuilder;
+
     @BeforeEach
     void setUp() {
     }
 
     @Test
-    void registerAnxietyLevels_ReturnsUserProfileWithUserDto_WhenSuccessful() throws Exception {
+    @WithMockUser(roles = "PATIENT")
+    public void testRegisterAnxietyLevels() throws Exception {
+        // Given
         AnxietyRecordWriteDto anxietyRecordWriteDto = new AnxietyRecordWriteDto(10,LocalDateTime.of(2024, Month.MARCH, 19, 19, 30));
-        doNothing().when(anxietyRecordService).registerAnxietyLevels(isA(AnxietyRecordWriteDto.class));
-        anxietyRecordService.registerAnxietyLevels(anxietyRecordWriteDto);
-        verify(anxietyRecordService, times(1)).registerAnxietyLevels(anxietyRecordWriteDto);
+        // Set properties of anxietyRecordDto here...
 
+        Mockito.when(chatClientBuilder.build()).thenReturn(chatClient);
+
+        // When & Then
         mockMvc.perform(post("/api/v1/anxiety-records")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(anxietyRecordWriteDto)))

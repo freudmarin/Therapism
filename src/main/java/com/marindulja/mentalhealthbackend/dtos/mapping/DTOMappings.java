@@ -36,6 +36,7 @@ public interface DTOMappings {
     TherapySession toTherapySession(TherapySessionWriteDto therapySessionWriteDto);
 
     @Mapping(target = "sessionStatus", source = "status")
+    @Mapping(target = "aiSummary", ignore = true)
     TherapySessionReadDto toTherapySessionReadDto(TherapySession therapySession);
 
     @Mapping(target = "id", ignore = true)
@@ -75,6 +76,7 @@ public interface DTOMappings {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "aiNotes", ignore = true)
     MoodJournal toMoodJournal(MoodJournalWriteDto moodJournalDto);
 
     MoodJournalReadDto toMoodJournalReadDto(MoodJournal moodJournal);
