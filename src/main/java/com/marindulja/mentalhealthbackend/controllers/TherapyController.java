@@ -1,6 +1,5 @@
 package com.marindulja.mentalhealthbackend.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionWriteDto;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1/therapySessions")
@@ -23,14 +21,8 @@ public class TherapyController {
 
     @GetMapping("all")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> getAllSessionsOfTherapist(@RequestParam("from") LocalDateTime from,
-                                                       @RequestParam("to") LocalDateTime to) {
-        Map<String, List<TherapySessionReadDto>> allSessionsOfTherapist = null;
-        try {
-            allSessionsOfTherapist = therapySessionService.allSessionsOfTherapist(from, to);
-        } catch (JsonProcessingException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<?> getAllSessionsOfTherapist(@RequestParam("from") LocalDateTime from, @RequestParam("to") LocalDateTime to) {
+        var allSessionsOfTherapist = therapySessionService.allSessionsOfTherapist(from, to);
         return new ResponseEntity<>(allSessionsOfTherapist, HttpStatus.OK);
     }
 
@@ -68,6 +60,13 @@ public class TherapyController {
     @PreAuthorize("hasRole('THERAPIST')")
     public ResponseEntity<?> declineSession(@PathVariable Long sessionId) {
         therapySessionService.declineSession(sessionId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PatchMapping("session/{sessionId}/complete")
+    @PreAuthorize("hasRole('THERAPIST')")
+    public ResponseEntity<?> completeSession(@PathVariable Long sessionId) {
+        therapySessionService.completeSession(sessionId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

@@ -30,9 +30,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,29 +67,33 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     }
 
     @Override
-    public Map<String, List<TherapySessionReadDto>> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) throws JsonProcessingException {
+    public List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) {
         User therapist = getCurrentUserOrThrow();
         List<TherapySession> sessions = therapySessionRepository.findTherapySessionsByTherapistAndSessionDateBetween(therapist, start, end);
         var therapySessions = sessions.stream()
                 .map(mapper::toTherapySessionReadDto)
                 .toList();
-
-        String message = """
-                Interpret these data {data} of therapy sessions of this therapist {therapist}. What improvements can be made by the therapist? 
-                """;
-        String therapySessionsJson, therapistJson;
-        try {
-            therapySessionsJson = objectMapper.writeValueAsString(therapySessions);
-            therapistJson = objectMapper.writeValueAsString(therapistProfileService.findByUserId(therapist.getId()));
-        } catch (JsonProcessingException e) {
-            throw e;
-        }
-        var allSessionsResult = new HashMap<String, List<TherapySessionReadDto>>();
-        var aiInterpretation = chatClient.prompt()
-                .user(u -> u.text(message).param("data", therapySessionsJson).param("therapist", therapistJson))
-                .call().content();
-        allSessionsResult.put(aiInterpretation, therapySessions);
-        return allSessionsResult;
+        therapySessions.forEach(therapySession -> {
+            try {
+                String message = """
+                        Interpret these data of therapy session {therapySession} of this therapist {therapist}. What improvements can be made by the therapist? 
+                        """;
+                String therapySessionJson, therapistJson;
+                try {
+                    therapySessionJson = objectMapper.writeValueAsString(therapySession);
+                    therapistJson = objectMapper.writeValueAsString(therapistProfileService.findByUserId(therapist.getId()));
+                } catch (JsonProcessingException e) {
+                    throw e;
+                }
+                var aiInterpretation = chatClient.prompt()
+                        .user(u -> u.text(message).param("therapySession", therapySessionJson).param("therapist", therapistJson))
+                        .call().content();
+                therapySession.setAiSummary(aiInterpretation);
+            } catch (IOException e) {
+                log.error("Could not create chat session for therapy session with id {}", therapySession.getId());
+            }
+        });
+        return therapySessions;
     }
 
     @Override
@@ -108,6 +110,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         TherapySession newSession = mapper.toTherapySession(therapySessionDto);
         newSession.setTherapist(therapist);
         newSession.setPatient(patient);
+        newSession.setPatientNotes(therapySessionDto.getPatientNotes());
         newSession.setStatus(SessionStatus.REQUESTED);
         TherapySession savedSession = therapySessionRepository.save(newSession);
 
@@ -197,6 +200,14 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         TherapySession session = therapySessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found"));
         session.setStatus(SessionStatus.DECLINED);
+        therapySessionRepository.save(session);
+    }
+
+    @Override
+    public void completeSession(Long sessionId) {
+        TherapySession session = therapySessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+        session.setStatus(SessionStatus.COMPLETED);
         therapySessionRepository.save(session);
     }
 

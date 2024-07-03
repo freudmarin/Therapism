@@ -1,16 +1,14 @@
 package com.marindulja.mentalhealthbackend.services.therapysessions;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionReadDto;
 import com.marindulja.mentalhealthbackend.dtos.therapysession.TherapySessionWriteDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 public interface TherapySessionService {
-    Map<String, List<TherapySessionReadDto>> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end) throws JsonProcessingException;
+    List<TherapySessionReadDto> allSessionsOfTherapist(LocalDateTime start, LocalDateTime end);
 
     TherapySessionReadDto createTherapySession(Long therapistId, TherapySessionWriteDto therapySessionDto);
 
@@ -22,6 +20,8 @@ public interface TherapySessionService {
     TherapySessionReadDto acceptSession(Long sessionId, String zoomCode);
 
     TherapySessionReadDto getTherapySession(Long sessionId);
+
+    void completeSession(Long sessionId);
 
     void declineSession(Long sessionId);
 
