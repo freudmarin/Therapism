@@ -17,7 +17,7 @@ public interface MoodJournalService {
 
     void deleteMoodEntry(Long moodEntryId);
 
-    MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodEntryDTO);
+    MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodEntryDTO) throws JsonProcessingException;;
 
     List<MoodTrendDto> getMoodTrends(Long patientId, ChronoUnit interval);
 }

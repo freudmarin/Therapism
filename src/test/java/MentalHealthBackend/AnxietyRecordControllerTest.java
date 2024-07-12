@@ -53,7 +53,6 @@ class AnxietyRecordControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "PATIENT")
     public void testRegisterAnxietyLevels() throws Exception {
         // Given
         AnxietyRecordWriteDto anxietyRecordWriteDto = new AnxietyRecordWriteDto(10,LocalDateTime.of(2024, Month.MARCH, 19, 19, 30));
@@ -69,7 +68,6 @@ class AnxietyRecordControllerTest {
     }
 
     @Test
-    @WithMockUser(username="patientUser", roles={"PATIENT"})
     public void getAllRecordsOfCurrentUser_ShouldReturnRecords_WhenAuthenticatedAsPatient() throws Exception {
         // Given
         List<AnxietyRecordReadDto> anxietyRecords = Arrays.asList(

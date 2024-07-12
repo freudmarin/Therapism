@@ -90,7 +90,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
                 .collect(Collectors.toList());
     }
 
-    public MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodJournalDTO) {
+    public MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodJournalDTO) throws JsonProcessingException {
         // Check if the mood entry with the given ID exists
         final var existingMoodEntry = moodJournalRepository.findById(moodEntryId)
                 .orElseThrow(() -> new EntityNotFoundException("MoodEntry with id :" + moodEntryId + "not found"));
@@ -102,6 +102,15 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         existingMoodEntry.setMoodType(updatedMoodJournal.getMoodType());
         existingMoodEntry.setThoughts(updatedMoodJournal.getThoughts());
         existingMoodEntry.setActivities(updatedMoodJournal.getActivities());
+        String moodJournalJson = objectMapper.writeValueAsString(updatedMoodJournal);
+        String message = """
+                Generate AI notes for this mood journal entry  {moodJournal}.
+                Be specific to the mood level, mood type, thoughts and activities and suggest some activities to improve the mood.
+                """;
+
+        existingMoodEntry.setAiNotes(chatClient.prompt()
+                .user(m -> m.text(message).param("moodJournal", moodJournalJson))
+                .call().content());
         // Update other fields as needed
 
         MoodJournal savedMoodEntry = moodJournalRepository.save(existingMoodEntry);

@@ -59,9 +59,15 @@ public class MoodJournalController {
 
     @PreAuthorize("hasRole('PATIENT')")
     @PutMapping("{moodJournalId}")
-    public ResponseEntity<MoodJournalReadDto> updateMoodJournal(@PathVariable Long moodJournalId, @RequestBody MoodJournalWriteDto updatedMoodJournalDto) {
-        final var updatedMoodEntry = moodEntryService.updateMoodJournal(moodJournalId, updatedMoodJournalDto);
-        return new ResponseEntity<>(updatedMoodEntry, HttpStatus.OK);
+    public ResponseEntity<MoodJournalReadDto> updateMoodJournal(@PathVariable Long moodJournalId,
+                                                                @RequestBody MoodJournalWriteDto updatedMoodJournalDto) {
+        final MoodJournalReadDto updatedMoodEntry;
+        try {
+            updatedMoodEntry = moodEntryService.updateMoodJournal(moodJournalId, updatedMoodJournalDto);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(updatedMoodEntry, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('PATIENT')")
