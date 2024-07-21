@@ -98,7 +98,7 @@ public class TaskServiceImpl implements TaskService {
     private boolean isReassignmentValid(User currentUser, Long originalAssignedUserId, Long newAssignedUserId) {
         // Validate that the therapist is reassigning the task within their patients or a patient is updating their own task
         return currentUser.getRole() == Role.THERAPIST && Utilities.patientBelongsToTherapist(newAssignedUserId, userProfileRepository)
-                || currentUser.getId().equals(originalAssignedUserId) && originalAssignedUserId.equals(newAssignedUserId);
+                 && originalAssignedUserId.equals(newAssignedUserId);
     }
 
     private void updateTaskDetailsFromDto(Task task, TaskDto taskDto) {

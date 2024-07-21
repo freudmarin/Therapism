@@ -90,7 +90,8 @@ public class PatientProfileServiceImpl implements ProfileService {
 
 
     private void authorizeUserAction(Long targetUserId, User authenticatedUser) {
-        if (!targetUserId.equals(authenticatedUser.getId()) || !authenticatedUser.getRole().equals(Role.PATIENT)) {
+        if (!targetUserId.equals(authenticatedUser.getId()) || (!authenticatedUser.getRole().equals(Role.PATIENT) &&
+                !authenticatedUser.getRole().equals(Role.ADMIN))) {
             throw new UnauthorizedException("User with id " + authenticatedUser.getId() + " not authorized.");
         }
     }
