@@ -37,10 +37,10 @@ public class UserController {
         this.therapistProfileService = therapistProfileService;
     }
 
-    @PostMapping("therapists/{therapistId}/assignPatients")
-    @PreAuthorize("hasAnyRole('ADMIN', 'THERAPIST')")
-    public ResponseEntity<?> assignPatientsToTherapist(@RequestBody List<Long> patientIds, @PathVariable("therapistId") Long therapistId) {
-        userService.assignPatientsToTherapist(patientIds, therapistId);
+    @PostMapping("chooseTherapist/{therapistId}")
+    @PreAuthorize("hasAnyRole('PATIENT')")
+    public ResponseEntity<?> chooseTherapistForPatient(@PathVariable("therapistId") Long therapistId) {
+        userService.chooseTherapist(therapistId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

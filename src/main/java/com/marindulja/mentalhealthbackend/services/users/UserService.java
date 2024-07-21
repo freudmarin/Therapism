@@ -18,5 +18,5 @@ public interface UserService {
 
     List<UserReadDto> findAllByRoleFilteredAndSorted(String searchValue);
 
-    void assignPatientsToTherapist(List<Long> patientIds, Long therapistId);
+    void chooseTherapist(Long therapistId);
 }

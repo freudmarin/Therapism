@@ -36,25 +36,6 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    @Transactional
-    public void assignPatientsToTherapist(List<Long> patientIds, Long therapistId) {
-        final var currentUser = getCurrentUserOrThrow();
-        final var therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
-        final var patients = userRepository.findAllById(patientIds);
-        if (currentUser.getRole() == Role.ADMIN) {
-            assignTherapistToPatients(therapist, patients);
-        } else if (currentUser.getRole() == THERAPIST && currentUser.getId().equals(therapistId)) {
-            assignTherapistToPatients(therapist, patients);
-        } else
-            throw new UnauthorizedException("The user with id " + currentUser.getId() + "doesn't have the required permission to perform this operation");
-    }
-
-    public void assignTherapistToPatients(User therapist, List<User> patients) {
-        patients.forEach(patient -> patient.setTherapist(therapist));
-        userRepository.saveAll(patients);
-    }
-
-    @Override
     public UserReadDto update(Long id, UserWriteDto userDto) throws InvalidInputException {
         final var currentUser = getCurrentUserOrThrow();
         if (!currentUser.getId().equals(id)) {
@@ -144,6 +125,18 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(user -> new UserReadDto(user.getId(), user.getActualUsername(), user.getEmail(), user.getRole()))
                 .collect(toList());
+    }
+
+    @Override
+    public void chooseTherapist(Long therapistId) {
+        final var currentUser = getCurrentUserOrThrow();
+        final var therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
+        if (currentUser.getRole() == Role.PATIENT) {
+            currentUser.setTherapist(therapist);
+            userRepository.save(currentUser);
+        } else {
+            throw new UnauthorizedException("The user with id " + currentUser.getId() + "doesn't have the required permission to perform this operation");
+        }
     }
 
     private User getCurrentUserOrThrow() {
