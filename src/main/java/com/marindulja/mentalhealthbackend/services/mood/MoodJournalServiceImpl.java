@@ -87,7 +87,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         final var therapist = getCurrentUserOrThrow();
         final var patients = userRepository.findAllByTherapist(therapist);
         return patients.stream()
-                .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId()).stream().filter(moodJournal -> !moodJournal.isSharedWithTherapist())
+                .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId()).stream().filter(MoodJournal::isSharedWithTherapist)
                         .map(mapper::toMoodJournalReadDto)
                 )
                 .toList();
