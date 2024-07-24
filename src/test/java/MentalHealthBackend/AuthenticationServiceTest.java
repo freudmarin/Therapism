@@ -69,7 +69,7 @@ class AuthenticationServiceTest {
 
 
     @Test
-    public void testSignUp() {
+    void testSignUp() {
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
@@ -82,7 +82,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    public void testSignIn() {
+    void testSignIn() {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(jwtService.generateToken(any(User.class))).thenReturn("token");
         when(authenticationManager.authenticate(any(Authentication.class)))

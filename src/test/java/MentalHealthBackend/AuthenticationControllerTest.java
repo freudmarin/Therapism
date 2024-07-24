@@ -49,7 +49,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    public void signUpTest() throws Exception {
+    void signUpTest() throws Exception {
         SignUpRequest signUpRequest = new SignUpRequest("newUser", "newuser@example.com", "password", Role.PATIENT);
         mockMvc.perform(post("/api/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -61,7 +61,7 @@ class AuthenticationControllerTest {
 
 
     @Test
-    public void signIn_ShouldReturnJwtToken_WhenCredentialsAreValid() throws Exception {
+    void signIn_ShouldReturnJwtToken_WhenCredentialsAreValid() throws Exception {
         // Given
         SignInRequest signInRequest = new SignInRequest("user@example.com", "password");
         JwtAuthenticationResponse response = new JwtAuthenticationResponse("user", Role.PATIENT, "token", "refreshToken");
