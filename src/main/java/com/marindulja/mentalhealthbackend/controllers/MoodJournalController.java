@@ -71,6 +71,13 @@ public class MoodJournalController {
     }
 
     @PreAuthorize("hasRole('PATIENT')")
+    @PostMapping("share/{moodJournalId}")
+    public ResponseEntity<Void> shareMoodJournalWithTherapist(@PathVariable Long moodJournalId, @RequestParam Long therapistId) {
+        moodEntryService.shareMoodJournalWithTherapist(moodJournalId, therapistId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('PATIENT')")
     @DeleteMapping("{moodJournalId}")
     public ResponseEntity<Void> deleteMoodEntry(@PathVariable Long moodJournalId) {
         moodEntryService.deleteMoodEntry(moodJournalId);

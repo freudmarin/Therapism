@@ -40,6 +40,9 @@ public class MoodJournal {
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
+    @Column(name = "shared_with_therapist")
+    private boolean sharedWithTherapist;
+
     // Additional details related to mood assessment
 
     // Getters and setters

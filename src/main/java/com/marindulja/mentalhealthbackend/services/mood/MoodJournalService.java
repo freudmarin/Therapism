@@ -19,5 +19,7 @@ public interface MoodJournalService {
 
     MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodEntryDTO) throws JsonProcessingException;;
 
+    void shareMoodJournalWithTherapist(Long moodEntryId, Long therapistId);
+
     List<MoodTrendDto> getMoodTrends(Long patientId, ChronoUnit interval);
 }

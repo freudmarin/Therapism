@@ -46,25 +46,29 @@ public class MoodJournalServiceImpl implements MoodJournalService {
     }
 
     public MoodJournalReadDto createMoodEntry(MoodJournalWriteDto moodEntryDTO) throws JsonProcessingException {
-        final var moodJournalEntry = mapper.toMoodJournal(moodEntryDTO);
-        // Update mood entry fields
-        moodJournalEntry.setUser(profileRepository.findById(getCurrentUserOrThrow().getId()).orElseThrow(
-                () -> new EntityNotFoundException("Profile with id " + getCurrentUserOrThrow().getId() + " not found")));
-        // Update other fields as needed
-        moodJournalEntry.setEntryDate(LocalDateTime.now());
-
-
-        String moodJournalJson = objectMapper.writeValueAsString(moodEntryDTO);
-        String message = """
-                Generate AI notes for this mood journal entry  {moodJournal}.
-                Be specific to the mood level, mood type, thoughts and activities and suggest some activities to improve the mood.
-                """;
-
-        moodJournalEntry.setAiNotes(chatClient.prompt()
-                .user(m -> m.text(message).param("moodJournal", moodJournalJson))
-                .call().content());
+        final var moodJournalEntry = prepareMoodJournalEntry(moodEntryDTO);
+        moodJournalEntry.setAiNotes(generateAiNotes(moodEntryDTO));
         MoodJournal savedMoodEntry = moodJournalRepository.save(moodJournalEntry);
         return mapper.toMoodJournalReadDto(savedMoodEntry);
+    }
+
+    private MoodJournal prepareMoodJournalEntry(MoodJournalWriteDto moodEntryDTO) {
+        final var moodJournalEntry = mapper.toMoodJournal(moodEntryDTO);
+        moodJournalEntry.setUser(profileRepository.findById(getCurrentUserOrThrow().getId()).orElseThrow(
+                () -> new EntityNotFoundException("Profile with id " + getCurrentUserOrThrow().getId() + " not found")));
+        moodJournalEntry.setEntryDate(LocalDateTime.now());
+        return moodJournalEntry;
+    }
+
+    private String generateAiNotes(MoodJournalWriteDto moodEntryDTO) throws JsonProcessingException {
+        String moodJournalJson = objectMapper.writeValueAsString(moodEntryDTO);
+        String message = """
+            Generate AI notes for this mood journal entry  {moodJournal}.
+            Be specific to the mood level, mood type, thoughts and activities and suggest some activities to improve the mood.
+            """;
+        return chatClient.prompt()
+                .user(m -> m.text(message).param("moodJournal", moodJournalJson))
+                .call().content();
     }
 
     public List<MoodJournalReadDto> getMoodJournalsByPatient(Long patientId) {
@@ -83,8 +87,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         final var therapist = getCurrentUserOrThrow();
         final var patients = userRepository.findAllByTherapist(therapist);
         return patients.stream()
-                .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId())
-                        .stream()
+                .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId()).stream().filter(moodJournal -> !moodJournal.isSharedWithTherapist())
                         .map(mapper::toMoodJournalReadDto)
                 )
                 .collect(Collectors.toList());
@@ -102,19 +105,26 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         existingMoodEntry.setMoodType(updatedMoodJournal.getMoodType());
         existingMoodEntry.setThoughts(updatedMoodJournal.getThoughts());
         existingMoodEntry.setActivities(updatedMoodJournal.getActivities());
-        String moodJournalJson = objectMapper.writeValueAsString(updatedMoodJournal);
-        String message = """
-                Generate AI notes for this mood journal entry  {moodJournal}.
-                Be specific to the mood level, mood type, thoughts and activities and suggest some activities to improve the mood.
-                """;
-
-        existingMoodEntry.setAiNotes(chatClient.prompt()
-                .user(m -> m.text(message).param("moodJournal", moodJournalJson))
-                .call().content());
+        existingMoodEntry.setAiNotes(generateAiNotes(updatedMoodJournalDTO));
         // Update other fields as needed
 
         MoodJournal savedMoodEntry = moodJournalRepository.save(existingMoodEntry);
         return mapper.toMoodJournalReadDto(savedMoodEntry);
+    }
+
+    @Override
+    public void shareMoodJournalWithTherapist(Long moodEntryId, Long therapistId) {
+        final var currentUser = getCurrentUserOrThrow();
+        if(Utilities.therapistBelongsToPatient(therapistId, profileRepository))
+            throw new UnauthorizedException("Therapist with id " + therapistId + " is not the therapist of the patient with id " + currentUser.getId());
+
+        final var moodEntry = moodJournalRepository.findById(moodEntryId);
+        moodEntry.ifPresentOrElse(moodJournal -> {
+            moodJournal.setSharedWithTherapist(true);
+            moodJournalRepository.save(moodJournal);
+        }, () -> {
+            throw new EntityNotFoundException("MoodEntry with id " + moodEntryId + "not found");
+        });
     }
 
     public List<MoodTrendDto> getMoodTrends(Long patientId, ChronoUnit interval) {
