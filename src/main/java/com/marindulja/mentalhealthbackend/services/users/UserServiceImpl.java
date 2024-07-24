@@ -130,12 +130,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void chooseTherapist(Long therapistId) {
         final var currentUser = getCurrentUserOrThrow();
-        final var therapist = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
-        if (currentUser.getRole() == Role.PATIENT) {
-            currentUser.setTherapist(therapist);
+        final var user = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
+        if (user.getRole() != Role.THERAPIST)
+            throw new InvalidInputException("User with id " + therapistId + " is not a therapist");
+        else if (currentUser.getRole() != Role.PATIENT)
+            throw new InvalidInputException("User with id " + currentUser.getId() + " is not a patient");
+        else {
+            currentUser.setTherapist(user);
             userRepository.save(currentUser);
-        } else {
-            throw new UnauthorizedException("The user with id " + currentUser.getId() + "doesn't have the required permission to perform this operation");
         }
     }
 
