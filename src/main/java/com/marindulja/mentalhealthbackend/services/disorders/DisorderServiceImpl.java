@@ -49,7 +49,6 @@ public class DisorderServiceImpl implements DisorderService {
             // handle cases where some disorder IDs are invalid
             throw new IllegalArgumentException("Some disorder IDs are invalid");
         }
-
         patientProfile.getDisorders().addAll(disorders);
         userProfileRepository.save(patientProfile);
     }
@@ -65,14 +64,16 @@ public class DisorderServiceImpl implements DisorderService {
 
         final var currentDisordersList = patientProfile.getDisorders();
 
-        // Filter out medications from current list that are not in the new list
+        // Filter out disorders from current list that are not in the new list
         final var retainedDisorders = currentDisordersList.stream().filter(newDisorders::contains).collect(Collectors.toList());
 
-        // Get medications from the new list that are not in the current list
+        // Get disorders from the new list that are not in the current list
         final var disordersToAdd = newDisorders.stream().filter(disorder -> !retainedDisorders.contains(disorder)).toList();
 
+        final var disordersToRemove = currentDisordersList.stream().filter(disorder -> !newDisorders.contains(disorder)).toList();
         // Combine the two lists
         retainedDisorders.addAll(disordersToAdd);
+        retainedDisorders.removeAll(disordersToRemove);
 
         // Set the modified medications back to the patient profile
         patientProfile.setDisorders(retainedDisorders);
