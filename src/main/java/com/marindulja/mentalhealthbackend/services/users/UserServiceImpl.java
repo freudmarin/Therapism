@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.marindulja.mentalhealthbackend.models.Role.THERAPIST;
-import static java.util.stream.Collectors.toList;
 
 @RequiredArgsConstructor
 @Service
@@ -124,7 +123,7 @@ public class UserServiceImpl implements UserService {
         return userListResult
                 .stream()
                 .map(user -> new UserReadDto(user.getId(), user.getActualUsername(), user.getEmail(), user.getRole()))
-                .collect(toList());
+                .toList();
     }
 
     @Override

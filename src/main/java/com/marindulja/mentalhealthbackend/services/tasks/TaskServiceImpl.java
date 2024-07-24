@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,13 +34,13 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<AssignedTaskDto> allTasksAssignedToPatient() {
         final var allTasksAssignedToPatient = taskRepository.getAllByAssignedToUser(getCurrentUserOrThrow());
-        return allTasksAssignedToPatient.stream().map(mapper::toAssignedTaskDto).collect(Collectors.toList());
+        return allTasksAssignedToPatient.stream().map(mapper::toAssignedTaskDto).toList();
     }
 
     @Override
     public List<AssignedTaskDto> allTasksAssignedByTherapist() {
         final var allTasksAssignedToPatient = taskRepository.getAllByAssignedByUser(getCurrentUserOrThrow());
-        return allTasksAssignedToPatient.stream().map(mapper::toAssignedTaskDto).collect(Collectors.toList());
+        return allTasksAssignedToPatient.stream().map(mapper::toAssignedTaskDto).toList();
     }
 
     @Override
@@ -146,6 +145,6 @@ public class TaskServiceImpl implements TaskService {
                         ((Number) result[1]).doubleValue(), // completionRate, safely cast to Number then to Double
                         ((Number) result[2]).doubleValue() // avgMoodLevel
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

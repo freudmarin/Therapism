@@ -80,7 +80,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
         final var moodEntries = moodJournalRepository.findAllByUserId(patientId);
         return moodEntries.stream()
                 .map(mapper::toMoodJournalReadDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<MoodJournalReadDto> getMoodJournalsByTherapist() {
@@ -90,7 +90,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
                 .flatMap(patient -> moodJournalRepository.findAllByUserId(patient.getId()).stream().filter(moodJournal -> !moodJournal.isSharedWithTherapist())
                         .map(mapper::toMoodJournalReadDto)
                 )
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodJournalDTO) throws JsonProcessingException {
@@ -158,7 +158,7 @@ public class MoodJournalServiceImpl implements MoodJournalService {
                     trendDTO.setAverageMoodLevel(averageMoodLevel);
                     return trendDTO;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private LocalDate truncateDate(LocalDateTime dateTime, ChronoUnit interval) {

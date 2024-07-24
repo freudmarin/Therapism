@@ -26,8 +26,8 @@ public class FAQController {
     @Value("classpath:prompts/rag-prompt-template.st")
     private Resource ragPromptTemplate;
 
-    public FAQController(ChatClient.Builder builder, VectorStore vectorStore, VectorStore vectorStore1) {
-        this.vectorStore = vectorStore1;
+    public FAQController(ChatClient.Builder builder, VectorStore vectorStore) {
+        this.vectorStore = vectorStore;
         this.chatClient = builder.build();
     }
 

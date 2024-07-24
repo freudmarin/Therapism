@@ -28,16 +28,16 @@ public class AnxietyRecordController {
         this.chatClient = builder.build();
     }
 
-    @PostMapping()
+    @PostMapping
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> registerAnxietyLevels(@RequestBody AnxietyRecordWriteDto anxietyRecordDto) {
+    public ResponseEntity<Void> registerAnxietyLevels(@RequestBody AnxietyRecordWriteDto anxietyRecordDto) {
         anxietyRecordService.registerAnxietyLevels(anxietyRecordDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("{recordId}")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> updateAnxietyRecord(@RequestBody AnxietyRecordWriteDto anxietyRecord, @PathVariable(name = "recordId") Long recordId) {
+    public ResponseEntity<Void> updateAnxietyRecord(@RequestBody AnxietyRecordWriteDto anxietyRecord, @PathVariable(name = "recordId") Long recordId) {
         anxietyRecordService.updateAnxietyRecord(anxietyRecord, recordId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -51,7 +51,7 @@ public class AnxietyRecordController {
 
     @GetMapping("{patientId}")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> viewPatientAnxietyLevels(@PathVariable(name = "patientId") Long patientId) {
+    public ResponseEntity<List<AnxietyRecordReadDto>> viewPatientAnxietyLevels(@PathVariable(name = "patientId") Long patientId) {
         final var anxietyRecordsList = anxietyRecordService.viewPatientAnxietyLevels(patientId);
         return new ResponseEntity<>(anxietyRecordsList, HttpStatus.OK);
     }

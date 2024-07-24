@@ -37,7 +37,7 @@ public class DisorderServiceImpl implements DisorderService {
 
     @Override
     public List<DisorderDto> getAllDisorders() {
-        return disorderRepository.findAll().stream().map(mapper::toDisorderDto).collect(Collectors.toList());
+        return disorderRepository.findAll().stream().map(mapper::toDisorderDto).toList();
     }
 
     @Override
@@ -130,7 +130,7 @@ public class DisorderServiceImpl implements DisorderService {
             dto.setAvgAnxietyLevel(avgAnxietyLevel);
 
             return dto;
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     public double calculateAverageAnxietyLevelForDisorder(String disorderName, List<Long> highAnxietyUserIds) {

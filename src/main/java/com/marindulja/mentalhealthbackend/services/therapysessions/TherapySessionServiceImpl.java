@@ -74,24 +74,21 @@ public class TherapySessionServiceImpl implements TherapySessionService {
                 .map(mapper::toTherapySessionReadDto)
                 .toList();
         therapySessions.forEach(therapySession -> {
+            String message = """
+                    Interpret these data of therapy session {therapySession} of this therapist {therapist}. What improvements can be made by the therapist? 
+                    """;
+            String therapySessionJson, therapistJson;
             try {
-                String message = """
-                        Interpret these data of therapy session {therapySession} of this therapist {therapist}. What improvements can be made by the therapist? 
-                        """;
-                String therapySessionJson, therapistJson;
-                try {
-                    therapySessionJson = objectMapper.writeValueAsString(therapySession);
-                    therapistJson = objectMapper.writeValueAsString(therapistProfileService.findByUserId(therapist.getId()));
-                } catch (JsonProcessingException e) {
-                    throw e;
-                }
-                var aiInterpretation = chatClient.prompt()
-                        .user(u -> u.text(message).param("therapySession", therapySessionJson).param("therapist", therapistJson))
-                        .call().content();
-                therapySession.setAiSummary(aiInterpretation);
-            } catch (IOException e) {
-                log.error("Could not create chat session for therapy session with id {}", therapySession.getId());
+                therapySessionJson = objectMapper.writeValueAsString(therapySession);
+                therapistJson = objectMapper.writeValueAsString(therapistProfileService.findByUserId(therapist.getId()));
+            } catch (JsonProcessingException e) {
+                log.error("Error processing JSON for therapy session with id {}: {}", therapySession.getId(), e.getMessage());
+                return; // Skip this therapy session
             }
+            var aiInterpretation = chatClient.prompt()
+                    .user(u -> u.text(message).param("therapySession", therapySessionJson).param("therapist", therapistJson))
+                    .call().content();
+            therapySession.setAiSummary(aiInterpretation);
         });
         return therapySessions;
     }
@@ -118,7 +115,8 @@ public class TherapySessionServiceImpl implements TherapySessionService {
     }
 
     @Override
-    public TherapySessionReadDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionWriteDto therapySessionDto, String zoomOAuthCode) {
+    public TherapySessionReadDto updateTherapySession(Long patientId, Long therapySessionId, TherapySessionWriteDto
+            therapySessionDto, String zoomOAuthCode) {
         if (!Utilities.patientBelongsToTherapist(patientId, userProfileRepository)) {
             throw new UnauthorizedException("Therapist is not authorized to update a session of this patient");
         }
@@ -240,7 +238,7 @@ public class TherapySessionServiceImpl implements TherapySessionService {
         List<Object[]> moodData = therapySessionRepository.findMoodChangesAroundTherapySessions(patientId);
         return moodData.stream()
                 .map(this::convertToTherapySessionMoodDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private User getCurrentUserOrThrow() {

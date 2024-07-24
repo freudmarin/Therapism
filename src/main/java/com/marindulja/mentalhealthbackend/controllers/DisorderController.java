@@ -15,7 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/v1/disorders")
@@ -45,21 +44,21 @@ public class DisorderController {
 
     @PutMapping("users/{patientId}/assignDisorders")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> assignDisordersToUser(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
+    public ResponseEntity<Void> assignDisordersToUser(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
         disorderService.assignDisordersToPatient(patientId, disorderIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PatchMapping("users/{patientId}/updateDisorders")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> updateDisordersToUser(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
+    public ResponseEntity<Void> updateDisordersToUser(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
         disorderService.updateDisordersToUser(patientId, disorderIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("users/{patientId}/removeDisorders")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> removeDisordersFromPatient(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
+    public ResponseEntity<Void> removeDisordersFromPatient(@PathVariable Long patientId, @RequestBody List<Long> disorderIds) {
         disorderService.removeDisordersFromPatient(patientId, disorderIds);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -89,6 +88,6 @@ public class DisorderController {
             }
         });
 
-        return disorders.stream().map(mapper::toDisorderDto).collect(Collectors.toList());
+        return disorders.stream().map(mapper::toDisorderDto).toList();
     }
 }

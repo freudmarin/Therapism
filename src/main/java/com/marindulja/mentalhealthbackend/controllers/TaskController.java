@@ -34,21 +34,21 @@ public class TaskController {
 
     @PostMapping("users/{patientId}/assignTask")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> assignTaskToUser(@PathVariable Long patientId, @RequestBody TaskDto request) {
+    public ResponseEntity<AssignedTaskDto> assignTaskToUser(@PathVariable Long patientId, @RequestBody TaskDto request) {
         final var assignedTask = taskService.assignTaskToPatient(patientId, request);
         return new ResponseEntity<>(assignedTask, HttpStatus.OK);
     }
 
     @PutMapping("users/{patientId}/updateTask/{taskId}")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> updateExistingTask(@PathVariable Long patientId, @PathVariable Long taskId, @RequestBody TaskDto request) {
+    public ResponseEntity<AssignedTaskDto> updateExistingTask(@PathVariable Long patientId, @PathVariable Long taskId, @RequestBody TaskDto request) {
         final var updatedTask = taskService.updatePatientTask(patientId, taskId, request);
         return new ResponseEntity<>(updatedTask, HttpStatus.OK);
     }
 
     @PatchMapping("{taskId}/status")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> updateTaskStatus(@PathVariable Long taskId, @RequestBody TaskDto taskDtoStatusUpdate) {
+    public ResponseEntity<AssignedTaskDto> updateTaskStatus(@PathVariable Long taskId, @RequestBody TaskDto taskDtoStatusUpdate) {
         final var assignedTaskDto = taskService.changeTaskStatus(taskId, taskDtoStatusUpdate.getStatus());
         return new ResponseEntity<>(assignedTaskDto, HttpStatus.OK);
     }

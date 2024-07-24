@@ -38,7 +38,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("refreshtoken")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<TokenRefreshResponse> refreshToken(@RequestBody Map<String, String> requestBody) {
         final var requestRefreshToken = requestBody.get("refreshToken");
         return refreshTokenService.findByToken(requestRefreshToken)
                 .map(refreshTokenService::verifyExpiration)

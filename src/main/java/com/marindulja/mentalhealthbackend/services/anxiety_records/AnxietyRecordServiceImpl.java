@@ -65,7 +65,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
                 .filter(PatientProfile.class::isInstance)
                 .map(PatientProfile.class::cast)
                 .map(PatientProfile::getAnxietyRecords)
-                .map(records -> records.stream().map(mapper::toAnxietyRecordReadDto).collect(Collectors.toList()))
+                .map(records -> records.stream().map(mapper::toAnxietyRecordReadDto).toList())
                 .orElseThrow(() -> new EntityNotFoundException("Current user's patient profile not found"));
     }
 
@@ -74,10 +74,9 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
         User currentUser = Utilities.getCurrentUser()
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
 
-        if (currentUser.getRole() == Role.THERAPIST) {
-            if (Utilities.patientBelongsToTherapist(patientId, userProfileRepository))
+        if (currentUser.getRole() == Role.THERAPIST && Utilities.patientBelongsToTherapist(patientId, userProfileRepository))
                 throw new UnauthorizedException("Patient with id " + patientId + " is not a patient of the therapist with id " + currentUser.getId());
-        }
+
 
         if (currentUser.getRole() == Role.PATIENT && currentUser.getId() != patientId) {
             throw new UnauthorizedException("Current user is not authorized to view anxiety records of patient with id " + patientId);
@@ -89,7 +88,7 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
                 .orElseThrow(() -> new EntityNotFoundException("Profile of Patient with id " + patientId + " not found"));
         return patientProfile.getAnxietyRecords().stream()
                 .map(mapper::toAnxietyRecordReadDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

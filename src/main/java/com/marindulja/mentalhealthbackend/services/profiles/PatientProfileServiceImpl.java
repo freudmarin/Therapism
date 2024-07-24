@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -98,8 +97,8 @@ public class PatientProfileServiceImpl implements ProfileService {
 
     private UserProfileReadDto getPatientProfileReadDto(PatientProfile patientProfile, UserReadDto userDto) {
             return new PatientProfileReadDto(userDto, patientProfile.getId(), patientProfile.getPhoneNumber(), patientProfile.getGender(),
-                    patientProfile.getAnxietyRecords().stream().map(mapper::toAnxietyRecordReadDto).collect(Collectors.toList()),
-                    patientProfile.getDisorders().stream().map(mapper::toDisorderDto).collect(Collectors.toList()),
-                    patientProfile.getSymptoms().stream().map(mapper::toSymptomDto).collect(Collectors.toList()));
+                    patientProfile.getAnxietyRecords().stream().map(mapper::toAnxietyRecordReadDto).toList(),
+                    patientProfile.getDisorders().stream().map(mapper::toDisorderDto).toList(),
+                    patientProfile.getSymptoms().stream().map(mapper::toSymptomDto).toList());
         }
 }

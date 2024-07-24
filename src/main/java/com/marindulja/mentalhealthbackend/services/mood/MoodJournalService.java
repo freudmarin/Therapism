@@ -17,7 +17,7 @@ public interface MoodJournalService {
 
     void deleteMoodEntry(Long moodEntryId);
 
-    MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodEntryDTO) throws JsonProcessingException;;
+    MoodJournalReadDto updateMoodJournal(Long moodEntryId, MoodJournalWriteDto updatedMoodEntryDTO) throws JsonProcessingException;
 
     void shareMoodJournalWithTherapist(Long moodEntryId, Long therapistId);
 

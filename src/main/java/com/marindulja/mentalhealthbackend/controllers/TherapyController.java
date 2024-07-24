@@ -21,7 +21,7 @@ public class TherapyController {
 
     @GetMapping("all")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> getAllSessionsOfTherapist(@RequestParam("from") LocalDateTime from, @RequestParam("to") LocalDateTime to) {
+    public ResponseEntity<List<TherapySessionReadDto>> getAllSessionsOfTherapist(@RequestParam("from") LocalDateTime from, @RequestParam("to") LocalDateTime to) {
         var allSessionsOfTherapist = therapySessionService.allSessionsOfTherapist(from, to);
         return new ResponseEntity<>(allSessionsOfTherapist, HttpStatus.OK);
     }
@@ -35,7 +35,7 @@ public class TherapyController {
 
     @PutMapping("therapy/{therapyId}/patient/{patientId}")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> updateExistingTherapySession(@PathVariable Long therapyId, @PathVariable Long patientId,
+    public ResponseEntity<TherapySessionReadDto> updateExistingTherapySession(@PathVariable Long therapyId, @PathVariable Long patientId,
                                                           @RequestBody TherapySessionWriteDto request,
                                                           @RequestParam(value = "zoomCode") String zoomCode) {
         var updatedTherapySession = therapySessionService.updateTherapySession(patientId, therapyId, request, zoomCode);
@@ -58,14 +58,14 @@ public class TherapyController {
 
     @PatchMapping("session/{sessionId}/decline")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> declineSession(@PathVariable Long sessionId) {
+    public ResponseEntity<Void> declineSession(@PathVariable Long sessionId) {
         therapySessionService.declineSession(sessionId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PatchMapping("session/{sessionId}/complete")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> completeSession(@PathVariable Long sessionId) {
+    public ResponseEntity<Void> completeSession(@PathVariable Long sessionId) {
         therapySessionService.completeSession(sessionId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -79,7 +79,7 @@ public class TherapyController {
 
     @DeleteMapping("{therapyId}")
     @PreAuthorize("hasRole('THERAPIST')")
-    public ResponseEntity<?> deleteTherapySession(@PathVariable Long therapyId) {
+    public ResponseEntity<Void> deleteTherapySession(@PathVariable Long therapyId) {
         therapySessionService.deleteTherapySession(therapyId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
