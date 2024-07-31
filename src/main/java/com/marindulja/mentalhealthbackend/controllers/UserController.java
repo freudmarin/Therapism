@@ -39,7 +39,7 @@ public class UserController {
 
     @PostMapping("chooseTherapist/{therapistId}")
     @PreAuthorize("hasAnyRole('PATIENT')")
-    public ResponseEntity<Void> chooseTherapistForPatient(@PathVariable("therapistId") Long therapistId) {
+    public ResponseEntity<Void> chooseTherapist(@PathVariable("therapistId") Long therapistId) {
         userService.chooseTherapist(therapistId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

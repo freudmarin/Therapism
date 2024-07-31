@@ -15,7 +15,6 @@ import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.SpecializationRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +33,6 @@ public class TherapistProfileServiceImpl implements ProfileService {
     private final UserRepository userRepository;
 
     @Override
-    @Transactional
     public UserProfileReadDto createProfile(Long userId, UserProfileWriteDto profileDto) {
         User currentUser = Utilities.getCurrentUser().flatMap(cUser -> userRepository.findById(cUser.getId()))
                 .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));

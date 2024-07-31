@@ -25,7 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -78,7 +77,7 @@ class TherapistProfileServiceTest {
             assertEquals(therapistProfileWriteDto.getPhoneNumber(), therapistProfileReadDto.getPhoneNumber());
             assertEquals(therapistProfileWriteDto.getQualifications(), therapistProfileReadDto.getQualifications());
             assertEquals(therapistProfileWriteDto.getPhoneNumber(), therapistProfileReadDto.getPhoneNumber());
-            assertEquals(therapistProfileWriteDto.getSpecializationIds(), therapistProfileReadDto.getSpecializations().stream().map(SpecializationDto::getId).collect(Collectors.toList()));
+            assertEquals(therapistProfileWriteDto.getSpecializationIds(), therapistProfileReadDto.getSpecializations().stream().map(SpecializationDto::getId).toList());
         }
     }
 
