@@ -2,6 +2,7 @@ package com.marindulja.mentalhealthbackend.config;
 
 import com.marindulja.mentalhealthbackend.errors.ValidationError;
 import com.marindulja.mentalhealthbackend.exceptions.AuthenticationFailedException;
+import com.marindulja.mentalhealthbackend.exceptions.TokenRefreshException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.responses.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,7 +34,7 @@ public class RestExceptionHandler {
     }
 
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler(value = {IllegalArgumentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleInvalidInputException(IllegalArgumentException ex) {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
@@ -55,6 +56,12 @@ public class RestExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ErrorResponse> handleAuthenticationFailedException(AuthenticationFailedException ex) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(value = {TokenRefreshException.class})
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<ErrorResponse> handleTokenRefreshException(Exception ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage(), null);
     }
 
     @ExceptionHandler(Exception.class)

@@ -5,7 +5,6 @@ import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
 import com.marindulja.mentalhealthbackend.dtos.task.AssignedTaskDto;
 import com.marindulja.mentalhealthbackend.dtos.task.TaskCompletionMoodDto;
 import com.marindulja.mentalhealthbackend.dtos.task.TaskDto;
-import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.Role;
 import com.marindulja.mentalhealthbackend.models.Task;
@@ -13,7 +12,6 @@ import com.marindulja.mentalhealthbackend.models.TaskStatus;
 import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.TaskRepository;
-import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,9 +43,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public AssignedTaskDto assignTaskToPatient(Long patientId, TaskDto taskDto) {
-        if (StringUtils.isBlank(taskDto.getDescription())) {
-            throw new InvalidInputException("Task description cannot be null or empty");
-        }
         final var therapist = getCurrentUserOrThrow();
 
         final var patientUser = userProfileRepository.findByUserId(patientId)

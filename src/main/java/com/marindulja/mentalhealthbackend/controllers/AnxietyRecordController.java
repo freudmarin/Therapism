@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordWriteDto;
 import com.marindulja.mentalhealthbackend.services.anxiety_records.AnxietyRecordService;
+import jakarta.validation.Valid;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,14 +31,14 @@ public class AnxietyRecordController {
 
     @PostMapping
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<Void> registerAnxietyLevels(@RequestBody AnxietyRecordWriteDto anxietyRecordDto) {
+    public ResponseEntity<Void> registerAnxietyLevels(@RequestBody @Valid AnxietyRecordWriteDto anxietyRecordDto) {
         anxietyRecordService.registerAnxietyLevels(anxietyRecordDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("{recordId}")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<Void> updateAnxietyRecord(@RequestBody AnxietyRecordWriteDto anxietyRecord, @PathVariable(name = "recordId") Long recordId) {
+    public ResponseEntity<Void> updateAnxietyRecord(@RequestBody @Valid AnxietyRecordWriteDto anxietyRecord, @PathVariable(name = "recordId") Long recordId) {
         anxietyRecordService.updateAnxietyRecord(anxietyRecord, recordId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

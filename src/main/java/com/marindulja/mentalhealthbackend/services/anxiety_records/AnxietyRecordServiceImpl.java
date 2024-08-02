@@ -4,7 +4,6 @@ import com.marindulja.mentalhealthbackend.common.Utilities;
 import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordReadDto;
 import com.marindulja.mentalhealthbackend.dtos.anxietyrecord.AnxietyRecordWriteDto;
 import com.marindulja.mentalhealthbackend.dtos.mapping.DTOMappings;
-import com.marindulja.mentalhealthbackend.exceptions.InvalidInputException;
 import com.marindulja.mentalhealthbackend.exceptions.UnauthorizedException;
 import com.marindulja.mentalhealthbackend.models.AnxietyRecord;
 import com.marindulja.mentalhealthbackend.models.PatientProfile;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +32,6 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
     @Override
     @Transactional
     public void registerAnxietyLevels(AnxietyRecordWriteDto anxietyRecordDto) {
-        if (anxietyRecordDto.getAnxietyLevel() == null) {
-            throw new InvalidInputException("Anxiety level should be defined");
-        }
-
         Utilities.getCurrentUser()
                 .flatMap(user -> userProfileRepository.findByUserId(user.getId()))
                 .filter(PatientProfile.class::isInstance)

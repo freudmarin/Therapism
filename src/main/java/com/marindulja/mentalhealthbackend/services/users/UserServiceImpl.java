@@ -11,7 +11,6 @@ import com.marindulja.mentalhealthbackend.models.User;
 import com.marindulja.mentalhealthbackend.repositories.ProfileRepository;
 import com.marindulja.mentalhealthbackend.repositories.UserRepository;
 import com.marindulja.mentalhealthbackend.repositories.specifications.UserSpecification;
-import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -38,12 +37,9 @@ public class UserServiceImpl implements UserService {
     public UserReadDto update(Long id, UserWriteDto userDto) throws InvalidInputException {
         final var currentUser = getCurrentUserOrThrow();
         if (!currentUser.getId().equals(id)) {
-            throw new InvalidInputException("The user can update only his profile");
+            throw new UnauthorizedException("The user can update only his profile");
         }
 
-        if (StringUtils.isBlank(userDto.getUsername())) {
-            throw new InvalidInputException("Username cannot be null or empty");
-        }
         return userRepository.findById(id)
                 .map(user -> {
                     user.setUsername(userDto.getUsername());
@@ -131,9 +127,9 @@ public class UserServiceImpl implements UserService {
         final var currentUser = getCurrentUserOrThrow();
         final var user = userRepository.findById(therapistId).orElseThrow(() -> new EntityNotFoundException("Therapist with id " + therapistId + "not found"));
         if (user.getRole() != Role.THERAPIST)
-            throw new InvalidInputException("User with id " + therapistId + " is not a therapist");
+            throw new UnauthorizedException("User with id " + therapistId + " is not a therapist");
         else if (currentUser.getRole() != Role.PATIENT)
-            throw new InvalidInputException("User with id " + currentUser.getId() + " is not a patient");
+            throw new UnauthorizedException("User with id " + currentUser.getId() + " is not a patient");
         else {
             currentUser.setTherapist(user);
             userRepository.save(currentUser);
