@@ -38,7 +38,8 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
                 .map(PatientProfile.class::cast)
                 .ifPresentOrElse(patientProfile -> saveAnxietyRecord(anxietyRecordDto, patientProfile),
                         () -> {
-                            throw new UnauthorizedException("Current user is not a patient");
+                            throw new UnauthorizedException("Authenticated user either does " +
+                                    "not have a profile or is not a patient");
                         });
     }
 
@@ -86,12 +87,12 @@ public class AnxietyRecordServiceImpl implements AnxietyRecordService {
     }
 
     @Override
-    @Transactional
     public void updateAnxietyRecord(AnxietyRecordWriteDto anxietyRecord, long recordId) {
         PatientProfile patientProfile = Utilities.getCurrentUser()
                 .flatMap(user -> userProfileRepository.findByUserId(user.getId()))
                 .filter(PatientProfile.class::isInstance)
-                .map(PatientProfile.class::cast).orElseThrow(() -> new UnauthorizedException("Current user is not a patient"));
+                .map(PatientProfile.class::cast).orElseThrow(() -> new UnauthorizedException("Authenticated user either does " +
+                        "not have a profile or is not a patient"));
 
         var anxietyRecordToUpdate = anxietyRecordRepository.findById(recordId)
                 .orElseThrow(() -> new EntityNotFoundException("Anxiety record with id " + recordId + " not found"));

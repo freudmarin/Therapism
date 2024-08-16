@@ -22,19 +22,6 @@ public class AiSuggestionsController {
                 .build();
     }
 
-    @GetMapping("meditationExercise")
-    @PreAuthorize("hasRole('PATIENT')")
-    public String getMeditationExercise(@RequestParam(value = "topic", defaultValue = "Mindfulness") String topic) {
-        String message = """
-                Generate a meditation exercise for {topic}
-                """;
-
-        return chatClient.prompt()
-                .user(u -> u.text(message).param("topic", topic))
-                .call()
-                .content();
-    }
-
     @GetMapping("meditationTechniques")
     @PreAuthorize("hasRole('PATIENT')")
     public List<String> getMeditationTechniques(@RequestParam(value = "topic", defaultValue = "Mindfulness Meditation") String topic) {
